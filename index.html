@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ban Đoàn vụ · Bảng theo dõi nhiệm vụ</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --bg: #f4f6fa; --card: #ffffff; --line: #dfe4ec; --text: #17202e; --muted: #5d6b80; --accent: #1a56c4; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #10151d; --card: #19212c; --line: #2c3746; --text: #e8edf4; --muted: #9aa8bb; --accent: #7fb0ff; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 16px 56px; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 0 0 4px; }
+  p.sub { color: var(--muted); margin: 0 0 24px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  a.card, div.card { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; color: inherit; text-decoration: none; }
+  a.card:hover { border-color: var(--accent); }
+  .card b { display: block; font-size: 17px; }
+  .card span { color: var(--muted); font-size: 14px; }
+  a.card b { color: var(--accent); }
+  div.card { opacity: .7; }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ban Đoàn vụ</h1>
+  <p class="sub">Bảng theo dõi nhiệm vụ các nhóm · năm học 2026 - 2027</p>
+  <div class="grid">
+    <a class="card" href="4t/"><b>Truyền thông - Thông tin</b><span>Timeline hoạt động, nhận việc và cập nhật tiến độ</span></a>
+    <div class="card"><b>Nghiệp vụ</b><span>Đang xây dựng</span></div>
+    <div class="card"><b>Cơ sở dữ liệu - Cơ sở vật chất</b><span>Đang xây dựng</span></div>
+    <div class="card"><b>Nội vụ</b><span>Đang xây dựng</span></div>
+  </div>
+</main>
+</body>
+</html>
