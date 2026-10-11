@@ -59,7 +59,7 @@
   var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
   document.body.insertAdjacentHTML('afterbegin',
-    '<div class="wrap"><div class="top"><div><a class="back" href="../">← Ban Đoàn vụ</a><h1 id="title">Nhóm</h1>' +
+    '<div class="wrap"><div class="top"><div><h1 id="title">Nhóm</h1>' +
     '<div class="sub">Năm học 2026 - 2027 · dữ liệu lấy trực tiếp từ sheet theo dõi nhiệm vụ của nhóm</div></div>' +
     '<div class="who"><label for="me">Bạn là</label><select id="me"><option value="">Chọn tên của bạn</option></select>' +
     '<input type="text" id="code" placeholder="Mã nhóm" size="9" style="display:none" autocomplete="off">' +
@@ -248,6 +248,8 @@
   $('me').addEventListener('change', function (e) { toi = e.target.value; nho('bdv.' + NHOM + '.ten', toi); e.target.classList.remove('need'); ve(); });
   $('code').addEventListener('change', function (e) { ma = e.target.value.trim(); nho('bdv4t.ma', ma); });
   $('reload').addEventListener('click', function () { tai(false); });
+
+  var mn = document.createElement('script'); mn.src = '/menu.js'; document.body.appendChild(mn);
 
   tai(true);
   setInterval(function () {
