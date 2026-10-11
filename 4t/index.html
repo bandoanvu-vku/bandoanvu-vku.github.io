@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<base target="_blank">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard nhóm Truyền thông - Thông tin · Ban Đoàn vụ</title>
+<meta name="robots" content="noindex">
+<style>
+  :root {
+    --bg: #f4f6fa; --card: #ffffff; --line: #dfe4ec; --text: #17202e; --muted: #5d6b80;
+    --accent: #1a56c4; --accent-soft: #e6eefc; --on-accent: #ffffff;
+    --ok: #17794a; --ok-soft: #e0f3e9; --warn: #9a5b00; --warn-soft: #fdf0d5;
+    --bad: #b3261e; --bad-soft: #fde7e5; --idle: #5d6b80; --idle-soft: #eceff4;
+    --track: #e4e8ef;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151d; --card: #19212c; --line: #2c3746; --text: #e8edf4; --muted: #9aa8bb;
+      --accent: #7fb0ff; --accent-soft: #1d2f4d; --on-accent: #0c1524;
+      --ok: #6fd3a0; --ok-soft: #173326; --warn: #f2c063; --warn-soft: #3a2d10;
+      --bad: #ff9d94; --bad-soft: #40201d; --idle: #9aa8bb; --idle-soft: #242e3b;
+      --track: #2a3442;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 20px 16px 56px; }
+  h1 { font-size: 21px; line-height: 1.25; margin: 0; letter-spacing: -.01em; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  a { color: var(--accent); }
+
+  .top { display: flex; gap: 12px 20px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; }
+  .who { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .who label { font-size: 13px; color: var(--muted); }
+  select, input[type=text] { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-height: 38px; }
+  .who select.need { border-color: var(--bad); box-shadow: 0 0 0 3px var(--bad-soft); }
+  .ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; min-height: 38px; }
+  .ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .months { display: flex; gap: 6px; overflow-x: auto; padding: 16px 0 4px; scrollbar-width: thin; }
+  .months button { flex: none; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; white-space: nowrap; }
+  .months button .n { color: var(--muted); font-size: 12px; margin-left: 4px; font-variant-numeric: tabular-nums; }
+  .months button[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+  .months button[aria-pressed=true] .n { color: inherit; opacity: .8; }
+  .months button.empty { color: var(--muted); }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0 18px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .kpi .v { font-size: 26px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .kpi .v small { font-size: 14px; font-weight: 500; color: var(--muted); }
+  .kpi .l { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .kpi.alert .v { color: var(--bad); }
+  .bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; margin-top: 8px; display: flex; }
+  .bar i { display: block; height: 100%; background: var(--ok); }
+  .bar i.doing { background: var(--warn); opacity: .55; }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 14px; overflow-x: auto; }
+  .tabs button { flex: none; background: none; border: 0; border-bottom: 3px solid transparent; padding: 9px 12px; color: var(--muted); font-weight: 600; }
+  .tabs button[aria-selected=true] { color: var(--accent); border-bottom-color: var(--accent); }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filters button { background: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; font-size: 13px; color: var(--muted); }
+  .filters button[aria-pressed=true] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+  .act { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; margin-bottom: 10px;
+    display: grid; grid-template-columns: 58px 1fr; gap: 4px 14px; }
+  .date { text-align: center; border-right: 1px solid var(--line); padding-right: 12px; align-self: start; }
+  .date b { display: block; font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .date span { font-size: 12px; color: var(--muted); }
+  .date.none b { font-size: 13px; font-weight: 600; color: var(--muted); line-height: 1.3; padding-top: 4px; }
+  .act h3 { margin: 0; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
+  .meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+  .pill { border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.doing { background: var(--warn-soft); color: var(--warn); }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  .pill.idle { background: var(--idle-soft); color: var(--idle); }
+  .pill.plain { border: 1px solid var(--line); font-weight: 500; color: var(--muted); }
+  .tasks { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+  .task { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 9px; font-size: 13px; min-height: 32px; background: var(--card); }
+  .task .role { color: var(--muted); }
+  .task .name { font-weight: 600; }
+  .task.done { background: var(--ok-soft); border-color: transparent; }
+  .task.done .name, .task.done .role { color: var(--ok); }
+  .task.mine { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .task input { width: 17px; height: 17px; margin: 0; accent-color: var(--ok); }
+  .task input:disabled { opacity: .55; }
+  .task .x { background: none; border: 0; padding: 0 0 0 2px; color: var(--muted); font-size: 12px; text-decoration: underline; }
+  button.open { border: 1px dashed var(--accent); color: var(--accent); background: none; border-radius: 8px; padding: 4px 10px; font-size: 13px; min-height: 32px; }
+  button.open:hover { background: var(--accent-soft); }
+  details.more { font-size: 13px; }
+  details.more summary { cursor: pointer; color: var(--accent); padding: 5px 4px; min-height: 32px; list-style: none; }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more[open] { flex-basis: 100%; }
+  details.more > div { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 2px; }
+  .busy { opacity: .5; pointer-events: none; }
+  .note { grid-column: 2; font-size: 12.5px; color: var(--muted); margin-top: 6px; overflow-wrap: anywhere; }
+
+  .mine-row { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .mine-row input { width: 19px; height: 19px; accent-color: var(--ok); }
+  .mine-row .t { font-weight: 600; overflow-wrap: anywhere; }
+  .mine-row .s { font-size: 12.5px; color: var(--muted); }
+  .mine-row .d { font-size: 13px; color: var(--muted); white-space: nowrap; text-align: right; }
+  .mine-row .d.late { color: var(--bad); font-weight: 600; }
+  h2 { font-size: 14px; margin: 18px 0 8px; color: var(--muted); font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .bar { margin: 0; min-width: 90px; height: 8px; }
+  .legend { font-size: 12.5px; color: var(--muted); margin-top: 8px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; background: var(--ok); }
+  .legend i.doing { background: var(--warn); opacity: .55; }
+
+  .empty-box { text-align: center; color: var(--muted); padding: 34px 16px; border: 1px dashed var(--line); border-radius: 12px; }
+  .foot { margin-top: 22px; font-size: 12.5px; color: var(--muted); display: flex; gap: 8px 16px; flex-wrap: wrap; justify-content: space-between; }
+  #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); max-width: calc(100vw - 32px); background: var(--text); color: var(--bg);
+    padding: 10px 16px; border-radius: 10px; font-size: 14px; display: none; z-index: 5; }
+  #toast.err { background: var(--bad); color: #fff; }
+
+  @media (max-width: 640px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .act { grid-template-columns: 46px 1fr; gap: 4px 10px; padding: 12px; }
+    .date { padding-right: 8px; } .date b { font-size: 20px; }
+    .tasks, .note { grid-column: 1 / -1; }
+    .hide-s { display: none; }
+    th, td { padding: 9px 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1 id="title">Dashboard nhóm Truyền thông - Thông tin</h1>
+      <div class="sub">Ban Đoàn vụ · năm học 2026 - 2027 · dữ liệu lấy trực tiếp từ sheet Timeline</div>
+    </div>
+    <div class="who">
+      <label for="me">Bạn là</label>
+      <select id="me"><option value="">Chọn tên của bạn</option></select>
+      <input type="text" id="code" placeholder="Mã nhóm" size="9" style="display:none" autocomplete="off">
+      <button class="ghost" id="reload" type="button">Tải lại</button>
+    </div>
+  </div>
+
+  <div class="months" id="months"></div>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-view="hd">Hoạt động trong tháng</button>
+    <button type="button" role="tab" data-view="toi">Việc của tôi</button>
+    <button type="button" role="tab" data-view="tv">Thành viên</button>
+  </div>
+  <div id="view"><div class="empty-box">Đang tải dữ liệu từ sheet…</div></div>
+
+  <div class="foot">
+    <span>Nhận việc và tick hoàn thành tại đây sẽ được ghi thẳng vào sheet. Giao việc, sửa ngày, thêm hoạt động: làm trong sheet.</span>
+    <span id="stamp"></span>
+  </div>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  var NHAN = { ctt: 'Content Tuổi trẻ', cvp: 'Content VPĐ', dtt: 'Thiết kế Tuổi trẻ', dvp: 'Thiết kế VPĐ', photo: 'Chụp hình' };
+  var LOAI = { ctt: 'Viết bài', cvp: 'Viết bài', dtt: 'Thiết kế', dvp: 'Thiết kế', photo: 'Chụp ảnh' };
+  var D = null, iThang = -1, view = 'hd', loc = 'all', busy = false;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function nho(k, v) {
+    try { if (v === undefined) return localStorage.getItem(k) || ''; localStorage.setItem(k, v); } catch (e) {}
+    return v || '';
+  }
+  var toi = nho('bdv4t.ten'), ma = nho('bdv4t.ma');
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function tenNgan(t) { var p = String(t).split(' '); return p.length > 2 ? p.slice(-2).join(' ') : t; }
+  function homNay() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function ngay(iso) { if (!iso) return null; var p = iso.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function soNgay(iso) { return Math.round((ngay(iso) - homNay()) / 864e5); }
+  function link(s) { return /^https?:\/\//i.test(s) ? '<a href="' + esc(s) + '" rel="noopener">' + esc(s) + '</a>' : esc(s); }
+
+  var tT;
+  function toast(msg, err) {
+    var t = $('toast'); t.textContent = msg; t.className = err ? 'err' : ''; t.style.display = 'block';
+    clearTimeout(tT); tT = setTimeout(function () { t.style.display = 'none'; }, err ? 6000 : 2500);
+  }
+
+  /* ---------- tính trạng thái ---------- */
+  function viecCanLam(h) { return h.viec.filter(function (v) { return v.nguoi || v.xong; }); }
+  function choTrong(h) {
+    var vt = h.viTri.toLowerCase();
+    var tt = vt.indexOf('tuổi trẻ') > -1, vp = vt.indexOf('vpđ') > -1, ca2 = vt.indexOf('cả 2') > -1 || (tt && vp) || (!tt && !vp);
+    return h.viec.filter(function (v) {
+      if (v.nguoi || v.xong) return false;
+      if (ca2 || v.key === 'photo') return true;
+      return tt ? (v.key === 'ctt' || v.key === 'dtt') : (v.key === 'cvp' || v.key === 'dvp');
+    });
+  }
+  function trangThai(h) {
+    var can = viecCanLam(h), xong = can.filter(function (v) { return v.xong; }).length;
+    var s = { can: can.length, xong: xong, ma: 'doing', chu: 'Đang làm' };
+    if (!can.length) { s.ma = 'idle'; s.chu = 'Chưa có người nhận'; }
+    else if (xong === can.length) { s.ma = 'ok'; s.chu = 'Hoàn thành'; }
+    else if (!xong) { s.chu = 'Đã giao, chưa xong'; }
+    if (h.truongNhomTick && can.length === 0) { s.ma = 'ok'; s.chu = 'Hoàn thành'; }
+    s.tre = s.ma !== 'ok' && h.ngay && soNgay(h.ngay) < 0;
+    return s;
+  }
+
+  /* ---------- gọi Apps Script ---------- */
+  var API = 'https://script.google.com/macros/s/AKfycbyvfVC6D4z7dpvqTRXENomrqmEMnoeqY4Y2Al5ApP32yQWwjJunsJZJYJ4PqCtaptfd/exec';
+  // Gọi thẳng Apps Script, không gửi kèm đăng nhập Google nên không dính lỗi nhiều tài khoản.
+  function goi(ham, req) {
+    var p = ham === 'layDuLieu'
+      ? fetch(API + '?api=data' + (req && req.moi ? '&fresh=1' : '') + '&t=' + Date.now(), { credentials: 'omit' })
+      : fetch(API, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: ham, req: req }) });
+    return p.then(function (r) { if (!r.ok) throw new Error('Máy chủ trả về lỗi ' + r.status); return r.json(); })
+      .then(function (o) { if (!o.ok) throw new Error(o.error || 'Có lỗi xảy ra.'); return o.data; })
+      .catch(function (e) { throw (e && e.message ? e.message : String(e)); });
+  }
+  function tai(imLang) {
+    return goi('layDuLieu', { moi: !imLang }).then(function (d) { nhan(d); if (!imLang) toast('Đã cập nhật từ sheet'); })
+      .catch(function (m) { if (!D) $('view').innerHTML = '<div class="empty-box">Không tải được dữ liệu: ' + esc(m) + '</div>'; else if (!imLang) toast(m, true); });
+  }
+  function nhan(d) {
+    D = d;
+    if (iThang < 0 || iThang >= D.cacThang.length) {
+      var n = new Date(), tim = -1, coViec = -1;
+      D.cacThang.forEach(function (t, i) {
+        if (t.thang === n.getMonth() + 1 && t.nam === n.getFullYear()) tim = i;
+        if (t.hoatDong.length) coViec = i;
+      });
+      iThang = tim > -1 ? tim : (coViec > -1 ? coViec : 0);
+    }
+    $('title').textContent = D.tieuDe;
+    var sel = $('me');
+    sel.innerHTML = '<option value="">Chọn tên của bạn</option>' + D.thanhVien.map(function (t) {
+      return '<option' + (t === toi ? ' selected' : '') + '>' + esc(t) + '</option>';
+    }).join('');
+    if (D.thanhVien.indexOf(toi) === -1) toi = '';
+    $('code').style.display = D.canMa ? '' : 'none';
+    $('code').value = ma;
+    var n2 = new Date();
+    $('stamp').textContent = 'Cập nhật lúc ' + ('0' + n2.getHours()).slice(-2) + ':' + ('0' + n2.getMinutes()).slice(-2);
+    ve();
+  }
+  function thaoTac(ham, t, h, v, them, el) {
+    if (busy) return;
+    if (!toi) {
+      var s = $('me'); s.classList.add('need'); s.focus();
+      toast('Chọn tên của bạn ở góc trên trước đã nhé', true); ve(); return;
+    }
+    if (D.canMa && !ma) { $('code').focus(); toast('Nhập mã nhóm để cập nhật', true); ve(); return; }
+    busy = true; if (el) el.classList.add('busy');
+    var req = { tab: t.tab, dong: h.dong, key: v.key, ten: toi, hoatDong: h.ten, ma: ma };
+    for (var k in them) req[k] = them[k];
+    goi(ham, req).then(function (d) { busy = false; nhan(d); toast('Đã ghi vào sheet'); })
+      .catch(function (m) { busy = false; toast(m, true); goi('layDuLieu', { moi: true }).then(nhan).catch(function () {}); });
+  }
+
+  /* ---------- vẽ ---------- */
+  function ve() {
+    if (!D) return;
+    if (!D.cacThang.length) { $('view').innerHTML = '<div class="empty-box">Chưa có tab tháng nào (dạng 08.2026) trong sheet.</div>'; return; }
+    veThang(); veKpi();
+    [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.setAttribute('aria-selected', b.dataset.view === view); });
+    if (view === 'hd') veHoatDong(); else if (view === 'toi') veCuaToi(); else veThanhVien();
+  }
+  function veThang() {
+    $('months').innerHTML = D.cacThang.map(function (t, i) {
+      return '<button type="button" data-i="' + i + '" aria-pressed="' + (i === iThang) + '" class="' + (t.hoatDong.length ? '' : 'empty') + '">Tháng ' +
+        t.thang + '/' + t.nam + (t.hoatDong.length ? '<span class="n">' + t.hoatDong.length + '</span>' : '') + '</button>';
+    }).join('');
+    var b = $('months').querySelector('[aria-pressed=true]');
+    if (b && b.scrollIntoView) b.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }
+  function veKpi() {
+    var t = D.cacThang[iThang], can = 0, xong = 0, chuaNhan = 0, chuaNgay = 0, tre = 0;
+    t.hoatDong.forEach(function (h) {
+      var s = trangThai(h); can += s.can; xong += s.xong;
+      if (s.ma === 'idle') chuaNhan++; if (!h.ngay && s.ma !== 'ok') chuaNgay++; if (s.tre) tre++;
+    });
+    var pt = can ? Math.round(xong / can * 100) : 0;
+    $('kpis').innerHTML =
+      '<div class="kpi"><div class="v">' + t.hoatDong.length + '</div><div class="l">Hoạt động tháng ' + t.thang + '</div></div>' +
+      '<div class="kpi"><div class="v">' + xong + '<small> / ' + can + ' việc</small></div><div class="l">Đã hoàn thành (' + pt + '%)</div>' +
+        '<div class="bar"><i style="width:' + pt + '%"></i></div></div>' +
+      '<div class="kpi' + (chuaNhan ? ' alert' : '') + '"><div class="v">' + chuaNhan + '</div><div class="l">Hoạt động chưa có người nhận</div></div>' +
+      '<div class="kpi' + (tre ? ' alert' : '') + '"><div class="v">' + tre + '<small>' + (chuaNgay ? ' · ' + chuaNgay + ' chưa có ngày' : '') + '</small></div><div class="l">Hoạt động đã qua ngày, chưa xong</div></div>';
+  }
+  function theViec(t, h, v) {
+    var cuaToi = toi && v.nguoi === toi;
+    var id = 'data-tab="' + esc(t.tab) + '" data-dong="' + h.dong + '" data-key="' + v.key + '"';
+    return '<span class="task' + (v.xong ? ' done' : '') + (cuaToi ? ' mine' : '') + '" ' + id + ' title="' + esc(NHAN[v.key] + ' — ' + (v.nguoi || 'chưa ghi tên')) + '">' +
+      '<input type="checkbox" data-act="tick"' + (v.xong ? ' checked' : '') + (cuaToi ? '' : ' disabled') + ' aria-label="' + esc(NHAN[v.key] + ' hoàn thành') + '">' +
+      '<span class="role">' + NHAN[v.key] + '</span><span class="name">' + esc(v.nguoi ? tenNgan(v.nguoi) : 'chưa ghi tên') + '</span>' +
+      (cuaToi && !v.xong ? '<button type="button" class="x" data-act="bo">bỏ nhận</button>' : '') + '</span>';
+  }
+  function theHoatDong(t, h) {
+    var s = trangThai(h), d = ngay(h.ngay), con = h.ngay ? soNgay(h.ngay) : null;
+    var kh = '';
+    if (s.ma !== 'ok' && con !== null) {
+      kh = con < 0 ? '<span class="pill bad">Đã qua ' + (-con) + ' ngày</span>' : con === 0 ? '<span class="pill doing">Hôm nay</span>' : con <= 7 ? '<span class="pill plain">Còn ' + con + ' ngày</span>' : '';
+    }
+    var id = 'data-tab="' + esc(t.tab) + '" data-dong="' + h.dong + '"';
+    return '<div class="act">' +
+      (d ? '<div class="date"><b>' + ('0' + d.getDate()).slice(-2) + '</b><span>Th' + (d.getMonth() + 1) + '</span></div>'
+         : '<div class="date none"><b>Chưa có ngày</b></div>') +
+      '<div><h3>' + esc(h.ten) + '</h3><div class="meta">' +
+        '<span class="pill ' + s.ma + '">' + s.chu + (s.can ? ' ' + s.xong + '/' + s.can : '') + '</span>' + kh +
+        (h.mucDo ? '<span class="pill plain">Ưu tiên: ' + esc(h.mucDo) + '</span>' : '') +
+        (h.viTri ? '<span>Đăng: ' + esc(h.viTri) + '</span>' : '') +
+        (h.moTa ? '<span class="hide-s">· ' + esc(h.moTa) + '</span>' : '') +
+      '</div></div>' +
+      '<div class="tasks">' + viecCanLam(h).map(function (v) { return theViec(t, h, v); }).join('') +
+        (function () {
+          var nut = choTrong(h).map(function (v) {
+            return '<button type="button" class="open" data-act="nhan" ' + id + ' data-key="' + v.key + '">+ Nhận ' + NHAN[v.key] + '</button>';
+          }).join('');
+          if (!nut || s.ma === 'idle') return nut;
+          return '<details class="more"><summary>+ Nhận thêm việc</summary><div>' + nut + '</div></details>';
+        })() + '</div>' +
+      (h.thuMuc || h.ghiChu ? '<div class="note">' + (h.thuMuc ? 'Thư mục: ' + link(h.thuMuc) + ' ' : '') + (h.ghiChu ? 'Ghi chú: ' + link(h.ghiChu) : '') + '</div>' : '') +
+      '</div>';
+  }
+  function veHoatDong() {
+    var t = D.cacThang[iThang];
+    var ds = t.hoatDong.filter(function (h) {
+      var s = trangThai(h);
+      if (loc === 'todo') return s.ma !== 'ok';
+      if (loc === 'open') return s.ma === 'idle';
+      if (loc === 'mine') return h.viec.some(function (v) { return toi && v.nguoi === toi; });
+      return true;
+    }).sort(function (a, b) { return (a.ngay || '9999') < (b.ngay || '9999') ? -1 : (a.ngay || '9999') > (b.ngay || '9999') ? 1 : a.dong - b.dong; });
+    var f = [['all', 'Tất cả'], ['todo', 'Chưa xong'], ['open', 'Chưa có người nhận'], ['mine', 'Có việc của tôi']];
+    $('view').innerHTML = '<div class="filters">' + f.map(function (x) {
+        return '<button type="button" data-loc="' + x[0] + '" aria-pressed="' + (loc === x[0]) + '">' + x[1] + '</button>';
+      }).join('') + '</div>' +
+      (ds.length ? ds.map(function (h) { return theHoatDong(t, h); }).join('')
+        : '<div class="empty-box">' + (t.hoatDong.length ? 'Không có hoạt động nào khớp bộ lọc.' : 'Tháng ' + t.thang + '/' + t.nam + ' chưa có hoạt động nào trong sheet.') + '</div>');
+  }
+  function veCuaToi() {
+    if (!toi) { $('view').innerHTML = '<div class="empty-box">Chọn tên của bạn ở góc trên để xem việc của mình.</div>'; return; }
+    var chua = [], roi = [];
+    D.cacThang.forEach(function (t) { t.hoatDong.forEach(function (h) { h.viec.forEach(function (v) {
+      if (v.nguoi === toi) (v.xong ? roi : chua).push({ t: t, h: h, v: v });
+    }); }); });
+    var sx = function (a, b) { var x = a.h.ngay || '9999', y = b.h.ngay || '9999'; return x < y ? -1 : x > y ? 1 : 0; };
+    chua.sort(sx); roi.sort(sx).reverse();
+    var dong = function (o) {
+      var con = o.h.ngay ? soNgay(o.h.ngay) : null, d = ngay(o.h.ngay);
+      var chu = !d ? 'Chưa có ngày' : ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
+      if (!o.v.xong && con !== null) chu += con < 0 ? ' · qua ' + (-con) + ' ngày' : con === 0 ? ' · hôm nay' : ' · còn ' + con + ' ngày';
+      return '<div class="mine-row task-row" data-tab="' + esc(o.t.tab) + '" data-dong="' + o.h.dong + '" data-key="' + o.v.key + '">' +
+        '<input type="checkbox" data-act="tick"' + (o.v.xong ? ' checked' : '') + ' aria-label="Hoàn thành">' +
+        '<div><div class="t">' + esc(o.h.ten) + '</div><div class="s">' + NHAN[o.v.key] + (o.h.viTri ? ' · đăng ' + esc(o.h.viTri) : '') + '</div></div>' +
+        '<div class="d' + (!o.v.xong && con !== null && con < 0 ? ' late' : '') + '">' + chu + '</div></div>';
+    };
+    $('view').innerHTML = '<h2>Chưa xong (' + chua.length + ')</h2>' +
+      (chua.length ? chua.map(dong).join('') : '<div class="empty-box">Bạn không còn việc nào đang dở.</div>') +
+      (roi.length ? '<h2>Đã xong (' + roi.length + ')</h2>' + roi.map(dong).join('') : '');
+  }
+  function veThanhVien() {
+    var t = D.cacThang[iThang];
+    var dem = function (cac) {
+      var m = {}; D.thanhVien.forEach(function (n) { m[n] = { giao: 0, xong: 0, loai: {} }; });
+      cac.forEach(function (th) { th.hoatDong.forEach(function (h) { h.viec.forEach(function (v) {
+        if (!v.nguoi || !m[v.nguoi]) return; m[v.nguoi].giao++; if (v.xong) { m[v.nguoi].xong++; m[v.nguoi].loai[LOAI[v.key]] = (m[v.nguoi].loai[LOAI[v.key]] || 0) + 1; }
+      }); }); }); return m;
+    };
+    var th = dem([t]), nam = dem(D.cacThang), max = 1;
+    D.thanhVien.forEach(function (n) { max = Math.max(max, th[n].giao); });
+    $('view').innerHTML = '<table><thead><tr><th>Thành viên</th><th>Tháng ' + t.thang + ': xong / đã nhận</th><th class="hide-s">Loại việc đã xong (tháng)</th><th>Cả năm học</th></tr></thead><tbody>' +
+      D.thanhVien.map(function (n) {
+        var a = th[n], b = nam[n], lo = Object.keys(a.loai).map(function (k) { return k + ' ' + a.loai[k]; }).join(' · ') || '—';
+        return '<tr><td><b>' + esc(n) + '</b></td>' +
+          '<td><div class="num">' + a.xong + ' / ' + a.giao + '</div><div class="bar"><i style="width:' + (a.xong / max * 100) + '%"></i><i class="doing" style="width:' + ((a.giao - a.xong) / max * 100) + '%"></i></div></td>' +
+          '<td class="hide-s">' + lo + '</td><td class="num">' + b.xong + ' / ' + b.giao + '</td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<div class="legend"><span><i></i>Đã xong</span><span><i class="doing"></i>Đã nhận, chưa xong</span><span>Số việc tính theo từng việc con (viết bài, thiết kế, chụp hình).</span></div>';
+  }
+
+  /* ---------- sự kiện ---------- */
+  function timViec(el) {
+    var n = el.closest('[data-key]'); if (!n) return null;
+    var t = D.cacThang.filter(function (x) { return x.tab === n.dataset.tab; })[0]; if (!t) return null;
+    var h = t.hoatDong.filter(function (x) { return x.dong === +n.dataset.dong; })[0]; if (!h) return null;
+    var v = h.viec.filter(function (x) { return x.key === n.dataset.key; })[0];
+    return v ? { t: t, h: h, v: v, n: n } : null;
+  }
+  $('months').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { iThang = +b.dataset.i; ve(); } });
+  document.querySelector('.tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { view = b.dataset.view; ve(); } });
+  $('view').addEventListener('click', function (e) {
+    var f = e.target.closest('[data-loc]'); if (f) { loc = f.dataset.loc; ve(); return; }
+    var a = e.target.closest('[data-act]'); if (!a || a.dataset.act === 'tick') return;
+    var o = timViec(a); if (!o) return;
+    thaoTac(a.dataset.act === 'nhan' ? 'nhanViec' : 'boNhan', o.t, o.h, o.v, {}, o.n);
+  });
+  $('view').addEventListener('change', function (e) {
+    if (e.target.dataset.act !== 'tick') return;
+    var o = timViec(e.target); if (!o) return;
+    thaoTac('danhDauXong', o.t, o.h, o.v, { xong: e.target.checked }, o.n);
+  });
+  $('me').addEventListener('change', function (e) { toi = e.target.value; nho('bdv4t.ten', toi); e.target.classList.remove('need'); ve(); });
+  $('code').addEventListener('change', function (e) { ma = e.target.value.trim(); nho('bdv4t.ma', ma); });
+  $('reload').addEventListener('click', function () { tai(false); });
+
+  tai(true);
+  setInterval(function () { if (!document.hidden && !busy) tai(true); }, 120000);
+})();
+</script>
+</body>
+</html>
