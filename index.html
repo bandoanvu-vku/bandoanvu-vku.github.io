@@ -82,8 +82,8 @@
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>Tổng quan nhiệm vụ</h1>
-      <div class="sub">4 nhóm của Ban Đoàn vụ · năm học 2026 - 2027</div>
+      <h1 id="tieuDe">Tổng quan nhiệm vụ</h1>
+      <div class="sub" id="phuDe">4 nhóm của Ban Đoàn vụ · năm học 2026 - 2027</div>
     </div>
     <button class="ghost" id="reload" type="button">Tải lại</button>
   </div>
@@ -92,9 +92,9 @@
 </div>
 <div id="tip" role="tooltip"></div>
 
+<script src="/dangnhap.js"></script>
 <script>
 (function () {
-  var API = 'https://script.google.com/macros/s/AKfycbyvfVC6D4z7dpvqTRXENomrqmEMnoeqY4Y2Al5ApP32yQWwjJunsJZJYJ4PqCtaptfd/exec';
   var TEN_NGAN = { '4t': 'Truyền thông', 'nghiep-vu': 'Nghiệp vụ', 'csdl-csvc': 'CSDL - CSVC', 'noi-vu': 'Nội vụ' };
   var LOAI = [['xong', 'c-done', 'Hoàn thành'], ['dangLam', 'c-doing', 'Đang làm'], ['chuaLam', 'c-todo', 'Đã nhận, chưa làm xong'], ['chuaNhan', 'c-open', 'Chưa có người nhận']];
   var D = null, hetNguoi = false;
@@ -111,18 +111,35 @@
   }
 
   function tai(moi) {
-    return fetch(API + '?api=tongquan' + (moi ? '&fresh=1' : '') + '&t=' + Date.now(), { credentials: 'omit' })
-      .then(function (r) { if (!r.ok) throw new Error('Máy chủ trả về lỗi ' + r.status); return r.json(); })
-      .then(function (o) {
-        if (!o.ok) throw new Error(o.error || 'Có lỗi xảy ra.');
-        D = o.data; ve();
+    // Quản lý nhận số liệu cả 4 nhóm; thành viên chỉ nhận số liệu các nhóm mình thuộc về (máy chủ lọc).
+    return BDV.goi('tongquan', { moi: !!moi })
+      .then(function (data) {
+        D = data; ve();
         try { localStorage.setItem('bdv.tq.data', JSON.stringify(D)); } catch (e) {}
         if (!moi && D.tuoi > 90) { $('foot').textContent = 'Đang đọc lại các sheet…'; return tai(true); }
       })
-      .catch(function (e) { if (!D) $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Không tải được dữ liệu: ' + esc(e && e.message ? e.message : e) + '</div>'; });
+      .catch(function (e) {
+        if (e && e.canDangNhap) { chan(); return; }
+        if (!D) $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Không tải được dữ liệu: ' + esc(e && e.message ? e.message : e) + '</div>';
+      });
+  }
+  function chan() {
+    D = null; $('foot').textContent = ''; $('reload').style.display = 'none';
+    $('tieuDe').textContent = 'Tổng quan nhiệm vụ'; $('phuDe').textContent = 'Ban Đoàn vụ · năm học 2026 - 2027';
+    BDV.veCong($('app'));
   }
 
   function ve() {
+    $('reload').style.display = '';
+    var rieng = D.phamVi === 'nhom';
+    $('tieuDe').textContent = rieng ? 'Tổng quan nhóm của bạn' : 'Tổng quan nhiệm vụ';
+    $('phuDe').textContent = rieng
+      ? (D.nhom.length ? D.nhom.map(function (n) { return n.ten; }).join(' · ') : 'Tài khoản chưa thuộc nhóm nào') + ' · năm học 2026 - 2027'
+      : D.nhom.length + ' nhóm của Ban Đoàn vụ · năm học 2026 - 2027';
+    if (!D.nhom.length) {
+      $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Tên của bạn chưa có trong danh sách thành viên của nhóm nào.<br>Nhờ trưởng nhóm thêm tên bạn vào sheet của nhóm (đúng như tên trong sheet tài khoản).</div>';
+      $('foot').textContent = ''; return;
+    }
     var T = { xong: 0, dangLam: 0, chuaLam: 0, chuaNhan: 0, quaHan: 0, sapHan: 0 };
     D.nhom.forEach(function (n) { for (var k in T) T[k] += n[k] || 0; });
     var tat = tong(T), pt = tat ? Math.round(T.xong / tat * 100) : 0;
@@ -174,7 +191,7 @@
         : '<div class="empty">Không có việc nào quá hạn hoặc sắp đến hạn.</div>') + '</div></div>';
 
     var maxT = 1; D.thang.forEach(function (t) { maxT = Math.max(maxT, t.viec); });
-    var thang = '<div class="panel"><h2>Truyền thông - Thông tin theo tháng</h2><div class="sub">Số việc con trong timeline mỗi tháng</div>' +
+    var thang = !D.thang.length && rieng ? '' : '<div class="panel"><h2>Truyền thông - Thông tin theo tháng</h2><div class="sub">Số việc con trong timeline mỗi tháng</div>' +
       '<div class="legend"><span><i class="c-done"></i>Đã xong</span><span><i class="c-doing"></i>Chưa xong</span></div>' +
       (D.thang.length ? D.thang.map(function (t) {
         return '<div class="row"><div class="name">Tháng ' + t.thang + '/' + t.nam + '</div>' +
@@ -198,12 +215,20 @@
   $('app').addEventListener('click', function (e) { if (e.target.id === 'more') { hetNguoi = !hetNguoi; ve(); } });
   $('reload').addEventListener('click', function () { $('foot').textContent = 'Đang đọc lại các sheet…'; tai(true); });
 
-  try {
-    var cu = JSON.parse(localStorage.getItem('bdv.tq.data') || 'null');
-    if (cu && cu.nhom && cu.nguoi && cu.sapToi) { D = cu; ve(); $('foot').textContent = 'Đang cập nhật…'; }
-  } catch (e) {}
-  tai(false);
-  setInterval(function () { if (!document.hidden) tai(false); }, 180000);
+  document.addEventListener('bdv-nguoi', function (e) {
+    if (!e.detail) { chan(); return; }
+    $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Đang tổng hợp dữ liệu từ các sheet…</div>';
+    tai(false);
+  });
+  if (!BDV.nguoi()) chan();
+  else {
+    try {
+      var cu = JSON.parse(localStorage.getItem('bdv.tq.data') || 'null');
+      if (cu && cu.nhom && cu.nguoi && cu.sapToi && cu.phamVi) { D = cu; ve(); $('foot').textContent = 'Đang cập nhật…'; }
+    } catch (e) {}
+    tai(false);
+  }
+  setInterval(function () { if (!document.hidden && D) tai(false); }, 180000);
 })();
 </script>
 <script src="/menu.js"></script>

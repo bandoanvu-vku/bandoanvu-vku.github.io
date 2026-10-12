@@ -1,7 +1,6 @@
 /* Dashboard nhiệm vụ cho một nhóm của Ban Đoàn vụ (Nghiệp vụ, CSDL - CSVC, Nội vụ).
    Trang gọi file này phải có <body data-nhom="nghiep-vu | csdl-csvc | noi-vu">. */
 (function () {
-  var API = 'https://script.google.com/macros/s/AKfycbyvfVC6D4z7dpvqTRXENomrqmEMnoeqY4Y2Al5ApP32yQWwjJunsJZJYJ4PqCtaptfd/exec';
   var NHOM = document.body.getAttribute('data-nhom');
   var TRANG_THAI = ['Chưa làm', 'Đang làm', 'Chờ duyệt', 'Hoàn thành'];
 
@@ -76,8 +75,7 @@
     try { if (v === undefined) return localStorage.getItem(k) || ''; localStorage.setItem(k, v); } catch (e) {}
     return v || '';
   }
-  function nguoi() { if (window.BDV) return BDV.nguoi(); try { return JSON.parse(localStorage.getItem('bdv.nguoi') || 'null'); } catch (e) { return null; } }
-  var toi = (nguoi() || {}).ten || '';
+  var toi = '', loi = null;
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -97,16 +95,10 @@
     clearTimeout(tT); tT = setTimeout(function () { t.style.display = 'none'; }, err ? 6000 : 2500);
   }
 
-  function goi(req, moi, token) {
-    var p = req
-      ? fetch(API, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'nhomGhi', req: req, token: token }) })
-      : fetch(API + '?api=nhom&n=' + encodeURIComponent(NHOM) + (moi ? '&fresh=1' : '') + '&t=' + Date.now(), { credentials: 'omit' });
-    return p.then(function (r) { if (!r.ok) throw new Error('Máy chủ trả về lỗi ' + r.status); return r.json(); })
-      .then(function (o) {
-        if (!o.ok) { if (o.dangNhap && window.BDV) BDV.hetHan(o.error); throw new Error(o.error || 'Có lỗi xảy ra.'); }
-        return o.data;
-      })
-      .catch(function (e) { throw (e && e.message ? e.message : String(e)); });
+  // Đọc: action 'nhom'; ghi: action 'nhomGhi'. Máy chủ chỉ trả dữ liệu khi tài khoản thuộc nhóm này hoặc là quản lý.
+  function goi(req, moi) {
+    var p = req ? BDV.goi('nhomGhi', req) : BDV.goi('nhom', { n: NHOM, moi: !!moi });
+    return p.catch(function (e) { loi = e; throw (e && e.message) || String(e); });
   }
   function tai(imLang) {
     return goi(null, !imLang).then(function (d) {
@@ -118,11 +110,14 @@
         return goi(null, true).then(function (m) { if (!busy && !dangGo()) nhan(m); });
       }
     })
-      .catch(function (m) { if (!D) $('view').innerHTML = '<div class="empty-box">Không tải được dữ liệu: ' + esc(m) + '</div>'; else if (!imLang) toast(m, true); });
+      .catch(function (m) {
+        if (loi && (loi.canDangNhap || loi.khongQuyen)) { chan(loi.khongQuyen ? m : ''); return; }
+        if (!D) $('view').innerHTML = '<div class="empty-box">Không tải được dữ liệu: ' + esc(m) + '</div>'; else if (!imLang) toast(m, true);
+      });
   }
   function dangGo() { var a = document.activeElement; return !!(a && a.matches && a.matches('input[type=url]')); }
   function nhan(d) {
-    D = d;
+    D = d; moKhoa();
     try { localStorage.setItem('bdv.' + NHOM + '.data', JSON.stringify(d)); } catch (e) {}
     document.title = 'Nhóm ' + D.ten + ' · Ban Đoàn vụ';
     $('title').textContent = 'Nhóm ' + D.ten;
@@ -133,19 +128,14 @@
   }
   function thaoTac(v, viec, them, el) {
     if (busy) return;
-    if (!window.BDV) { toast('Đang tải phần đăng nhập, bạn thử lại sau vài giây nhé', true); ve(); return; }
-    if (!BDV.token()) ve();
-    BDV.canToken(function (token) {
-      if (busy) return;
-      if (D.thanhVien.indexOf(toi) === -1) { toast('Tài khoản ' + toi + ' không có trong danh sách thành viên nhóm ' + D.ten + '.', true); ve(); return; }
-      busy = true; if (el) el.classList.add('busy');
-      var req = { nhom: NHOM, dong: v.dong, nhiemVu: v.ten, ten: toi, viec: viec };
-      for (var k in them) req[k] = them[k];
-      gui(req, token);
-    }, 'Đăng nhập bằng tài khoản Google đã đăng ký với Ban để nhận việc và cập nhật tiến độ.');
-  }
-  function gui(req, token) {
-    goi(req, false, token).then(function (d) { busy = false; nhan(d); toast('Đã ghi vào sheet'); })
+    if (D.thanhVien.indexOf(toi) === -1) {
+      toast(BDV.laQuanLy() ? 'Tài khoản quản lý chỉ xem; giao việc và sửa việc thì làm trong sheet của nhóm.' : 'Tài khoản của bạn không có trong danh sách thành viên nhóm này.', true);
+      ve(); return;
+    }
+    busy = true; if (el) el.classList.add('busy');
+    var req = { nhom: NHOM, dong: v.dong, nhiemVu: v.ten, viec: viec };
+    for (var k in them) req[k] = them[k];
+    goi(req).then(function (d) { busy = false; nhan(d); toast('Đã ghi vào sheet'); })
       .catch(function (m) { busy = false; toast(m, true); goi(null, true).then(nhan).catch(function () {}); });
   }
 
@@ -262,21 +252,37 @@
     var o = timViec(e.target); if (o) thaoTac(o.v, 'trangThai', { trangThai: e.target.value }, o.n);
   });
   function veMe() {
-    $('me').innerHTML = toi
-      ? 'Bạn: <b>' + esc(toi) + '</b>' + (D && D.thanhVien.indexOf(toi) === -1 ? ' <span class="warn">(không thuộc nhóm này)</span>' : '')
-      : '<button type="button" class="ghost" data-dn>Đăng nhập để nhận việc</button>';
+    $('me').innerHTML = toi && BDV.laQuanLy() && D && D.thanhVien.indexOf(toi) === -1 ? '<span class="pill plain">Chế độ quản lý: chỉ xem</span>' : '';
   }
-  $('me').addEventListener('click', function (e) { if (e.target.closest('[data-dn]') && window.BDV) BDV.moDangNhap(); });
-  document.addEventListener('bdv-nguoi', function (e) { toi = (e.detail && e.detail.ten) || ''; veMe(); ve(); });
-  veMe();
+  function chan(thongBao) {
+    D = null;
+    $('kpis').innerHTML = ''; $('stamp').textContent = '';
+    document.querySelector('.tabs').style.display = 'none'; $('reload').style.display = 'none';
+    if (!BDV.nguoi()) BDV.veCong($('view'));
+    else $('view').innerHTML = '<div class="empty-box">' + esc(thongBao || 'Tài khoản của bạn không thuộc nhóm này, nên không xem được trang này.') +
+      '<br><a href="/cua-toi/">Xem việc của tôi</a> · <a href="/">Tổng quan nhóm của bạn</a></div>';
+  }
+  function moKhoa() { document.querySelector('.tabs').style.display = ''; $('reload').style.display = ''; }
   $('reload').addEventListener('click', function () { tai(false); });
 
-  var mn = document.createElement('script'); mn.src = '/menu.js'; document.body.appendChild(mn);
-
-  try {
-    var cu = JSON.parse(localStorage.getItem('bdv.' + NHOM + '.data') || 'null');
-    if (cu && cu.ma === NHOM && cu.nhiemVu && cu.thanhVien) { nhan(cu); $('stamp').textContent = 'Đang cập nhật…'; }
-  } catch (e) {}
-  tai(true);
-  setInterval(function () { if (!document.hidden && !busy && !dangGo()) tai(true); }, 180000);
+  function batDau() {
+    toi = (BDV.nguoi() || {}).ten || '';
+    document.addEventListener('bdv-nguoi', function (e) {
+      var cu = toi; toi = (e.detail && e.detail.ten) || '';
+      if (!e.detail || !BDV.duocXem(NHOM)) { chan(); return; }
+      if (!D || cu !== toi) { moKhoa(); if (!D) $('view').innerHTML = '<div class="empty-box">Đang tải dữ liệu từ sheet…</div>'; tai(true); } else { veMe(); ve(); }
+    });
+    if (!BDV.nguoi() || !BDV.duocXem(NHOM)) chan();
+    else {
+      try {
+        var cu = JSON.parse(localStorage.getItem('bdv.' + NHOM + '.data') || 'null');
+        if (cu && cu.ma === NHOM && cu.nhiemVu && cu.thanhVien) { nhan(cu); $('stamp').textContent = 'Đang cập nhật…'; }
+      } catch (e) {}
+      tai(true);
+    }
+    setInterval(function () { if (!document.hidden && !busy && !dangGo() && D) tai(true); }, 180000);
+    var mn = document.createElement('script'); mn.src = '/menu.js'; document.body.appendChild(mn);
+  }
+  if (window.BDV) batDau();
+  else { var dn = document.createElement('script'); dn.src = '/dangnhap.js'; dn.onload = batDau; document.body.appendChild(dn); }
 })();
