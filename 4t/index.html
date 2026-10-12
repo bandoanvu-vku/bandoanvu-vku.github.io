@@ -36,6 +36,9 @@
   .top { display: flex; gap: 12px 20px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; }
   .who { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .who label { font-size: 13px; color: var(--muted); }
+  .who .me { font-size: 14px; color: var(--muted); }
+  .who .me b { color: var(--text); }
+  .who .warn { color: var(--bad); }
   select, input[type=text] { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-height: 38px; }
   .who select.need { border-color: var(--bad); box-shadow: 0 0 0 3px var(--bad-soft); }
   .ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; min-height: 38px; }
@@ -141,9 +144,7 @@
       <div class="sub">Ban Đoàn vụ · năm học 2026 - 2027 · dữ liệu lấy trực tiếp từ sheet Timeline</div>
     </div>
     <div class="who">
-      <label for="me">Bạn là</label>
-      <select id="me"><option value="">Chọn tên của bạn</option></select>
-      <input type="text" id="code" placeholder="Mã nhóm" size="9" style="display:none" autocomplete="off">
+      <span id="me" class="me"></span>
       <button class="ghost" id="reload" type="button">Tải lại</button>
     </div>
   </div>
@@ -176,7 +177,8 @@
     try { if (v === undefined) return localStorage.getItem(k) || ''; localStorage.setItem(k, v); } catch (e) {}
     return v || '';
   }
-  var toi = nho('bdv4t.ten'), ma = nho('bdv4t.ma');
+  function nguoi() { if (window.BDV) return BDV.nguoi(); try { return JSON.parse(localStorage.getItem('bdv.nguoi') || 'null'); } catch (e) { return null; } }
+  var toi = (nguoi() || {}).ten || '';
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -220,12 +222,15 @@
   /* ---------- gọi Apps Script ---------- */
   var API = 'https://script.google.com/macros/s/AKfycbyvfVC6D4z7dpvqTRXENomrqmEMnoeqY4Y2Al5ApP32yQWwjJunsJZJYJ4PqCtaptfd/exec';
   // Gọi thẳng Apps Script, không gửi kèm đăng nhập Google nên không dính lỗi nhiều tài khoản.
-  function goi(ham, req) {
+  function goi(ham, req, token) {
     var p = ham === 'layDuLieu'
       ? fetch(API + '?api=data' + (req && req.moi ? '&fresh=1' : '') + '&t=' + Date.now(), { credentials: 'omit' })
-      : fetch(API, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: ham, req: req }) });
+      : fetch(API, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: ham, req: req, token: token }) });
     return p.then(function (r) { if (!r.ok) throw new Error('Máy chủ trả về lỗi ' + r.status); return r.json(); })
-      .then(function (o) { if (!o.ok) throw new Error(o.error || 'Có lỗi xảy ra.'); return o.data; })
+      .then(function (o) {
+        if (!o.ok) { if (o.dangNhap && window.BDV) BDV.hetHan(o.error); throw new Error(o.error || 'Có lỗi xảy ra.'); }
+        return o.data;
+      })
       .catch(function (e) { throw (e && e.message ? e.message : String(e)); });
   }
   function tai(imLang) {
@@ -253,28 +258,26 @@
       iThang = tim > -1 ? tim : (coViec > -1 ? coViec : 0);
     }
     $('title').textContent = D.tieuDe;
-    var sel = $('me');
-    sel.innerHTML = '<option value="">Chọn tên của bạn</option>' + D.thanhVien.map(function (t) {
-      return '<option' + (t === toi ? ' selected' : '') + '>' + esc(t) + '</option>';
-    }).join('');
-    if (D.thanhVien.indexOf(toi) === -1) toi = '';
-    $('code').style.display = D.canMa ? '' : 'none';
-    $('code').value = ma;
+    veMe();
     var n2 = new Date();
     $('stamp').textContent = 'Cập nhật lúc ' + ('0' + n2.getHours()).slice(-2) + ':' + ('0' + n2.getMinutes()).slice(-2);
     ve();
   }
   function thaoTac(ham, t, h, v, them, el) {
     if (busy) return;
-    if (!toi) {
-      var s = $('me'); s.classList.add('need'); s.focus();
-      toast('Chọn tên của bạn ở góc trên trước đã nhé', true); ve(); return;
-    }
-    if (D.canMa && !ma) { $('code').focus(); toast('Nhập mã nhóm để cập nhật', true); ve(); return; }
-    busy = true; if (el) el.classList.add('busy');
-    var req = { tab: t.tab, dong: h.dong, key: v.key, ten: toi, hoatDong: h.ten, ma: ma };
-    for (var k in them) req[k] = them[k];
-    goi(ham, req).then(function (d) { busy = false; nhan(d); toast('Đã ghi vào sheet'); })
+    if (!window.BDV) { toast('Đang tải phần đăng nhập, bạn thử lại sau vài giây nhé', true); ve(); return; }
+    if (!BDV.token()) ve(); // chưa đăng nhập: trả ô tick về như cũ
+    BDV.canToken(function (token) {
+      if (busy) return;
+      if (D.thanhVien.indexOf(toi) === -1) { toast('Tài khoản ' + toi + ' không có trong danh sách thành viên nhóm Truyền thông - Thông tin.', true); return; }
+      busy = true; if (el) el.classList.add('busy');
+      var req = { tab: t.tab, dong: h.dong, key: v.key, ten: toi, hoatDong: h.ten };
+      for (var k in them) req[k] = them[k];
+      gui(ham, req, token);
+    }, 'Đăng nhập bằng tài khoản Google đã đăng ký với Ban để nhận việc và tick hoàn thành.');
+  }
+  function gui(ham, req, token) {
+    goi(ham, req, token).then(function (d) { busy = false; nhan(d); toast('Đã ghi vào sheet'); })
       .catch(function (m) { busy = false; toast(m, true); goi('layDuLieu', { moi: true }).then(nhan).catch(function () {}); });
   }
 
@@ -360,7 +363,7 @@
         : '<div class="empty-box">' + (t.hoatDong.length ? 'Không có hoạt động nào khớp bộ lọc.' : 'Tháng ' + t.thang + '/' + t.nam + ' chưa có hoạt động nào trong sheet.') + '</div>');
   }
   function veCuaToi() {
-    if (!toi) { $('view').innerHTML = '<div class="empty-box">Chọn tên của bạn ở góc trên để xem việc của mình.</div>'; return; }
+    if (!toi) { $('view').innerHTML = '<div class="empty-box">Đăng nhập (nút ở góc trên) để xem việc của mình.</div>'; return; }
     var chua = [], roi = [];
     D.cacThang.forEach(function (t) { t.hoatDong.forEach(function (h) { h.viec.forEach(function (v) {
       if (v.nguoi === toi) (v.xong ? roi : chua).push({ t: t, h: h, v: v });
@@ -421,8 +424,13 @@
     var o = timViec(e.target); if (!o) return;
     thaoTac('danhDauXong', o.t, o.h, o.v, { xong: e.target.checked }, o.n);
   });
-  $('me').addEventListener('change', function (e) { toi = e.target.value; nho('bdv4t.ten', toi); e.target.classList.remove('need'); ve(); });
-  $('code').addEventListener('change', function (e) { ma = e.target.value.trim(); nho('bdv4t.ma', ma); });
+  function veMe() {
+    $('me').innerHTML = toi
+      ? 'Bạn: <b>' + esc(toi) + '</b>' + (D && D.thanhVien.indexOf(toi) === -1 ? ' <span class="warn">(không thuộc nhóm này)</span>' : '')
+      : '<button type="button" class="ghost" data-dn>Đăng nhập để nhận việc</button>';
+  }
+  $('me').addEventListener('click', function (e) { if (e.target.closest('[data-dn]') && window.BDV) BDV.moDangNhap(); });
+  document.addEventListener('bdv-nguoi', function (e) { toi = (e.detail && e.detail.ten) || ''; veMe(); ve(); });
   $('reload').addEventListener('click', function () { tai(false); });
 
   // Hiện ngay dữ liệu của lần xem trước trên máy này, rồi mới hỏi máy chủ
