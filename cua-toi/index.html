@@ -152,6 +152,10 @@
       '<dt>Vai trò</dt><dd>' + (n.vaiTro === 'quanLy' ? '<span class="tag ql">Quản lý</span> xem được toàn bộ dashboard' : 'Thành viên') + '</dd>' +
       '<dt>Nhóm</dt><dd>' + (n.nhom.length ? n.nhom.map(function (m) { return '<a class="tag" href="/' + m + '/">' + esc(TEN[m] || m) + '</a>'; }).join('')
         : '<span class="note">Chưa có tên trong danh sách thành viên của nhóm nào.</span>') + '</dd></dl></div>';
+    var tr = D.truc ? '<div class="panel"><h2>Trực văn phòng tuần này</h2><div class="sub">Mỗi thành viên trực ít nhất ' + D.truc.toiThieu + ' buổi / tuần.</div>' +
+      '<div style="margin-top:8px;font-size:14px">Đã đăng ký <b>' + D.truc.dangKy + '</b> buổi · đã điểm danh <b>' + D.truc.diemDanh + '</b> buổi' +
+      (D.truc.dangKy < D.truc.toiThieu ? ' · <span class="late">còn thiếu ' + (D.truc.toiThieu - D.truc.dangKy) + ' buổi đăng ký</span>' : '') +
+      ' · <a href="/lich-truc/">Mở lịch trực →</a></div></div>' : '';
     var kpi = '<div class="kpis k4">' +
       '<div class="kpi"><div class="v">' + chua.length + '</div><div class="l">Việc chưa xong</div></div>' +
       '<div class="kpi' + (tre ? ' alert' : '') + '"><div class="v">' + tre + '</div><div class="l">Quá hạn</div></div>' +
@@ -162,7 +166,7 @@
     var dx = xong.length ? '<div class="panel"><h2>Đã hoàn thành (' + xong.length + ')</h2><div style="margin-top:8px">' +
       (hetXong ? xong : xong.slice(0, 5)).map(function (v) { return dong(v, hn); }).join('') +
       (xong.length > 5 ? '<button type="button" class="ghost" id="more" style="margin-top:8px">' + (hetXong ? 'Thu gọn' : 'Xem cả ' + xong.length + ' việc') + '</button>' : '') + '</div></div>' : '';
-    $('app').innerHTML = ho + kpi + ds + dx;
+    $('app').innerHTML = ho + tr + kpi + ds + dx;
     var t = new Date();
     $('foot').textContent = 'Cập nhật lúc ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '. Nhóm Truyền thông tính theo từng việc con (viết bài, thiết kế, chụp hình).';
   }
