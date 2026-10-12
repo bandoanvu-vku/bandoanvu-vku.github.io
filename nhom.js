@@ -106,11 +106,21 @@
       .catch(function (e) { throw (e && e.message ? e.message : String(e)); });
   }
   function tai(imLang) {
-    return goi(null, !imLang).then(function (d) { nhan(d); if (!imLang) toast('Đã cập nhật từ sheet'); })
+    return goi(null, !imLang).then(function (d) {
+      if (busy) return;
+      nhan(d);
+      if (!imLang) { toast('Đã cập nhật từ sheet'); return; }
+      if (d.tuoi > 90) {
+        $('stamp').textContent = 'Đang đọc lại sheet…';
+        return goi(null, true).then(function (m) { if (!busy && !dangGo()) nhan(m); });
+      }
+    })
       .catch(function (m) { if (!D) $('view').innerHTML = '<div class="empty-box">Không tải được dữ liệu: ' + esc(m) + '</div>'; else if (!imLang) toast(m, true); });
   }
+  function dangGo() { var a = document.activeElement; return !!(a && a.matches && a.matches('input[type=url]')); }
   function nhan(d) {
     D = d;
+    try { localStorage.setItem('bdv.' + NHOM + '.data', JSON.stringify(d)); } catch (e) {}
     document.title = 'Nhóm ' + D.ten + ' · Ban Đoàn vụ';
     $('title').textContent = 'Nhóm ' + D.ten;
     if (D.thanhVien.indexOf(toi) === -1) toi = '';
@@ -251,9 +261,10 @@
 
   var mn = document.createElement('script'); mn.src = '/menu.js'; document.body.appendChild(mn);
 
+  try {
+    var cu = JSON.parse(localStorage.getItem('bdv.' + NHOM + '.data') || 'null');
+    if (cu && cu.ma === NHOM && cu.nhiemVu && cu.thanhVien) { nhan(cu); $('stamp').textContent = 'Đang cập nhật…'; }
+  } catch (e) {}
   tai(true);
-  setInterval(function () {
-    var a = document.activeElement;
-    if (!document.hidden && !busy && !(a && a.matches && a.matches('input[type=url]'))) tai(true);
-  }, 120000);
+  setInterval(function () { if (!document.hidden && !busy && !dangGo()) tai(true); }, 180000);
 })();

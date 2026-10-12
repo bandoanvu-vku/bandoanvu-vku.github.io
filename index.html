@@ -113,7 +113,12 @@
   function tai(moi) {
     return fetch(API + '?api=tongquan' + (moi ? '&fresh=1' : '') + '&t=' + Date.now(), { credentials: 'omit' })
       .then(function (r) { if (!r.ok) throw new Error('Máy chủ trả về lỗi ' + r.status); return r.json(); })
-      .then(function (o) { if (!o.ok) throw new Error(o.error || 'Có lỗi xảy ra.'); D = o.data; ve(); })
+      .then(function (o) {
+        if (!o.ok) throw new Error(o.error || 'Có lỗi xảy ra.');
+        D = o.data; ve();
+        try { localStorage.setItem('bdv.tq.data', JSON.stringify(D)); } catch (e) {}
+        if (!moi && D.tuoi > 90) { $('foot').textContent = 'Đang đọc lại các sheet…'; return tai(true); }
+      })
       .catch(function (e) { if (!D) $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Không tải được dữ liệu: ' + esc(e && e.message ? e.message : e) + '</div>'; });
   }
 
@@ -193,6 +198,10 @@
   $('app').addEventListener('click', function (e) { if (e.target.id === 'more') { hetNguoi = !hetNguoi; ve(); } });
   $('reload').addEventListener('click', function () { $('foot').textContent = 'Đang đọc lại các sheet…'; tai(true); });
 
+  try {
+    var cu = JSON.parse(localStorage.getItem('bdv.tq.data') || 'null');
+    if (cu && cu.nhom && cu.nguoi && cu.sapToi) { D = cu; ve(); $('foot').textContent = 'Đang cập nhật…'; }
+  } catch (e) {}
   tai(false);
   setInterval(function () { if (!document.hidden) tai(false); }, 180000);
 })();
