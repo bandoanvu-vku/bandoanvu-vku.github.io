@@ -29,4 +29,7 @@
   document.body.insertBefore(h, document.body.firstChild);
   var c = h.querySelector('[aria-current]');
   if (c && c.scrollIntoView) c.scrollIntoView({ block: 'nearest', inline: 'center' });
+  if (!window.BDV && !document.querySelector('script[src="/dangnhap.js"]')) {
+    var dn = document.createElement('script'); dn.src = '/dangnhap.js'; document.body.appendChild(dn);
+  }
 })();

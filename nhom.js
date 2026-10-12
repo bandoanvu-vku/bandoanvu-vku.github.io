@@ -17,7 +17,7 @@
     '.top{display:flex;gap:12px 20px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}',
     '.who{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.who label{font-size:13px;color:var(--muted)}',
     'select,input[type=text],input[type=url]{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-height:38px}',
-    '.who select.need{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-soft)}',
+    '.who .me{font-size:14px;color:var(--muted)}.who .me b{color:var(--text)}.who .warn{color:var(--bad)}',
     '.ghost{background:none;border:1px solid var(--line);border-radius:8px;padding:7px 12px;min-height:38px}.ghost:hover{border-color:var(--accent);color:var(--accent)}',
     '.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}',
     '.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}',
@@ -61,8 +61,7 @@
   document.body.insertAdjacentHTML('afterbegin',
     '<div class="wrap"><div class="top"><div><h1 id="title">Nhóm</h1>' +
     '<div class="sub">Năm học 2026 - 2027 · dữ liệu lấy trực tiếp từ sheet theo dõi nhiệm vụ của nhóm</div></div>' +
-    '<div class="who"><label for="me">Bạn là</label><select id="me"><option value="">Chọn tên của bạn</option></select>' +
-    '<input type="text" id="code" placeholder="Mã nhóm" size="9" style="display:none" autocomplete="off">' +
+    '<div class="who"><span id="me" class="me"></span>' +
     '<button class="ghost" id="reload" type="button">Tải lại</button></div></div>' +
     '<div class="kpis" id="kpis"></div><div class="tabs" role="tablist">' +
     '<button type="button" role="tab" data-view="nv">Nhiệm vụ</button><button type="button" role="tab" data-view="toi">Việc của tôi</button>' +
@@ -77,7 +76,8 @@
     try { if (v === undefined) return localStorage.getItem(k) || ''; localStorage.setItem(k, v); } catch (e) {}
     return v || '';
   }
-  var toi = nho('bdv.' + NHOM + '.ten'), ma = nho('bdv4t.ma');
+  function nguoi() { if (window.BDV) return BDV.nguoi(); try { return JSON.parse(localStorage.getItem('bdv.nguoi') || 'null'); } catch (e) { return null; } }
+  var toi = (nguoi() || {}).ten || '';
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -97,12 +97,15 @@
     clearTimeout(tT); tT = setTimeout(function () { t.style.display = 'none'; }, err ? 6000 : 2500);
   }
 
-  function goi(req, moi) {
+  function goi(req, moi, token) {
     var p = req
-      ? fetch(API, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'nhomGhi', req: req }) })
+      ? fetch(API, { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'nhomGhi', req: req, token: token }) })
       : fetch(API + '?api=nhom&n=' + encodeURIComponent(NHOM) + (moi ? '&fresh=1' : '') + '&t=' + Date.now(), { credentials: 'omit' });
     return p.then(function (r) { if (!r.ok) throw new Error('Máy chủ trả về lỗi ' + r.status); return r.json(); })
-      .then(function (o) { if (!o.ok) throw new Error(o.error || 'Có lỗi xảy ra.'); return o.data; })
+      .then(function (o) {
+        if (!o.ok) { if (o.dangNhap && window.BDV) BDV.hetHan(o.error); throw new Error(o.error || 'Có lỗi xảy ra.'); }
+        return o.data;
+      })
       .catch(function (e) { throw (e && e.message ? e.message : String(e)); });
   }
   function tai(imLang) {
@@ -123,23 +126,26 @@
     try { localStorage.setItem('bdv.' + NHOM + '.data', JSON.stringify(d)); } catch (e) {}
     document.title = 'Nhóm ' + D.ten + ' · Ban Đoàn vụ';
     $('title').textContent = 'Nhóm ' + D.ten;
-    if (D.thanhVien.indexOf(toi) === -1) toi = '';
-    $('me').innerHTML = '<option value="">Chọn tên của bạn</option>' + D.thanhVien.map(function (t) {
-      return '<option' + (t === toi ? ' selected' : '') + '>' + esc(t) + '</option>';
-    }).join('');
-    $('code').style.display = D.canMa ? '' : 'none'; $('code').value = ma;
+    veMe();
     var n = new Date();
     $('stamp').textContent = 'Cập nhật lúc ' + ('0' + n.getHours()).slice(-2) + ':' + ('0' + n.getMinutes()).slice(-2);
     ve();
   }
   function thaoTac(v, viec, them, el) {
     if (busy) return;
-    if (!toi) { var s = $('me'); s.classList.add('need'); s.focus(); toast('Chọn tên của bạn ở góc trên trước đã nhé', true); ve(); return; }
-    if (D.canMa && !ma) { $('code').focus(); toast('Nhập mã nhóm để cập nhật', true); ve(); return; }
-    busy = true; if (el) el.classList.add('busy');
-    var req = { nhom: NHOM, dong: v.dong, nhiemVu: v.ten, ten: toi, ma: ma, viec: viec };
-    for (var k in them) req[k] = them[k];
-    goi(req).then(function (d) { busy = false; nhan(d); toast('Đã ghi vào sheet'); })
+    if (!window.BDV) { toast('Đang tải phần đăng nhập, bạn thử lại sau vài giây nhé', true); ve(); return; }
+    if (!BDV.token()) ve();
+    BDV.canToken(function (token) {
+      if (busy) return;
+      if (D.thanhVien.indexOf(toi) === -1) { toast('Tài khoản ' + toi + ' không có trong danh sách thành viên nhóm ' + D.ten + '.', true); ve(); return; }
+      busy = true; if (el) el.classList.add('busy');
+      var req = { nhom: NHOM, dong: v.dong, nhiemVu: v.ten, ten: toi, viec: viec };
+      for (var k in them) req[k] = them[k];
+      gui(req, token);
+    }, 'Đăng nhập bằng tài khoản Google đã đăng ký với Ban để nhận việc và cập nhật tiến độ.');
+  }
+  function gui(req, token) {
+    goi(req, false, token).then(function (d) { busy = false; nhan(d); toast('Đã ghi vào sheet'); })
       .catch(function (m) { busy = false; toast(m, true); goi(null, true).then(nhan).catch(function () {}); });
   }
 
@@ -190,7 +196,7 @@
       (acts ? '<div class="acts">' + acts + '</div>' : '') + '</div>';
   }
   function veNhiemVu(cuaToi) {
-    if (cuaToi && !toi) { $('view').innerHTML = '<div class="empty-box">Chọn tên của bạn ở góc trên để xem việc của mình.</div>'; return; }
+    if (cuaToi && !toi) { $('view').innerHTML = '<div class="empty-box">Đăng nhập (nút ở góc trên) để xem việc của mình.</div>'; return; }
     if (!D.nhiemVu.length) {
       $('view').innerHTML = '<div class="empty-box">Sheet của nhóm chưa có nhiệm vụ nào.<br>Trưởng nhóm nhập việc vào tab “Nhiệm vụ” của sheet, mỗi dòng một việc; dashboard sẽ tự hiện.</div>';
       return;
@@ -255,8 +261,14 @@
     if (e.target.dataset.act !== 'trangThai' || !e.target.value) return;
     var o = timViec(e.target); if (o) thaoTac(o.v, 'trangThai', { trangThai: e.target.value }, o.n);
   });
-  $('me').addEventListener('change', function (e) { toi = e.target.value; nho('bdv.' + NHOM + '.ten', toi); e.target.classList.remove('need'); ve(); });
-  $('code').addEventListener('change', function (e) { ma = e.target.value.trim(); nho('bdv4t.ma', ma); });
+  function veMe() {
+    $('me').innerHTML = toi
+      ? 'Bạn: <b>' + esc(toi) + '</b>' + (D && D.thanhVien.indexOf(toi) === -1 ? ' <span class="warn">(không thuộc nhóm này)</span>' : '')
+      : '<button type="button" class="ghost" data-dn>Đăng nhập để nhận việc</button>';
+  }
+  $('me').addEventListener('click', function (e) { if (e.target.closest('[data-dn]') && window.BDV) BDV.moDangNhap(); });
+  document.addEventListener('bdv-nguoi', function (e) { toi = (e.detail && e.detail.ten) || ''; veMe(); ve(); });
+  veMe();
   $('reload').addEventListener('click', function () { tai(false); });
 
   var mn = document.createElement('script'); mn.src = '/menu.js'; document.body.appendChild(mn);
