@@ -56,8 +56,12 @@ jobs:
       - name: Kiểm tra web app còn chạy
         if: steps.check.outputs.skip != 'true'
         run: |
-          sleep 5
-          out=$(curl -sL -X POST -H 'Content-Type: text/plain' -d '{"action":"lichTruc"}' "https://script.google.com/macros/s/$DEPLOY_ID/exec")
+          # Không dùng -X POST: Apps Script trả 302, curl -L phải chuyển sang GET ở bước chuyển hướng.
+          for i in 1 2 3; do
+            sleep 10
+            out=$(curl -sL -H 'Content-Type: text/plain' -d '{"action":"lichTruc"}' "https://script.google.com/macros/s/$DEPLOY_ID/exec") || true
+            echo "$out" | grep -q '"canDangNhap":true' && break
+          done
           echo "$out" | head -c 300; echo
           echo "$out" | grep -q '"canDangNhap":true'
 
