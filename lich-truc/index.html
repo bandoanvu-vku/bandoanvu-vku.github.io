@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lịch trực · Ban Đoàn vụ</title>
+<meta name="robots" content="noindex">
+<style>
+  :root {
+    --bg: #f4f6fa; --card: #ffffff; --line: #dfe4ec; --text: #17202e; --muted: #5d6b80; --accent: #1a56c4;
+    --bad: #b3261e; --bad-soft: #fde7e5; --warn: #9a5b00; --warn-soft: #fdf0d5; --track: #e9edf3;
+    --s-done: #1baf7a; --s-doing: #2a78d6; --s-todo: #eb6834; --s-open: #a9b1bd;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151d; --card: #19212c; --line: #2c3746; --text: #e8edf4; --muted: #9aa8bb; --accent: #7fb0ff;
+      --bad: #ff9d94; --bad-soft: #40201d; --warn: #f2c063; --warn-soft: #3a2d10; --track: #242e3b;
+      --s-done: #199e70; --s-doing: #3987e5; --s-todo: #d95926; --s-open: #5c6675;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 22px 16px 56px; }
+  h1 { font-size: 24px; line-height: 1.25; margin: 0; letter-spacing: -.01em; }
+  h2 { font-size: 16px; margin: 0 0 2px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  a { color: var(--accent); }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .top { display: flex; gap: 12px 20px; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
+  .ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; min-height: 38px; }
+  .ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 0; }
+  .nav a { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; text-decoration: none; color: inherit; }
+  .nav a:hover { border-color: var(--accent); }
+  .nav b { display: block; color: var(--accent); font-size: 15px; line-height: 1.3; }
+  .nav span { font-size: 12.5px; color: var(--muted); }
+  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 14px 0; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .kpi .v { font-size: 28px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .kpi .v small { font-size: 14px; font-weight: 500; color: var(--muted); }
+  .kpi .l { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .kpi.alert .v { color: var(--bad); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; min-width: 0; }
+  .legend { display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin: 10px 0 12px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .row { display: grid; grid-template-columns: 190px 1fr 92px; gap: 10px; align-items: center; padding: 7px 0; }
+  .row .name { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; line-height: 1.3; }
+  .row .name small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+  .row .name a { text-decoration: none; }
+  .row .val { font-size: 13px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .row .val b { color: var(--text); }
+  .stack { display: flex; gap: 2px; height: 18px; }
+  .stack i { display: block; height: 100%; min-width: 3px; }
+  .stack i:first-child { border-radius: 4px 0 0 4px; } .stack i:last-child { border-radius: 0 4px 4px 0; } .stack i:only-child { border-radius: 4px; }
+  .stack.none { background: var(--track); border-radius: 4px; }
+  .c-done { background: var(--s-done); } .c-doing { background: var(--s-doing); } .c-todo { background: var(--s-todo); } .c-open { background: var(--s-open); }
+  .note { font-size: 12.5px; color: var(--muted); }
+  .late { color: var(--bad); font-weight: 600; }
+  details { margin-top: 10px; font-size: 13px; }
+  summary { cursor: pointer; color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  th, td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 600; }
+  .due { display: grid; grid-template-columns: 50px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .due:last-child { border-bottom: 0; }
+  .due .d { text-align: center; font-variant-numeric: tabular-nums; }
+  .due .d b { display: block; font-size: 18px; line-height: 1.1; } .due .d span { font-size: 11.5px; color: var(--muted); }
+  .due .t { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; line-height: 1.35; }
+  .due .s { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+  .pill { border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); } .pill.soon { background: var(--warn-soft); color: var(--warn); }
+  .empty { color: var(--muted); text-align: center; padding: 22px 8px; font-size: 14px; }
+  .foot { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+  #tip { position: fixed; z-index: 9; pointer-events: none; display: none; background: var(--text); color: var(--bg); font-size: 12.5px; padding: 5px 9px; border-radius: 6px; max-width: 260px; }
+  @media (max-width: 820px) { .grid2 { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(2, 1fr); } .nav { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr 84px; } .row .name { grid-column: 1 / -1; } }
+  .pill.ok { background: rgba(27,175,122,.14); color: var(--s-done); } .pill.plain { border: 1px solid var(--line); color: var(--muted); font-weight: 500; }
+  .kpis.k3 { grid-template-columns: repeat(3, 1fr); }
+  .dd { display: flex; gap: 14px 18px; align-items: center; flex-wrap: wrap; }
+  .dd .t { flex: 1 1 260px; min-width: 0; }
+  .dd .t b { font-size: 16px; } .dd .t div { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .btn { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 10px; padding: 10px 18px; font-weight: 600; font-size: 15px; min-height: 44px; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn.ok { background: var(--s-done); border-color: var(--s-done); }
+  .msg { font-size: 13.5px; margin-top: 10px; line-height: 1.45; }
+  .msg.bad { color: var(--bad); } .msg.good { color: var(--s-done); font-weight: 600; }
+  .nav2 { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 4px 0 12px; }
+  .nav2 b { font-size: 15px; margin: 0 6px; }
+  .week { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .day { background: var(--card); border: 1px solid var(--line); border-radius: 12px; min-width: 0; overflow: hidden; }
+  .day.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .day h3 { margin: 0; font-size: 14px; padding: 9px 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 6px; }
+  .day h3 span { color: var(--muted); font-weight: 500; }
+  .day.off { opacity: .6; }
+  .shift { padding: 9px 12px 11px; border-bottom: 1px solid var(--line); }
+  .shift:last-child { border-bottom: 0; }
+  .shift.past { background: var(--track); }
+  .shift .h { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+  .shift .h b { color: var(--text); font-size: 13.5px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; min-height: 22px; }
+  .chip { font-size: 12.5px; border-radius: 999px; padding: 1px 8px; background: var(--track); white-space: nowrap; }
+  .chip.me { background: var(--accent); color: #fff; font-weight: 600; }
+  .chip.done::before { content: "✓ "; color: var(--s-done); font-weight: 700; }
+  .chip.me.done::before { color: #fff; }
+  .shift button { margin-top: 8px; width: 100%; font-size: 13px; border-radius: 8px; padding: 5px 8px; min-height: 32px; }
+  .shift button.reg { border: 1px dashed var(--accent); color: var(--accent); background: none; }
+  .shift button.reg:hover { background: rgba(26,86,196,.08); }
+  .shift button.cancel { border: 1px solid var(--line); color: var(--muted); background: none; }
+  .empty-s { font-size: 12.5px; color: var(--muted); }
+  .warnrow td { color: var(--bad); }
+  .loc { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; font-size: 14px; }
+  .loc input { width: 90px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font: inherit; background: var(--card); color: var(--text); }
+  .busy { opacity: .5; pointer-events: none; }
+  #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); max-width: calc(100vw - 32px); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; display: none; z-index: 5; }
+  #toast.err { background: var(--bad); color: #fff; }
+  @media (max-width: 900px) { .week { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .week { grid-template-columns: 1fr; } .kpis.k3 { grid-template-columns: 1fr 1fr 1fr; } .kpis.k3 .kpi .v { font-size: 22px; } .btn { width: 100%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Lịch trực văn phòng</h1>
+      <div class="sub">Thứ 2 – Thứ 6 · Ca sáng 8h – 11h · Ca chiều 14h – 17h · mỗi thành viên trực ít nhất <span id="tt">2</span> buổi / tuần</div>
+    </div>
+    <button class="ghost" id="reload" type="button">Tải lại</button>
+  </div>
+  <div id="app"><div class="panel empty" style="margin-top:14px">Đang tải lịch trực…</div></div>
+  <div class="foot" id="foot"></div>
+</div>
+<div id="toast" role="status"></div>
+
+<script src="/dangnhap.js"></script>
+<script>
+(function () {
+  var THU = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
+  var TEN_NHOM = { '4t': 'Truyền thông', 'nghiep-vu': 'Nghiệp vụ', 'csdl-csvc': 'CSDL - CSVC', 'noi-vu': 'Nội vụ' };
+  var D = null, tuan = '', busy = false, thongBao = null;
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function dm(iso) { var p = iso.split('-'); return p[2] + '/' + p[1]; }
+  function thu(iso) { var p = iso.split('-'); var t = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay(); return t === 0 ? 7 : t; }
+  function cong(iso, n) { var p = iso.split('-'); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)).toISOString().slice(0, 10); }
+  function phut(h) { var p = h.split(':'); return +p[0] * 60 + +p[1]; }
+  function tenNgan(t) { var p = String(t).split(' '); return p.length > 2 ? p.slice(-2).join(' ') : t; }
+  var tT;
+  function toast(m, err) { var t = $('toast'); t.textContent = m; t.className = err ? 'err' : ''; t.style.display = 'block'; clearTimeout(tT); tT = setTimeout(function () { t.style.display = 'none'; }, err ? 7000 : 3000); }
+
+  function tai(t) {
+    return BDV.goi('lichTruc', { tuan: t || tuan }).then(nhan).catch(loi);
+  }
+  function nhan(d) { D = d; tuan = d.tuan; ve(); }
+  function loi(e) {
+    if (e && e.canDangNhap) { chan(); return; }
+    if (!D) $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Không tải được lịch trực: ' + esc(e && e.message ? e.message : e) + '</div>';
+    else toast(e && e.message ? e.message : String(e), true);
+  }
+  function chan() { D = null; $('foot').textContent = ''; $('reload').style.display = 'none'; BDV.veCong($('app')); }
+
+  function viTri(chinhXac) {
+    return new Promise(function (ok, no) {
+      if (!navigator.geolocation) { no(new Error('Trình duyệt này không hỗ trợ lấy vị trí.')); return; }
+      navigator.geolocation.getCurrentPosition(function (p) { ok(p.coords); }, function (e) {
+        no(new Error(e.code === 1 ? 'Bạn chưa cho phép trang lấy vị trí. Bấm biểu tượng ổ khoá cạnh địa chỉ trang → cho phép Vị trí, rồi thử lại.'
+          : e.code === 3 ? 'Lấy vị trí quá lâu. Bật GPS / định vị rồi thử lại.' : 'Không lấy được vị trí. Bật định vị rồi thử lại.'));
+      }, { enableHighAccuracy: true, timeout: 20000, maximumAge: chinhXac ? 0 : 30000 });
+    });
+  }
+
+  function theDiemDanh() {
+    var ca = D.caHienTai ? D.ca.filter(function (c) { return c.ma === D.caHienTai; })[0] : null;
+    var cuaToi = ca ? D.toi.homNay.filter(function (x) { return x.ca === ca.ma; })[0] : null;
+    var nut = '', mo = '';
+    if (!D.coViTri) {
+      mo = '<b>Chưa điểm danh được</b><div>Quản lý chưa đặt vị trí văn phòng.' + (D.quanLy ? ' Đến văn phòng rồi bấm "Đặt vị trí văn phòng" ở cuối trang.' : '') + '</div>';
+    } else if (!ca) {
+      var sap = '';
+      D.toi.homNay.forEach(function (x) { var c = D.ca.filter(function (y) { return y.ma === x.ca; })[0]; if (!x.diemDanh && phut(D.gio) < phut(c.bd)) sap = sap || ('Hôm nay bạn trực ca ' + c.ten.toLowerCase() + ' (' + c.bd + ' - ' + c.kt + ').'); });
+      mo = '<b>Ngoài giờ trực</b><div>' + (sap || 'Điểm danh được từ 15 phút trước giờ bắt đầu đến hết ca, khi đang ở văn phòng.') + '</div>';
+    } else if (cuaToi && cuaToi.diemDanh) {
+      mo = '<b>Đã điểm danh ca ' + ca.ten.toLowerCase() + ' lúc ' + esc(cuaToi.diemDanh) + '</b><div>Cảm ơn bạn đã trực văn phòng.</div>';
+      nut = '<button class="btn ok" type="button" disabled>✓ Đã điểm danh</button>';
+    } else {
+      mo = '<b>Đang trong ca ' + ca.ten.toLowerCase() + ' (' + ca.bd + ' - ' + ca.kt + ')</b><div>' +
+        (cuaToi ? 'Bạn đã đăng ký ca này. Đứng trong văn phòng rồi bấm điểm danh.' : 'Bạn chưa đăng ký ca này; vẫn điểm danh được, buổi trực sẽ được ghi nhận kèm ghi chú "không đăng ký trước".') + '</div>';
+      nut = '<button class="btn" type="button" id="dd">Điểm danh</button>';
+    }
+    return '<div class="panel" style="margin-top:14px"><div class="dd"><div class="t">' + mo + '</div>' + nut + '</div>' +
+      (thongBao ? '<div class="msg ' + thongBao[0] + '">' + esc(thongBao[1]) + '</div>' : '') + '</div>';
+  }
+
+  function ve() {
+    $('reload').style.display = '';
+    $('tt').textContent = D.toiThieu;
+    var dau = D.tuan, cuoi = cong(dau, 4), tuanNay = D.homNay >= dau && D.homNay <= cuoi;
+    var kpi = '<div class="kpis k3">' +
+      '<div class="kpi' + (D.toi.dangKy < D.toiThieu ? ' alert' : '') + '"><div class="v">' + D.toi.dangKy + '<small> / ' + D.toiThieu + '</small></div><div class="l">Buổi bạn đã đăng ký ' + (tuanNay ? 'tuần này' : 'tuần đang xem') + '</div></div>' +
+      '<div class="kpi"><div class="v">' + D.toi.diemDanh + '</div><div class="l">Buổi đã điểm danh</div></div>' +
+      '<div class="kpi"><div class="v">' + D.dangKy.length + '</div><div class="l">Lượt trực của cả Ban trong tuần</div></div></div>';
+    var nav = '<div class="nav2"><button class="ghost" type="button" data-t="-7">‹ Tuần trước</button><b>Tuần ' + dm(dau) + ' – ' + dm(cuoi) + '</b>' +
+      '<button class="ghost" type="button" data-t="7"' + (cong(dau, 7) >= D.tuanToiDa ? ' disabled' : '') + '>Tuần sau ›</button>' +
+      (tuanNay ? '' : '<button class="ghost" type="button" data-t="0">Về tuần này</button>') + '</div>';
+    var tuanHtml = '<div class="week">' + D.ngay.map(function (n) {
+      var nghi = D.ngayNghi.indexOf(n) > -1;
+      return '<div class="day' + (n === D.homNay ? ' today' : '') + (nghi ? ' off' : '') + '"><h3>' + THU[thu(n)] + '<span>' + dm(n) + (nghi ? ' · nghỉ' : '') + '</span></h3>' +
+        D.ca.map(function (c) {
+          var ds = D.dangKy.filter(function (x) { return x.ngay === n && x.ca === c.ma; });
+          var toi = ds.filter(function (x) { return x.toi; })[0];
+          var qua = n < D.homNay || (n === D.homNay && phut(D.gio) > phut(c.kt));
+          var batDau = n < D.homNay || (n === D.homNay && phut(D.gio) >= phut(c.bd));
+          var nut = nghi ? '' : toi ? (toi.diemDanh || batDau ? '' : '<button type="button" class="cancel" data-act="huy" data-n="' + n + '" data-c="' + c.ma + '">Huỷ đăng ký</button>')
+            : qua ? '' : '<button type="button" class="reg" data-act="dk" data-n="' + n + '" data-c="' + c.ma + '">+ Đăng ký</button>';
+          return '<div class="shift' + (qua ? ' past' : '') + '"><div class="h"><b>' + c.ten + '</b><span>' + c.bd.replace(':00', 'h') + ' - ' + c.kt.replace(':00', 'h') + ' · ' + ds.length + ' người</span></div>' +
+            '<div class="chips">' + (ds.length ? ds.map(function (x) {
+              return '<span class="chip' + (x.toi ? ' me' : '') + (x.diemDanh ? ' done' : '') + '" title="' + esc(x.ten + (x.diemDanh ? ' · điểm danh ' + x.diemDanh : '')) + '">' + esc(tenNgan(x.ten)) + '</span>';
+            }).join('') : '<span class="empty-s">' + (nghi ? 'Không trực' : 'Chưa có ai') + '</span>') + '</div>' + nut + '</div>';
+        }).join('') + '</div>';
+    }).join('') + '</div><div class="legend" style="margin-top:10px"><span><span class="chip me">Bạn</span></span><span><span class="chip done">Đã điểm danh</span></span><span>Huỷ được trước khi ca bắt đầu.</span></div>';
+
+    var ql = '';
+    if (D.quanLy) {
+      var tk = D.thongKe || [];
+      ql = '<div class="panel" style="margin-top:14px"><h2>Thống kê trực tuần ' + dm(dau) + ' – ' + dm(cuoi) + '</h2><div class="sub">Người chưa đủ ' + D.toiThieu + ' buổi điểm danh được tô đỏ. Vắng = đã đăng ký nhưng ca đã qua mà không điểm danh.</div>' +
+        '<table><thead><tr><th>Thành viên</th><th>Nhóm</th><th>Đăng ký</th><th>Điểm danh</th><th>Vắng</th></tr></thead><tbody>' +
+        (tk.length ? tk.map(function (p) {
+          return '<tr class="' + (p.diemDanh < D.toiThieu ? 'warnrow' : '') + '"><td>' + esc(p.ten) + '</td><td>' + esc(p.nhom.map(function (m) { return TEN_NHOM[m] || m; }).join(', ') || '—') + '</td><td>' + p.dangKy + '</td><td>' + p.diemDanh + '</td><td>' + p.vang + '</td></tr>';
+        }).join('') : '<tr><td colspan="5">Chưa có thành viên nào trong sheet tài khoản.</td></tr>') + '</tbody></table></div>' +
+        '<div class="panel"><h2>Vị trí văn phòng</h2><div class="sub">' + (D.coViTri
+          ? 'Đã đặt: ' + D.viTri.lat + ', ' + D.viTri.lng + ' · <a href="https://www.google.com/maps?q=' + D.viTri.lat + ',' + D.viTri.lng + '" target="_blank" rel="noopener">xem trên bản đồ</a>. Thành viên phải đứng trong bán kính này mới điểm danh được.'
+          : 'Chưa đặt vị trí. Khi đang ở văn phòng, bấm nút dưới đây để lấy vị trí hiện tại làm vị trí văn phòng.') + '</div>' +
+        '<div class="loc"><label>Bán kính <input type="number" id="bk" min="30" max="2000" step="10" value="' + D.banKinh + '"> m</label>' +
+        '<button class="ghost" type="button" id="datvt">Đặt vị trí văn phòng tại chỗ tôi đứng</button></div></div>';
+    }
+    $('app').innerHTML = theDiemDanh() + kpi + '<div class="panel">' + nav + tuanHtml + '</div>' + ql;
+    var t = new Date();
+    $('foot').textContent = 'Cập nhật lúc ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '. Điểm danh dùng vị trí của điện thoại / máy tính, chỉ được ghi nhận khi bạn ở gần văn phòng.';
+  }
+
+  function lam(action, req, el, imLang) {
+    if (busy) return Promise.reject(new Error('Đang xử lý, đợi chút nhé.'));
+    busy = true; if (el) el.classList.add('busy');
+    return BDV.goi(action, req).then(function (d) { busy = false; nhan(d); return d; })
+      .catch(function (e) { busy = false; if (el) el.classList.remove('busy'); if (!imLang || (e && e.canDangNhap)) loi(e); throw e; });
+  }
+
+  $('app').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || !D) return;
+    if (b.dataset.t !== undefined) { var n = +b.dataset.t; tai(n === 0 ? D.homNay : cong(D.tuan, n)); return; }
+    if (b.dataset.act === 'dk') { lam('dangKyTruc', { ngay: b.dataset.n, ca: b.dataset.c }, b.closest('.shift')).then(function () { toast('Đã đăng ký ca trực'); }).catch(function () {}); return; }
+    if (b.dataset.act === 'huy') { lam('huyTruc', { ngay: b.dataset.n, ca: b.dataset.c }, b.closest('.shift')).then(function () { toast('Đã huỷ đăng ký'); }).catch(function () {}); return; }
+    if (b.id === 'dd') {
+      b.disabled = true; b.textContent = 'Đang lấy vị trí…'; thongBao = null;
+      viTri(true).then(function (c) {
+        b.textContent = 'Đang điểm danh…';
+        return lam('diemDanh', { lat: c.latitude, lng: c.longitude, acc: c.accuracy }, null, true).then(function (d) {
+          thongBao = ['good', 'Đã điểm danh ca ' + d.vuaDiemDanh.ca.toLowerCase() + ' lúc ' + d.vuaDiemDanh.luc + ' (cách văn phòng khoảng ' + d.vuaDiemDanh.cach + ' m).']; ve();
+        });
+      }).catch(function (er) { thongBao = ['bad', er && er.message ? er.message : String(er)]; if (D) ve(); });
+      return;
+    }
+    if (b.id === 'datvt') {
+      b.disabled = true; b.textContent = 'Đang lấy vị trí…';
+      viTri(true).then(function (c) {
+        return lam('datViTri', { lat: c.latitude, lng: c.longitude, acc: c.accuracy, banKinh: +$('bk').value, tuan: D.tuan }, null, true).then(function () { toast('Đã lưu vị trí văn phòng (sai số khoảng ' + Math.round(c.accuracy) + ' m)'); });
+      }).catch(function (er) { toast(er && er.message ? er.message : String(er), true); if (D) ve(); });
+    }
+  });
+  $('reload').addEventListener('click', function () { thongBao = null; tai(); });
+  document.addEventListener('bdv-nguoi', function (e) {
+    if (!e.detail) { chan(); return; }
+    if (!D) { $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Đang tải lịch trực…</div>'; tai(); }
+  });
+  if (!BDV.nguoi()) chan(); else tai();
+  setInterval(function () { if (!document.hidden && D && !busy) tai(); }, 120000);
+})();
+</script>
+<script src="/menu.js"></script>
+</body>
+</html>
