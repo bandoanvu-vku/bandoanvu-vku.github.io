@@ -60,7 +60,12 @@ function doPost(e) {
       dangKyTruc: function () { return dangKyTruc_(nd, req); },
       huyTruc: function () { return huyTruc_(nd, req); },
       diemDanh: function () { return diemDanh_(nd, req); },
-      datViTri: function () { return datViTri_(nd, req); }
+      datViTri: function () { return datViTri_(nd, req); },
+      guiYeuCau: function () { return guiYeuCau_(nd, req); },
+      rutYeuCau: function () { return rutYeuCau_(nd, req); },
+      duyetTruc: function () { return duyetTruc_(nd, req); },
+      quanLySuaTruc: function () { return quanLySuaTruc_(nd, req); },
+      congBoTruc: function () { return congBoTruc_(nd, req); }
     };
     if (Object.prototype.hasOwnProperty.call(doc, body.action)) return json_({ ok: true, data: doc[body.action]() });
 

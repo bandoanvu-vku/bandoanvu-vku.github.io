@@ -28,8 +28,13 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
   Thành viên, Mảng công việc.
 - **Tài khoản dashboard - Ban Đoàn vụ**: Họ và tên | Nhóm | Email Google | Vai trò (Quản lý/Thành viên) | Ghi chú.
   Một người thuộc nhóm nếu cột Nhóm ghi nhóm đó HOẶC có tên trong danh sách thành viên của sheet nhóm.
-- **Lịch trực văn phòng - Ban Đoàn vụ**: tab Đăng ký (mỗi dòng 1 lượt đăng ký/điểm danh) và Cài đặt
-  (vị trí văn phòng, bán kính, số buổi tối thiểu, ngày nghỉ). Ca: sáng 8–11h, chiều 14–17h, T2–T6.
+- **Lịch trực văn phòng - Ban Đoàn vụ**: tab Đăng ký (mỗi dòng 1 ca: Từ/Đến, Loại = Cả buổi/Ca ghép/Đổi ca/Đột xuất,
+  Trạng thái = Đã đăng ký/Chờ duyệt/Đã duyệt/Từ chối/Đã huỷ — không xoá dòng sau khi khoá), Yêu cầu (đổi/huỷ/thêm ca),
+  Công bố (tuần đã công bố), Cài đặt (vị trí văn phòng, bán kính, số buổi tối thiểu, ngày nghỉ).
+  Buổi: sáng 8–11h, chiều 14–17h, T2–T6; ca ghép bước 30 phút, tối thiểu 1 giờ; tính theo giờ (1 buổi = 3 giờ).
+  Quy trình tuần: mở đăng ký 00:00 thứ 6 → khoá 17:00 CN tuần trước; trong lúc mở thành viên chỉ thấy lịch mình + số người;
+  khoá xong quản lý chỉnh rồi Công bố; sau khoá muốn đổi/huỷ/thêm thì gửi yêu cầu cho quản lý duyệt;
+  trực đột xuất điểm danh luôn → "Chờ duyệt" → quản lý duyệt mới tính giờ. Tuần trước 19/10/2026 coi như đã công bố.
 
 ## Phân quyền
 
