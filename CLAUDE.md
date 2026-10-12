@@ -1,0 +1,52 @@
+# Dashboard Ban Đoàn vụ (VKU) — ghi chú cho Claude
+
+Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard phân công + theo dõi nhiệm vụ của Ban Đoàn vụ,
+4 nhóm: Truyền thông - Thông tin (`4t`), Nghiệp vụ (`nghiep-vu`), CSDL - CSVC (`csdl-csvc`), Nội vụ (`noi-vu`).
+
+## Kiến trúc
+
+- **Giao diện**: GitHub Pages, repo này, https://bandoanvu-vku.github.io/ (push lên `main` là lên trang sau ~1 phút).
+  Trang tĩnh, không build. Mọi dữ liệu lấy qua `BDV.goi(action, req)` trong `dangnhap.js`.
+- **Máy chủ**: một dự án Apps Script (tài khoản vanborapper@gmail.com), web app "Execute as me", access "Anyone".
+  - Mã nguồn: `apps-script/*.gs` (thứ tự file 1-…4- chỉ để dễ đọc; khi dán vào trình sửa thì gộp bằng
+    `scripts/build-apps-script.sh > /tmp/Ma.gs` rồi thay toàn bộ nội dung file `Mã.gs`).
+  - Deployment ID: `AKfycbyvfVC6D4z7dpvqTRXENomrqmEMnoeqY4Y2Al5ApP32yQWwjJunsJZJYJ4PqCtaptfd`
+    (URL `/exec` không đổi khi triển khai phiên bản mới: Triển khai → Quản lý các tùy chọn triển khai → bút chì → Phiên bản mới → Triển khai).
+  - Editor: https://script.google.com/u/1/home/projects/1TyUGdGBtKs3sPF5SgtxSMwHXYDa_VqVRirUd13WRZX_KCPNK-yDIm6y2/edit
+  - Chỉ có `doPost` (JSON gửi dạng text/plain, fetch `credentials:'omit'`); `doGet` chỉ trả thông báo.
+  - Script Properties: `SHEET_TIMELINE`, `SHEET_NHOM` (JSON {ma:{id,ten}}), `SHEET_TAI_KHOAN`, `SHEET_TRUC`, `BI_MAT_PHIEN` (khoá ký phiên — không bao giờ in ra).
+    **Không ghi ID sheet hay bí mật vào repo** (repo công khai).
+- **Đăng nhập**: Google Identity Services, OAuth client `416137728937-0o67vc9pdrhfvftgutl145ic7va4bafr.apps.googleusercontent.com`
+  (Google Cloud project `dashboard-bdv`, đã "En production", origin https://bandoanvu-vku.github.io).
+  `dangNhap` đổi ID token (kiểm tra qua tokeninfo) lấy phiên HMAC 7 ngày (`s1.<payload>.<sig>`).
+
+## Dữ liệu (Google Sheets)
+
+- **Timeline 2026 - 2027** (của vanphongdoan@vku.udn.vn): nguồn của nhóm 4T, tab tháng dạng `08.2026`.
+  Chỉ được ghi vào ô nhận việc/tick và tab "Nhật ký dashboard". **Không sửa gì khác trên sheet này.**
+- 3 sheet nhóm "[BĐV 2026 - 2027] Theo dõi nhiệm vụ - Nhóm …": tab Nhiệm vụ (dòng 1 tiêu đề, dòng 2 gợi ý, dữ liệu từ dòng 3),
+  Thành viên, Mảng công việc.
+- **Tài khoản dashboard - Ban Đoàn vụ**: Họ và tên | Nhóm | Email Google | Vai trò (Quản lý/Thành viên) | Ghi chú.
+  Một người thuộc nhóm nếu cột Nhóm ghi nhóm đó HOẶC có tên trong danh sách thành viên của sheet nhóm.
+- **Lịch trực văn phòng - Ban Đoàn vụ**: tab Đăng ký (mỗi dòng 1 lượt đăng ký/điểm danh) và Cài đặt
+  (vị trí văn phòng, bán kính, số buổi tối thiểu, ngày nghỉ). Ca: sáng 8–11h, chiều 14–17h, T2–T6.
+
+## Phân quyền
+
+- Chưa đăng nhập: không thấy dữ liệu. Thành viên: Tổng quan (chỉ nhóm mình), Của tôi, Lịch trực, trang nhóm mình.
+  Quản lý: xem tất cả (chỉ xem ở trang nhóm), thống kê trực, đặt vị trí văn phòng.
+- Kiểm tra quyền luôn ở máy chủ (`canNhom_`, `nguoiDung_`); tên ghi vào sheet lấy từ tài khoản, không tin client.
+
+## Trang
+
+`/` tổng quan · `/cua-toi/` · `/lich-truc/` · `/4t/` · `/nghiep-vu/` `/csdl-csvc/` `/noi-vu/` (dùng chung `nhom.js`) · `/bao-mat/`.
+`menu.js` vẽ menu theo quyền và tự nạp `dangnhap.js`. Thêm trang: thêm một dòng vào `TRANG` trong `menu.js`.
+
+## Cách làm việc (để tiết kiệm thời gian/token)
+
+- Sửa giao diện: sửa file trong repo → commit → push `main`. Không cần trình duyệt.
+- Sửa máy chủ: sửa `apps-script/*.gs` → commit → build → dán vào editor qua Chrome (`monaco.editor.getModels()[0].setValue(...)`),
+  bấm biểu tượng lưu, rồi triển khai phiên bản mới. Kiểm tra: `fetch(exec, {method:'POST', body:'{"action":"lichTruc"}'})`
+  phải trả "Bạn cần đăng nhập…".
+- Chrome của người dùng bị thu nhỏ thì thao tác chuột/ảnh chụp treo; nhờ họ mở cửa sổ lên.
+- Gom nhiều thay đổi máy chủ vào một lần triển khai.
