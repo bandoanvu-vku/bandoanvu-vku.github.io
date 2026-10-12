@@ -229,11 +229,21 @@
       .catch(function (e) { throw (e && e.message ? e.message : String(e)); });
   }
   function tai(imLang) {
-    return goi('layDuLieu', { moi: !imLang }).then(function (d) { nhan(d); if (!imLang) toast('Đã cập nhật từ sheet'); })
+    return goi('layDuLieu', { moi: !imLang }).then(function (d) {
+      if (busy) return;
+      nhan(d);
+      if (!imLang) { toast('Đã cập nhật từ sheet'); return; }
+      if (d.tuoi > 90) {
+        // Bản nhớ tạm đã cũ: hiện ngay, đồng thời đọc lại sheet ngầm rồi thay bằng bản mới
+        $('stamp').textContent = 'Đang đọc lại sheet…';
+        return goi('layDuLieu', { moi: true }).then(function (m) { if (!busy) nhan(m); });
+      }
+    })
       .catch(function (m) { if (!D) $('view').innerHTML = '<div class="empty-box">Không tải được dữ liệu: ' + esc(m) + '</div>'; else if (!imLang) toast(m, true); });
   }
   function nhan(d) {
     D = d;
+    try { localStorage.setItem('bdv4t.data', JSON.stringify(d)); } catch (e) {}
     if (iThang < 0 || iThang >= D.cacThang.length) {
       var n = new Date(), tim = -1, coViec = -1;
       D.cacThang.forEach(function (t, i) {
@@ -415,8 +425,13 @@
   $('code').addEventListener('change', function (e) { ma = e.target.value.trim(); nho('bdv4t.ma', ma); });
   $('reload').addEventListener('click', function () { tai(false); });
 
+  // Hiện ngay dữ liệu của lần xem trước trên máy này, rồi mới hỏi máy chủ
+  try {
+    var cu = JSON.parse(localStorage.getItem('bdv4t.data') || 'null');
+    if (cu && cu.cacThang && cu.thanhVien) { nhan(cu); $('stamp').textContent = 'Đang cập nhật…'; }
+  } catch (e) {}
   tai(true);
-  setInterval(function () { if (!document.hidden && !busy) tai(true); }, 120000);
+  setInterval(function () { if (!document.hidden && !busy) tai(true); }, 180000);
 })();
 </script>
 <script src="/menu.js"></script>
