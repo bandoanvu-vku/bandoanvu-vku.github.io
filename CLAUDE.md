@@ -45,8 +45,10 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 ## Cách làm việc (để tiết kiệm thời gian/token)
 
 - Sửa giao diện: sửa file trong repo → commit → push `main`. Không cần trình duyệt.
-- Sửa máy chủ: sửa `apps-script/*.gs` → commit → build → dán vào editor qua Chrome (`monaco.editor.getModels()[0].setValue(...)`),
-  bấm biểu tượng lưu, rồi triển khai phiên bản mới. Kiểm tra: `fetch(exec, {method:'POST', body:'{"action":"lichTruc"}'})`
-  phải trả "Bạn cần đăng nhập…".
+- Sửa máy chủ: sửa `apps-script/*.gs` → commit → push `main`. Workflow `.github/workflows/deploy-apps-script.yml`
+  tự `clasp push` + `clasp deploy` vào đúng Deployment ID và kiểm tra web app (cần secret `CLASPRC_JSON`;
+  thiếu secret thì workflow bỏ qua và phải dán tay qua editor như cũ). Xem kết quả: `gh run list -R bandoanvu-vku/bandoanvu-vku.github.io`.
+  `clasp push` thay toàn bộ file trong dự án bằng nội dung `apps-script/` (kể cả `appsscript.json`, giữ webapp
+  USER_DEPLOYING + ANYONE_ANONYMOUS). Thêm quyền mới (scope) thì người dùng phải vào editor chạy một hàm để cấp quyền lại.
 - Chrome của người dùng bị thu nhỏ thì thao tác chuột/ảnh chụp treo; nhờ họ mở cửa sổ lên.
 - Gom nhiều thay đổi máy chủ vào một lần triển khai.
