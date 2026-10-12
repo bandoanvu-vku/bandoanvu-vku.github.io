@@ -4,6 +4,7 @@
   var TRANG = [
     ['/', 'Tổng quan', ''],
     ['/cua-toi/', 'Của tôi', ''],
+    ['/lich-truc/', 'Lịch trực', ''],
     ['/4t/', 'Truyền thông - Thông tin', '4t'],
     ['/nghiep-vu/', 'Nghiệp vụ', 'nghiep-vu'],
     ['/csdl-csvc/', 'CSDL - CSVC', 'csdl-csvc'],
