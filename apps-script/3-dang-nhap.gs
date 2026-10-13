@@ -156,7 +156,7 @@ function locTongQuan_(kq, nd) {
   const sapToi = kq.sapToi.filter(function (v) { return duoc(v.nhom); });
   const nguoi = [];
   kq.nguoi.forEach(function (p) {
-    if (tatCa) { nguoi.push({ ten: p.ten, nhom: p.nhom, giao: p.giao, xong: p.xong, quaHan: p.quaHan }); return; }
+    if (tatCa) { nguoi.push({ ten: p.ten, nhom: p.nhom, giao: p.giao, xong: p.xong, quaHan: p.quaHan, theoNhom: p.theoNhom || {} }); return; }
     const o = { ten: p.ten, nhom: [], giao: 0, xong: 0, quaHan: 0 };
     Object.keys(p.theoNhom || {}).forEach(function (ma) {
       if (!duoc(ma)) return;
@@ -171,7 +171,7 @@ function locTongQuan_(kq, nd) {
     homNay: kq.homNay,
     nhom: kq.nhom.filter(function (n) { return duoc(n.ma); }),
     nguoi: nguoi,
-    sapToi: sapToi.slice(0, 20),
+    sapToi: sapToi.slice(0, tatCa ? 300 : 20), // quản lý lọc theo từng nhóm ở trang Tổng quan nên cần đủ danh sách
     soSapToi: sapToi.length,
     thang: duoc('4t') ? kq.thang : [],
     tuoi: kq.tuoi

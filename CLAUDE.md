@@ -48,7 +48,7 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 
 ## Trang
 
-`/` tổng quan (quản lý) · `/cua-toi/` (Trang chủ của thành viên / Việc của tôi của quản lý) · `/lich-truc/` (`#diem-danh` = chế độ Điểm danh) ·
+`/` tổng quan (quản lý; 5 tab Chung + từng nhóm, tab ghi trên địa chỉ #4t…) · `/cua-toi/` (Trang chủ của thành viên / Việc của tôi của quản lý) · `/lich-truc/` (`#diem-danh` = chế độ Điểm danh) ·
 `/phe-duyet/` `/thong-ke/` `/cai-dat/` (quản lý) · `/ho-so/` `/tai-lieu/` `/cam-nang/` · `/4t/` · `/nghiep-vu/` `/csdl-csvc/` `/noi-vu/` (dùng chung `nhom.js`) · `/bao-mat/`.
 `menu.js` vẽ thanh menu bên trái chia nhóm mục theo vai trò (hàm `cauHinh`; trên điện thoại mở bằng nút ☰) và tự nạp `dangnhap.js`.
 Thêm trang: thêm một mục vào `cauHinh()` trong `menu.js`. Trang mới dùng chung `/chung.css` + `/chung.js` (T.$, T.esc, T.toast, T.khoi).

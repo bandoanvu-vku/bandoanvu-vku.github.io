@@ -73,6 +73,11 @@
   .pill.bad { background: var(--bad-soft); color: var(--bad); } .pill.soon { background: var(--warn-soft); color: var(--warn); }
   .empty { color: var(--muted); text-align: center; padding: 22px 8px; font-size: 14px; }
   .foot { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+  .tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: thin; border-bottom: 1px solid var(--line); margin: 16px 0 14px; }
+  .tabs a { flex: none; padding: 9px 14px 8px; font-size: 14.5px; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+  .tabs a:hover { color: var(--accent); }
+  .tabs a[aria-selected=true] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tabs .so { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 9px; background: var(--bad-soft); color: var(--bad); font-size: 11.5px; font-weight: 700; line-height: 18px; text-align: center; }
   #tip { position: fixed; z-index: 9; pointer-events: none; display: none; background: var(--text); color: var(--bg); font-size: 12.5px; padding: 5px 9px; border-radius: 6px; max-width: 260px; }
   @media (max-width: 820px) { .grid2 { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(2, 1fr); } .nav { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 560px) { .row { grid-template-columns: 1fr 84px; } .row .name { grid-column: 1 / -1; } }
@@ -129,19 +134,52 @@
     BDV.veCong($('app'));
   }
 
+  // Quản lý: 5 tab — Chung và từng nhóm. Tab đang xem ghi trên địa chỉ (#4t, #nghiep-vu…) để tải lại vẫn giữ.
+  var TABS = [['chung', 'Chung'], ['4t', 'Truyền thông - Thông tin'], ['nghiep-vu', 'Nghiệp vụ'], ['noi-vu', 'Nội vụ'], ['csdl-csvc', 'CSDL - CSVC']];
+  var tab = 'chung';
+  function docTab() { var h = location.hash.slice(1); tab = TABS.some(function (t) { return t[0] === h; }) ? h : 'chung'; }
+  docTab();
+  function veTabs() {
+    if (D.phamVi === 'nhom') return '';
+    return '<div class="tabs" role="tablist">' + TABS.map(function (t) {
+      var n = D.nhom.filter(function (x) { return x.ma === t[0]; })[0];
+      var so = t[0] === 'chung' ? D.nhom.reduce(function (s, x) { return s + (x.quaHan || 0); }, 0) : n ? n.quaHan : 0;
+      return '<a role="tab" href="#' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + (so ? ' <span class="so" title="' + so + ' việc quá hạn">' + so + '</span>' : '') + '</a>';
+    }).join('') + '</div>';
+  }
+  // Số liệu cho tab đang xem
+  function khung() {
+    if (tab === 'chung' || D.phamVi === 'nhom') return { nhom: D.nhom, nguoi: D.nguoi, sapToi: D.sapToi.slice(0, 20), soSapToi: D.soSapToi, thang: D.thang };
+    var g = tab;
+    return {
+      nhom: D.nhom.filter(function (n) { return n.ma === g; }),
+      nguoi: D.nguoi.map(function (p) {
+        var x = p.theoNhom && p.theoNhom[g];
+        if (x) return { ten: p.ten, nhom: [g], giao: x.giao, xong: x.xong, quaHan: x.quaHan };
+        return !p.theoNhom && p.nhom.indexOf(g) > -1 ? p : null;
+      }).filter(Boolean).sort(function (a, b) { return b.giao - a.giao; }),
+      sapToi: D.sapToi.filter(function (v) { return v.nhom === g; }).slice(0, 20),
+      soSapToi: D.sapToi.filter(function (v) { return v.nhom === g; }).length,
+      thang: g === '4t' ? D.thang : []
+    };
+  }
+  window.addEventListener('hashchange', function () { docTab(); hetNguoi = false; if (D) ve(); });
+
   function ve() {
     $('reload').style.display = '';
+    var V = khung(), tabs = veTabs();
     var rieng = D.phamVi === 'nhom';
     $('tieuDe').textContent = rieng ? 'Tổng quan nhóm của bạn' : 'Tổng quan nhiệm vụ';
-    $('phuDe').textContent = rieng
-      ? (D.nhom.length ? D.nhom.map(function (n) { return n.ten; }).join(' · ') : 'Tài khoản chưa thuộc nhóm nào') + ' · năm học 2026 - 2027'
-      : D.nhom.length + ' nhóm của Ban Đoàn vụ · năm học 2026 - 2027';
+    $('phuDe').innerHTML = rieng
+      ? (V.nhom.length ? V.nhom.map(function (n) { return n.ten; }).join(' · ') : 'Tài khoản chưa thuộc nhóm nào') + ' · năm học 2026 - 2027'
+      : tab === 'chung' ? D.nhom.length + ' nhóm của Ban Đoàn vụ · năm học 2026 - 2027'
+      : 'Nhóm ' + (V.nhom[0] ? V.nhom[0].ten : '') + ' · năm học 2026 - 2027 · <a href="/' + tab + '/">Mở trang nhóm →</a>';
     if (!D.nhom.length) {
       $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Tên của bạn chưa có trong danh sách thành viên của nhóm nào.<br>Nhờ trưởng nhóm thêm tên bạn vào sheet của nhóm (đúng như tên trong sheet tài khoản).</div>';
       $('foot').textContent = ''; return;
     }
     var T = { xong: 0, dangLam: 0, chuaLam: 0, chuaNhan: 0, quaHan: 0, sapHan: 0 };
-    D.nhom.forEach(function (n) { for (var k in T) T[k] += n[k] || 0; });
+    V.nhom.forEach(function (n) { for (var k in T) T[k] += n[k] || 0; });
     var tat = tong(T), pt = tat ? Math.round(T.xong / tat * 100) : 0;
 
     var kpi = '<div class="kpis">' +
@@ -152,8 +190,8 @@
       '<div class="kpi' + (T.chuaNhan ? ' alert' : '') + '"><div class="v">' + T.chuaNhan + '</div><div class="l">Chưa có người nhận</div></div></div>';
 
     var chuGiai = '<div class="legend">' + LOAI.map(function (l) { return '<span><i class="' + l[1] + '"></i>' + l[2] + '</span>'; }).join('') + '</div>';
-    var nhom = '<div class="panel"><h2>Tiến độ theo nhóm</h2><div class="sub">Mỗi thanh là toàn bộ việc của một nhóm, chia theo trạng thái</div>' + chuGiai +
-      D.nhom.map(function (n) {
+    var nhom = '<div class="panel"><h2>' + (tab === 'chung' ? 'Tiến độ theo nhóm' : 'Tiến độ của nhóm') + '</h2><div class="sub">' + (tab === 'chung' ? 'Mỗi thanh là toàn bộ việc của một nhóm, chia theo trạng thái' : 'Toàn bộ việc của nhóm, chia theo trạng thái') + '</div>' + chuGiai +
+      V.nhom.map(function (n) {
         var t = tong(n), href = n.ma + '/';
         var thanh = n.loi ? '<div class="note">Không đọc được sheet của nhóm này</div>'
           : !t ? '<div class="stack none" data-tip="Sheet của nhóm chưa có nhiệm vụ"></div>'
@@ -163,43 +201,45 @@
           '<div class="val">' + (t ? '<b>' + n.xong + '</b> / ' + t + ' xong' : 'Chưa có việc') + '</div></div>';
       }).join('') +
       '<details><summary>Xem dạng bảng</summary><table><thead><tr><th>Nhóm</th><th>Hoàn thành</th><th>Đang làm</th><th>Chưa xong</th><th>Chưa nhận</th><th>Quá hạn</th></tr></thead><tbody>' +
-      D.nhom.map(function (n) { return '<tr><td>' + esc(n.ten) + '</td><td>' + n.xong + '</td><td>' + n.dangLam + '</td><td>' + n.chuaLam + '</td><td>' + n.chuaNhan + '</td><td>' + n.quaHan + '</td></tr>'; }).join('') +
+      V.nhom.map(function (n) { return '<tr><td>' + esc(n.ten) + '</td><td>' + n.xong + '</td><td>' + n.dangLam + '</td><td>' + n.chuaLam + '</td><td>' + n.chuaNhan + '</td><td>' + n.quaHan + '</td></tr>'; }).join('') +
       '</tbody></table></details>' +
-      '<div class="note" style="margin-top:8px">Nhóm Truyền thông tính theo từng việc con (viết bài, thiết kế, chụp hình); ba nhóm còn lại tính theo từng nhiệm vụ.</div></div>';
+      '<div class="note" style="margin-top:8px">' + (tab === 'chung' ? 'Nhóm Truyền thông tính theo từng việc con (viết bài, thiết kế, chụp hình); ba nhóm còn lại tính theo từng nhiệm vụ.'
+        : tab === '4t' ? 'Tính theo từng việc con (viết bài, thiết kế, chụp hình) trong Timeline.' : 'Tính theo từng nhiệm vụ trong sheet của nhóm.') + '</div></div>';
 
-    var max = 1; D.nguoi.forEach(function (p) { max = Math.max(max, p.giao); });
-    var dsNguoi = hetNguoi ? D.nguoi : D.nguoi.slice(0, 10);
+    var max = 1; V.nguoi.forEach(function (p) { max = Math.max(max, p.giao); });
+    var dsNguoi = hetNguoi ? V.nguoi : V.nguoi.slice(0, 10);
     var nguoi = '<div class="panel"><h2>Khối lượng theo thành viên</h2><div class="sub">Số việc mỗi người đang phụ trách</div>' +
       '<div class="legend"><span><i class="c-done"></i>Đã xong</span><span><i class="c-doing"></i>Chưa xong</span></div>' +
-      (D.nguoi.length ? dsNguoi.map(function (p) {
+      (V.nguoi.length ? dsNguoi.map(function (p) {
         var con = p.giao - p.xong;
         return '<div class="row"><div class="name">' + esc(p.ten) + '<small>' + p.nhom.map(function (m) { return TEN_NGAN[m] || m; }).join(', ') +
           (p.quaHan ? ' · <span class="late">' + p.quaHan + ' quá hạn</span>' : '') + '</small></div>' +
           '<div class="stack" style="width:' + Math.max(4, p.giao / max * 100) + '%">' + doan('c-done', p.xong, p.giao, 'Đã xong') + doan('c-doing', con, p.giao, 'Chưa xong') + '</div>' +
           '<div class="val"><b>' + p.xong + '</b> / ' + p.giao + ' xong</div></div>';
-      }).join('') + (D.nguoi.length > 10 ? '<button type="button" class="ghost" id="more" style="margin-top:8px">' + (hetNguoi ? 'Thu gọn' : 'Xem cả ' + D.nguoi.length + ' người') + '</button>' : '')
+      }).join('') + (V.nguoi.length > 10 ? '<button type="button" class="ghost" id="more" style="margin-top:8px">' + (hetNguoi ? 'Thu gọn' : 'Xem cả ' + V.nguoi.length + ' người') + '</button>' : '')
         : '<div class="empty">Chưa có việc nào được giao.</div>') + '</div>';
 
     var hn = ngay(D.homNay);
     var due = '<div class="panel"><h2>Quá hạn và sắp đến hạn</h2><div class="sub">Việc chưa xong đã qua ngày hoặc đến hạn trong 7 ngày tới</div><div style="margin-top:8px">' +
-      (D.sapToi.length ? D.sapToi.map(function (v) {
+      (V.sapToi.length ? V.sapToi.map(function (v) {
         var d = ngay(v.han), con = Math.round((d - hn) / 864e5);
         return '<div class="due"><div class="d"><b>' + ('0' + d.getDate()).slice(-2) + '</b><span>Th' + (d.getMonth() + 1) + '</span></div>' +
           '<div><div class="t">' + esc(v.ten) + '</div><div class="s">' + (TEN_NGAN[v.nhom] || v.nhom) + ' · ' + esc(v.nguoi) + '</div></div>' +
           '<span class="pill ' + (con < 0 ? 'bad">Quá ' + (-con) + ' ngày' : 'soon">' + (con === 0 ? 'Hôm nay' : 'Còn ' + con + ' ngày')) + '</span></div>';
-      }).join('') + (D.soSapToi > D.sapToi.length ? '<div class="note" style="padding-top:8px">Còn ' + (D.soSapToi - D.sapToi.length) + ' việc nữa, xem trong dashboard từng nhóm.</div>' : '')
+      }).join('') + (V.soSapToi > V.sapToi.length ? '<div class="note" style="padding-top:8px">Còn ' + (V.soSapToi - V.sapToi.length) + ' việc nữa, xem trong dashboard từng nhóm.</div>' : '')
         : '<div class="empty">Không có việc nào quá hạn hoặc sắp đến hạn.</div>') + '</div></div>';
 
-    var maxT = 1; D.thang.forEach(function (t) { maxT = Math.max(maxT, t.viec); });
-    var thang = !D.thang.length && rieng ? '' : '<div class="panel"><h2>Truyền thông - Thông tin theo tháng</h2><div class="sub">Số việc con trong timeline mỗi tháng</div>' +
+    var maxT = 1; V.thang.forEach(function (t) { maxT = Math.max(maxT, t.viec); });
+    var thang = !V.thang.length && (rieng || tab !== 'chung') ? '' : '<div class="panel"><h2>Truyền thông - Thông tin theo tháng</h2><div class="sub">Số việc con trong timeline mỗi tháng</div>' +
       '<div class="legend"><span><i class="c-done"></i>Đã xong</span><span><i class="c-doing"></i>Chưa xong</span></div>' +
-      (D.thang.length ? D.thang.map(function (t) {
+      (V.thang.length ? V.thang.map(function (t) {
         return '<div class="row"><div class="name">Tháng ' + t.thang + '/' + t.nam + '</div>' +
           '<div class="stack" style="width:' + Math.max(4, t.viec / maxT * 100) + '%">' + doan('c-done', t.xong, t.viec, 'Đã xong') + doan('c-doing', t.viec - t.xong, t.viec, 'Chưa xong') + '</div>' +
           '<div class="val"><b>' + t.xong + '</b> / ' + t.viec + ' xong</div></div>';
       }).join('') : '<div class="empty">Timeline chưa có hoạt động nào.</div>') + '</div>';
 
-    $('app').innerHTML = kpi + nhom + '<div class="grid2"><div>' + nguoi + '</div><div>' + due + thang + '</div></div>';
+    $('app').innerHTML = tabs + kpi + nhom + '<div class="grid2"><div>' + nguoi + '</div><div>' + due + thang + '</div></div>';
+    var tc = $('app').querySelector('.tabs [aria-selected=true]'); if (tc && tc.scrollIntoView && tab !== 'chung') tc.scrollIntoView({ block: 'nearest', inline: 'center' });
     var n = new Date();
     $('foot').textContent = 'Cập nhật lúc ' + ('0' + n.getHours()).slice(-2) + ':' + ('0' + n.getMinutes()).slice(-2) + '. Số liệu lấy từ sheet Timeline và ba sheet theo dõi nhiệm vụ; khối lượng thành viên tính theo người phụ trách chính.';
   }
