@@ -2,7 +2,7 @@
    Thêm trang mới: thêm một dòng vào TRANG (cột 3: '' = ai đăng nhập cũng xem được, hoặc mã nhóm). */
 (function () {
   var TRANG = [
-    ['/', 'Tổng quan', ''],
+    ['/', 'Tổng quan', '', 'quanLy'], // thành viên xem tổng quan nhóm ngay trong "Của tôi"
     ['/cua-toi/', 'Của tôi', ''],
     ['/lich-truc/', 'Lịch trực', ''],
     ['/4t/', 'Truyền thông - Thông tin', '4t'],
@@ -44,7 +44,9 @@
   // Trang chung hiện thẳng; trang các nhóm: xem được 1 nhóm thì hiện thẳng, từ 2 nhóm trở lên (vd quản lý) gom vào "Công việc nhóm"
   function ve() {
     var n = nguoi();
-    var duoc = function (t) { return !!n && (!t[2] || n.vaiTro === 'quanLy' || (n.nhom || []).indexOf(t[2]) > -1); };
+    var ql = !!n && n.vaiTro === 'quanLy';
+    var duoc = function (t) { return !!n && (t[3] !== 'quanLy' || ql) && (!t[2] || ql || (n.nhom || []).indexOf(t[2]) > -1); };
+    h.querySelector('.brand').setAttribute('href', n && !ql ? '/cua-toi/' : '/');
     var chung = TRANG.filter(function (t) { return !t[2] && duoc(t); });
     var nhom = TRANG.filter(function (t) { return t[2] && duoc(t); });
     var html = chung.map(lienKet).join('');

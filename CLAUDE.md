@@ -31,21 +31,22 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 - **Lịch trực văn phòng - Ban Đoàn vụ**: tab Đăng ký (mỗi dòng 1 ca: Từ/Đến, Loại = Cả buổi/Ca ghép/Đổi ca/Đột xuất,
   Trạng thái = Đã đăng ký/Chờ duyệt/Đã duyệt/Từ chối/Đã huỷ — không xoá dòng sau khi khoá), Yêu cầu (đổi/huỷ/thêm ca),
   Công bố (tuần đã công bố), Cài đặt (vị trí văn phòng, bán kính, số buổi tối thiểu, ngày nghỉ).
-  Buổi: sáng 8–11h, chiều 14–17h, T2–T6; ca ghép bước 30 phút, tối thiểu 1 giờ; tính theo giờ (1 buổi = 3 giờ).
+  Buổi: sáng 8–11h, chiều 14–17h, T2–T6; ca tự chọn giờ:phút bất kỳ trong 8:00–17:00, tối thiểu 1 giờ (bắt đầu trước 12:30 xếp buổi sáng);
+  trực đột xuất tính từ lúc điểm danh, đến giờ tự chọn ≤ 17:00; tính theo giờ (1 buổi = 3 giờ). Trang Lịch trực có nút "Tạo yêu cầu đổi lịch" (đổi/huỷ/thêm).
   Quy trình tuần: mở đăng ký 00:00 thứ 6 → khoá 17:00 CN tuần trước; trong lúc mở thành viên chỉ thấy lịch mình + số người;
   khoá xong quản lý chỉnh rồi Công bố; sau khoá muốn đổi/huỷ/thêm thì gửi yêu cầu cho quản lý duyệt;
   trực đột xuất điểm danh luôn → "Chờ duyệt" → quản lý duyệt mới tính giờ. Tuần trước 19/10/2026 coi như đã công bố.
 
 ## Phân quyền
 
-- Chưa đăng nhập: không thấy dữ liệu. Thành viên: Tổng quan (chỉ nhóm mình), Của tôi, Lịch trực, trang nhóm mình.
+- Chưa đăng nhập: không thấy dữ liệu. Thành viên: Của tôi (gồm cả tổng quan nhóm mình; vào `/` tự chuyển sang `/cua-toi/`), Lịch trực, trang nhóm mình.
   Quản lý: xem tất cả (chỉ xem ở trang nhóm), thống kê trực, đặt vị trí văn phòng.
 - Kiểm tra quyền luôn ở máy chủ (`canNhom_`, `nguoiDung_`); tên ghi vào sheet lấy từ tài khoản, không tin client.
 
 ## Trang
 
 `/` tổng quan · `/cua-toi/` · `/lich-truc/` · `/4t/` · `/nghiep-vu/` `/csdl-csvc/` `/noi-vu/` (dùng chung `nhom.js`) · `/bao-mat/`.
-`menu.js` vẽ menu theo quyền và tự nạp `dangnhap.js`. Thêm trang: thêm một dòng vào `TRANG` trong `menu.js`.
+`menu.js` vẽ menu theo quyền (xem được ≥2 nhóm thì gom vào menu thả xuống "Công việc nhóm"; cột 4 = 'quanLy' là trang chỉ quản lý thấy) và tự nạp `dangnhap.js`. Thêm trang: thêm một dòng vào `TRANG` trong `menu.js`.
 
 ## Cách làm việc (để tiết kiệm thời gian/token)
 

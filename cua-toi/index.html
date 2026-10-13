@@ -93,7 +93,7 @@
   <div class="top">
     <div>
       <h1>Của tôi</h1>
-      <div class="sub">Thông tin tài khoản và mọi việc của bạn ở các nhóm</div>
+      <div class="sub">Thông tin tài khoản, việc của bạn và tổng quan nhóm</div>
     </div>
     <button class="ghost" id="reload" type="button">Tải lại</button>
   </div>
@@ -105,7 +105,40 @@
 <script>
 (function () {
   var TEN = { '4t': 'Truyền thông - Thông tin', 'nghiep-vu': 'Nghiệp vụ', 'csdl-csvc': 'CSDL - CSVC', 'noi-vu': 'Nội vụ' };
-  var D = null, hetXong = false;
+  var D = null, hetXong = false, TQ = null;
+  var LOAI = [['xong', 'c-done', 'Hoàn thành'], ['dangLam', 'c-doing', 'Đang làm'], ['chuaLam', 'c-todo', 'Đã nhận, chưa làm xong'], ['chuaNhan', 'c-open', 'Chưa có người nhận']];
+  function tong(n) { return n.xong + n.dangLam + n.chuaLam + n.chuaNhan; }
+  function doan(cls, so, t, tip) { return so ? '<i class="' + cls + '" style="flex:' + so + ' 1 0" title="' + esc(tip + ': ' + so + ' việc (' + Math.round(so / t * 100) + '%)') + '"></i>' : ''; }
+  // Thành viên: tổng quan các nhóm của mình hiện luôn ở trang này (quản lý có trang Tổng quan riêng)
+  function taiTQ(moi) {
+    var n = BDV.nguoi(); if (!n || n.vaiTro === 'quanLy') { TQ = null; return; }
+    BDV.goi('tongquan', { moi: !!moi }).then(function (d) {
+      TQ = d; if (D) ve();
+      try { localStorage.setItem('bdv.tq.data', JSON.stringify(d)); } catch (e) {}
+      if (!moi && d.tuoi > 90) taiTQ(true);
+    }).catch(function () {});
+  }
+  function veTQ(hn) {
+    if (!TQ || !TQ.nhom || !TQ.nhom.length || D.nguoi.vaiTro === 'quanLy') return '';
+    var rows = TQ.nhom.map(function (n) {
+      var t = tong(n);
+      var thanh = n.loi ? '<div class="note">Không đọc được sheet của nhóm này</div>' : !t ? '<div class="stack none"></div>'
+        : '<div class="stack">' + LOAI.map(function (l) { return doan(l[1], n[l[0]], t, l[2]); }).join('') + '</div>';
+      return '<div class="row"><div class="name"><a href="/' + n.ma + '/">' + esc(n.ten) + '</a><small>' + n.thanhVien + ' thành viên' +
+        (n.quaHan ? ' · <span class="late">' + n.quaHan + ' quá hạn</span>' : '') + (n.chuaNhan ? ' · ' + n.chuaNhan + ' chưa có người nhận' : '') + '</small></div>' + thanh +
+        '<div class="val">' + (t ? '<b>' + n.xong + '</b> / ' + t + ' xong' : 'Chưa có việc') + '</div></div>';
+    }).join('');
+    var sap = (TQ.sapToi || []).slice(0, 6).map(function (v) {
+      var d = ngay(v.han), con = Math.round((d - hn) / 864e5);
+      return '<div class="due"><div class="d"><b>' + ('0' + d.getDate()).slice(-2) + '</b><span>Th' + (d.getMonth() + 1) + '</span></div>' +
+        '<div><div class="t">' + esc(v.ten) + '</div><div class="s">' + esc(TEN[v.nhom] || v.nhom) + ' · ' + esc(v.nguoi || 'Chưa có người nhận') + '</div></div>' +
+        '<div class="r"><span class="pill ' + (con < 0 ? 'bad">Quá ' + (-con) + ' ngày' : 'soon">' + (con === 0 ? 'Hôm nay' : 'Còn ' + con + ' ngày')) + '</span></div></div>';
+    }).join('');
+    return '<div class="panel"><h2>Tổng quan nhóm của bạn</h2><div class="sub">Toàn bộ việc của nhóm, chia theo trạng thái</div>' +
+      '<div class="legend">' + LOAI.map(function (l) { return '<span><i class="' + l[1] + '"></i>' + l[2] + '</span>'; }).join('') + '</div>' + rows +
+      (sap ? '<h2 style="margin-top:16px">Việc của nhóm quá hạn hoặc sắp đến hạn</h2><div style="margin-top:4px">' + sap + '</div>' +
+        ((TQ.soSapToi || 0) > 6 ? '<div class="note" style="padding-top:8px">Còn ' + (TQ.soSapToi - 6) + ' việc nữa, xem trong trang nhóm.</div>' : '') : '') + '</div>';
+  }
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -167,26 +200,28 @@
     var dx = xong.length ? '<div class="panel"><h2>Đã hoàn thành (' + xong.length + ')</h2><div style="margin-top:8px">' +
       (hetXong ? xong : xong.slice(0, 5)).map(function (v) { return dong(v, hn); }).join('') +
       (xong.length > 5 ? '<button type="button" class="ghost" id="more" style="margin-top:8px">' + (hetXong ? 'Thu gọn' : 'Xem cả ' + xong.length + ' việc') + '</button>' : '') + '</div></div>' : '';
-    $('app').innerHTML = ho + tr + kpi + ds + dx;
+    $('app').innerHTML = ho + tr + kpi + ds + veTQ(hn) + dx;
     var t = new Date();
     $('foot').textContent = 'Cập nhật lúc ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '. Nhóm Truyền thông tính theo từng việc con (viết bài, thiết kế, chụp hình).';
   }
 
   $('app').addEventListener('click', function (e) { if (e.target.id === 'more') { hetXong = !hetXong; ve(); } });
-  $('reload').addEventListener('click', function () { $('foot').textContent = 'Đang đọc lại các sheet…'; tai(true); });
+  $('reload').addEventListener('click', function () { $('foot').textContent = 'Đang đọc lại các sheet…'; tai(true); taiTQ(true); });
   document.addEventListener('bdv-nguoi', function (e) {
     if (!e.detail) { chan(); return; }
-    if (!D || D.nguoi.email !== e.detail.email) { $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Đang tải việc của bạn…</div>'; tai(false); }
+    if (!D || D.nguoi.email !== e.detail.email) { TQ = null; $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Đang tải việc của bạn…</div>'; tai(false); taiTQ(false); }
   });
   if (!BDV.nguoi()) chan();
   else {
     try {
       var cu = JSON.parse(localStorage.getItem('bdv.cuatoi.data') || 'null');
+      var tq = JSON.parse(localStorage.getItem('bdv.tq.data') || 'null');
+      if (tq && tq.phamVi === 'nhom' && BDV.nguoi().vaiTro !== 'quanLy') TQ = tq;
       if (cu && cu.nguoi && cu.viec && cu.nguoi.email === BDV.nguoi().email) { D = cu; ve(); $('foot').textContent = 'Đang cập nhật…'; }
     } catch (e) {}
-    tai(false);
+    tai(false); taiTQ(false);
   }
-  setInterval(function () { if (!document.hidden && D) tai(false); }, 180000);
+  setInterval(function () { if (!document.hidden && D) { tai(false); taiTQ(false); } }, 180000);
 })();
 </script>
 <script src="/menu.js"></script>

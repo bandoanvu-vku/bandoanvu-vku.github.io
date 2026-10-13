@@ -217,9 +217,13 @@
 
   document.addEventListener('bdv-nguoi', function (e) {
     if (!e.detail) { chan(); return; }
+    if (laThanhVien(e.detail)) { location.replace('/cua-toi/'); return; }
     $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Đang tổng hợp dữ liệu từ các sheet…</div>';
     tai(false);
   });
+  // Thành viên không có trang Tổng quan riêng: tổng quan nhóm nằm trong "Của tôi"
+  function laThanhVien(n) { return n && n.vaiTro !== 'quanLy'; }
+  if (laThanhVien(BDV.nguoi())) { location.replace('/cua-toi/'); return; }
   if (!BDV.nguoi()) chan();
   else {
     try {

@@ -7,7 +7,8 @@
  *  - 17:00 chủ nhật khoá. Quản lý xem lại, chỉnh (thêm/xoá) rồi bấm Công bố → mọi người thấy tên.
  *  - Sau khi khoá: muốn đổi / huỷ / thêm ca thì gửi yêu cầu, quản lý duyệt.
  *  - Trực đột xuất: điểm danh luôn (trong giờ của một buổi), quản lý duyệt sau mới được tính giờ.
- * Đăng ký "Cả buổi" (3 giờ) hoặc "Ca ghép" tự chọn giờ trong buổi (bước 30 phút, tối thiểu 1 giờ).
+ * Đăng ký "Cả buổi" (3 giờ) hoặc "Ca ghép" tự chọn giờ:phút bất kỳ trong khung 8:00 - 17:00 (tối thiểu 1 giờ);
+ * ca ghép bắt đầu trước 12:30 xếp vào buổi sáng, còn lại buổi chiều (chỉ để hiển thị).
  * Tính theo giờ: tối thiểu (số buổi trong Cài đặt × 3) giờ / tuần.
  */
 
@@ -17,7 +18,9 @@ const TRUC = {
     { ma: 'sang', ten: 'Sáng', bd: '08:00', kt: '11:00' },
     { ma: 'chieu', ten: 'Chiều', bd: '14:00', kt: '17:00' }
   ],
-  BUOC_PHUT: 30,       // bước chọn giờ của ca ghép
+  BUOC_PHUT: 1,        // ca ghép chọn tới từng phút
+  NGAY_BD: '08:00', NGAY_KT: '17:00', // khung giờ được chọn cho ca ghép / trực đột xuất
+  MOC_CHIEU: '12:30',  // ca bắt đầu từ mốc này xếp vào buổi chiều
   GHEP_TOI_THIEU: 60,  // ca ghép tối thiểu bao nhiêu phút
   SOM_PHUT: 15,        // được điểm danh sớm trước giờ bắt đầu bao nhiêu phút
   TOI_THIEU: 2,        // số buổi tối thiểu / tuần (1 buổi = 3 giờ), nếu Cài đặt để trống
@@ -196,17 +199,20 @@ function moTaCa_(ngay, buoi, tu, den) {
 
 function kiemTraCa_(ngay, buoi, tu, den, cd) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ngay || ''))) throw new Error('Ngày không hợp lệ.');
-  const b = buoiTheoMa_(buoi);
-  if (!b) throw new Error('Buổi không hợp lệ.');
   if (thuCua_(ngay) > 5) throw new Error('Chỉ trực từ thứ 2 đến thứ 6.');
   if (cd.ngayNghi.indexOf(ngay) > -1) throw new Error('Ngày này văn phòng nghỉ, không có ca trực.');
-  tu = gioChu_(tu) || b.bd; den = gioChu_(den) || b.kt;
+  const b0 = buoiTheoMa_(buoi);
+  tu = gioChu_(tu); den = gioChu_(den);
+  if (!tu && !den) { if (!b0) throw new Error('Buổi không hợp lệ.'); tu = b0.bd; den = b0.kt; }
+  if (!tu || !den || Number(tu.slice(3)) > 59 || Number(den.slice(3)) > 59) throw new Error('Giờ không hợp lệ.');
   const a = phut_(tu), z = phut_(den);
-  if (a < phut_(b.bd) || z > phut_(b.kt) || a >= z) throw new Error('Giờ trực phải nằm trong buổi ' + b.ten.toLowerCase() + ' (' + b.bd + ' - ' + b.kt + ').');
-  if (a % TRUC.BUOC_PHUT || z % TRUC.BUOC_PHUT) throw new Error('Giờ chọn theo bước ' + TRUC.BUOC_PHUT + ' phút.');
-  if (z - a < TRUC.GHEP_TOI_THIEU) throw new Error('Ca ghép tối thiểu ' + (TRUC.GHEP_TOI_THIEU / 60) + ' giờ.');
-  return { b: b, tu: tu, den: den, caBuoi: tu === b.bd && den === b.kt };
+  if (a < phut_(TRUC.NGAY_BD) || z > phut_(TRUC.NGAY_KT)) throw new Error('Giờ trực phải trong khoảng ' + TRUC.NGAY_BD + ' - ' + TRUC.NGAY_KT + '.');
+  if (a >= z) throw new Error('Giờ kết thúc phải sau giờ bắt đầu.');
+  const ca = TRUC.BUOI.filter(function (x) { return x.bd === tu && x.kt === den; })[0];
+  if (!ca && z - a < TRUC.GHEP_TOI_THIEU) throw new Error('Ca ghép tối thiểu ' + (TRUC.GHEP_TOI_THIEU / 60) + ' giờ.');
+  return { b: ca || buoiTheoGio_(tu), tu: tu, den: den, caBuoi: !!ca };
 }
+function buoiTheoGio_(tu) { return TRUC.BUOI[phut_(tu) < phut_(TRUC.MOC_CHIEU) ? 0 : 1]; }
 function trungGio_(ds, ngay, tu, den, boQua) {
   return ds.filter(function (x) {
     return conHieuLuc_(x) && x.ngay === ngay && x.dong !== boQua && phut_(x.tu) < phut_(den) && phut_(tu) < phut_(x.den);
@@ -232,6 +238,9 @@ function lichTruc_(nd, tuan) {
     const p = phut_(now.gio);
     TRUC.BUOI.forEach(function (b) { if (p >= phut_(b.bd) - TRUC.SOM_PHUT && p <= phut_(b.kt)) buoiNay = b.ma; });
   }
+  const pNow = phut_(now.gio);
+  const coDotXuat = now.thu <= 5 && cd.ngayNghi.indexOf(now.ngay) === -1 &&
+    pNow >= phut_(TRUC.NGAY_BD) - TRUC.SOM_PHUT && pNow < phut_(TRUC.NGAY_KT);
   const dem = {};
   trongTuan.forEach(function (x) { if (conHieuLuc_(x)) dem[x.ngay + '|' + x.buoi] = (dem[x.ngay + '|' + x.buoi] || 0) + 1; });
   const thongTin = function (x) {
@@ -251,13 +260,17 @@ function lichTruc_(nd, tuan) {
 
   const o = {
     tuan: t0, ngay: ngay, buoi: TRUC.BUOI, buoc: TRUC.BUOC_PHUT, ghepToiThieu: TRUC.GHEP_TOI_THIEU,
-    homNay: now.ngay, gio: now.gio, buoiNay: buoiNay, trangThaiTuan: st,
+    homNay: now.ngay, gio: now.gio, buoiNay: buoiNay, trangThaiTuan: st, coDotXuat: coDotXuat, ngayBd: TRUC.NGAY_BD, ngayKt: TRUC.NGAY_KT,
     toiThieuGio: cd.toiThieuGio, ngayNghi: cd.ngayNghi, coViTri: cd.lat !== null && cd.lng !== null, banKinh: cd.banKinh,
     tuanToiDa: themNgay_(dauTuan_(now.ngay), 7 * TRUC.TUAN_TOI), hienTen: hienTen,
     dangKy: trongTuan.filter(function (x) { return hienTen || cua(x); }).map(thongTin),
     dem: dem,
     toi: Object.assign(tinhGio(cuaToiTuan), {
-      homNay: tat.filter(function (x) { return cua(x) && x.ngay === now.ngay && conHieuLuc_(x); }).map(thongTin)
+      homNay: tat.filter(function (x) { return cua(x) && x.ngay === now.ngay && conHieuLuc_(x); }).map(thongTin),
+      // ca sắp tới của tôi (chưa bắt đầu, chưa điểm danh) để chọn khi tạo yêu cầu đổi / huỷ
+      sapToi: tat.filter(function (x) {
+        return cua(x) && conHieuLuc_(x) && x.trangThai !== TT.CHO && !x.diemDanh && !daQua_(x.ngay, x.tu, now);
+      }).sort(function (a, b) { return a.ngay < b.ngay ? -1 : a.ngay > b.ngay ? 1 : phut_(a.tu) - phut_(b.tu); }).slice(0, 30).map(thongTin)
     }),
     yeuCau: yc.filter(function (x) { return x.email === nd.email; }).slice(-15).reverse(),
     quanLy: quanLy
@@ -494,12 +507,11 @@ function diemDanh_(nd, req) {
     if (ca.length) throw new Error('Bạn đã điểm danh ca ' + ca[0].tu + ' - ' + ca[0].den + ' lúc ' + ca[0].diemDanh + '.');
     // 2) trực đột xuất: trong giờ của một buổi, chưa có ca nào giờ này → ghi "Chờ duyệt"
     if (now.thu > 5 || cd.ngayNghi.indexOf(now.ngay) > -1) throw new Error('Hôm nay không có ca trực.');
-    const b = TRUC.BUOI.filter(function (x) { return p >= phut_(x.bd) - TRUC.SOM_PHUT && p < phut_(x.kt); })[0];
-    if (!b) throw new Error('Bây giờ không phải giờ trực (sáng 8h - 11h, chiều 14h - 17h, thứ 2 - thứ 6).');
-    const tu = hhmm_(Math.max(phut_(b.bd), Math.ceil(p / TRUC.BUOC_PHUT) * TRUC.BUOC_PHUT)); // tính từ mốc 30 phút kế tiếp
-    if (phut_(tu) >= phut_(b.kt)) throw new Error('Buổi ' + b.ten.toLowerCase() + ' sắp hết, không còn đủ thời gian trực đột xuất.');
-    const den = gioChu_(req.den) || b.kt;
-    if (phut_(den) <= phut_(tu) || phut_(den) > phut_(b.kt) || phut_(den) % TRUC.BUOC_PHUT) throw new Error('Giờ kết thúc không hợp lệ (trong buổi, bước ' + TRUC.BUOC_PHUT + ' phút).');
+    if (p < phut_(TRUC.NGAY_BD) - TRUC.SOM_PHUT || p >= phut_(TRUC.NGAY_KT)) throw new Error('Bây giờ không phải giờ trực (' + TRUC.NGAY_BD + ' - ' + TRUC.NGAY_KT + ', thứ 2 - thứ 6).');
+    const tu = hhmm_(Math.max(phut_(TRUC.NGAY_BD), p)); // tính từ lúc điểm danh
+    const den = gioChu_(req.den) || TRUC.NGAY_KT;
+    if (phut_(den) <= phut_(tu) || phut_(den) > phut_(TRUC.NGAY_KT)) throw new Error('Giờ kết thúc phải sau ' + tu + ' và không quá ' + TRUC.NGAY_KT + '.');
+    const b = buoiTheoGio_(tu);
     if (trungGio_(cua, now.ngay, tu, den)) throw new Error('Khung giờ này trùng một ca khác của bạn.');
     themDong_(ss, now.ngay, { b: b, tu: tu, den: den }, nd, 'Đột xuất', TT.CHO, 'Trực đột xuất, chờ quản lý duyệt', dd);
     const kq = lichTruc_(nd, now.ngay);
