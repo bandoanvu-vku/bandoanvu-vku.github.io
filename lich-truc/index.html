@@ -332,16 +332,8 @@
     var ql = '';
     if (D.quanLy) {
       var cd = D.choDuyet || [];
-      ql += '<div class="panel" style="margin-top:14px"><h2>Chờ duyệt (' + cd.length + ')</h2><div class="sub">Yêu cầu đổi / huỷ / thêm ca và các buổi trực đột xuất. Duyệt xong lịch tự cập nhật.</div><div style="margin-top:6px">' +
-        (cd.length ? cd.map(function (y) {
-          var moi = y.ngay ? THU[thu(y.ngay)] + ' ' + dm(y.ngay) + ' · ' + (buoi(y.buoi) || {}).ten + ' ' + y.tu + '–' + y.den : '';
-          var chiTiet = y.kieu === 'dotXuat' ? esc(moi) + ' · điểm danh ' + esc(y.diemDanh) + (y.cach != null ? ' · cách VP ' + y.cach + ' m' : '')
-            : (y.goc ? esc(y.goc) : '') + (y.goc && moi ? ' → ' : '') + esc(moi) + ' · Lý do: ' + esc(y.lyDo) + ' · gửi ' + esc(y.guiLuc);
-          var key = y.kieu === 'dotXuat' ? 'data-kieu="dotXuat" data-d="' + y.dong + '"' : 'data-kieu="yeuCau" data-id="' + esc(y.id) + '"';
-          return '<div class="req"><div><b>' + esc(y.ten) + '</b> · ' + esc(y.loai) + '<div class="s">' + chiTiet + '</div></div>' +
-            '<div class="b"><input type="text" placeholder="Ghi chú (không bắt buộc)" data-gc="' + esc(y.id) + '"><button type="button" class="btn sm" data-act="duyet" data-ok="1" ' + key + '>Duyệt</button>' +
-            '<button type="button" class="ghost sm bad" data-act="duyet" data-ok="0" ' + key + '>Từ chối</button></div></div>';
-        }).join('') : '<div class="empty">Không có gì chờ duyệt.</div>') + '</div></div>';
+      ql += '<div class="panel" style="margin-top:14px"><h2>Chờ duyệt</h2><div class="sub">' + (cd.length ? 'Có <b>' + cd.length + '</b> yêu cầu đổi / huỷ / thêm ca hoặc trực đột xuất đang chờ.' : 'Không có gì chờ duyệt.') +
+        ' Duyệt ở mục <a href="/phe-duyet/">Phê duyệt →</a></div></div>';
       var tk = D.thongKe || [];
       ql += '<div class="panel"><h2>Thống kê trực tuần ' + dm(dau) + ' – ' + dm(cuoi) + '</h2><div class="sub">Tính theo giờ (1 buổi = 3 giờ). Chưa đủ ' + D.toiThieuGio + ' giờ đăng ký được tô đỏ. Vắng = số ca đã qua mà không điểm danh.</div>' +
         '<table><thead><tr><th>Thành viên</th><th>Nhóm</th><th>Đăng ký</th><th>Điểm danh</th><th>Chờ duyệt</th><th>Vắng</th></tr></thead><tbody>' +

@@ -5,6 +5,7 @@
     ['/', 'Tổng quan', '', 'quanLy'], // thành viên xem tổng quan nhóm ngay trong "Của tôi"
     ['/cua-toi/', 'Của tôi', ''],
     ['/lich-truc/', 'Lịch trực', ''],
+    ['/phe-duyet/', 'Phê duyệt', '', 'quanLy'],
     ['/4t/', 'Truyền thông - Thông tin', '4t'],
     ['/nghiep-vu/', 'Nghiệp vụ', 'nghiep-vu'],
     ['/csdl-csvc/', 'CSDL - CSVC', 'csdl-csvc'],
@@ -22,6 +23,7 @@
     '.bdv-menu nav>a:hover,.bdv-menu .nhom>button:hover{color:var(--accent,#1a56c4)}' +
     '.bdv-menu nav>a[aria-current=page],.bdv-menu .nhom.dang>button{color:var(--accent,#1a56c4);border-bottom-color:var(--accent,#1a56c4);font-weight:600}' +
     '.bdv-menu .nhom{position:relative}' +
+    '.bdv-menu .so{display:inline-block;min-width:18px;margin-left:5px;padding:0 5px;border-radius:9px;background:#d93025;color:#fff;font-size:11.5px;font-weight:700;line-height:18px;text-align:center;vertical-align:1px}' +
     '.bdv-menu .nhom>button::after{content:"";display:inline-block;margin-left:6px;vertical-align:2px;border:4px solid transparent;border-top-color:currentColor;border-bottom:0}' +
     '.bdv-menu .nhom ul{display:none;position:absolute;left:0;top:100%;min-width:220px;margin:0;padding:6px;list-style:none;background:var(--card,#fff);border:1px solid var(--line,#dfe4ec);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:6}' +
     '.bdv-menu .nhom.mo ul{display:block}' +
@@ -40,11 +42,27 @@
     if (window.BDV) return BDV.nguoi();
     try { return JSON.parse(localStorage.getItem('bdv.nguoi') || 'null'); } catch (e) { return null; }
   }
-  function lienKet(t) { return '<a href="' + t[0] + '"' + (t[0] === o ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }
+  var soCho = null; // số mục chờ duyệt, hiện cạnh "Phê duyệt"
+  function lienKet(t) {
+    var so = t[0] === '/phe-duyet/' && soCho ? '<span class="so" aria-label="' + soCho + ' mục chờ duyệt">' + soCho + '</span>' : '';
+    return '<a href="' + t[0] + '"' + (t[0] === o ? ' aria-current="page"' : '') + '>' + t[1] + so + '</a>';
+  }
+  function demCho(n) {
+    if (!n || n.vaiTro !== 'quanLy' || !window.BDV || o === '/phe-duyet/') return;
+    try { var c = JSON.parse(sessionStorage.getItem('bdv.pd') || 'null'); if (c && Date.now() - c.t < 60000) { soCho = c.so; return; } } catch (e) {}
+    if (demCho.dang) return; demCho.dang = true;
+    BDV.goi('pheDuyet', { dem: true }).then(function (d) {
+      demCho.dang = false; soCho = d.so;
+      try { sessionStorage.setItem('bdv.pd', JSON.stringify({ so: d.so, t: Date.now() })); } catch (e) {}
+      ve();
+    }).catch(function () { demCho.dang = false; });
+  }
+  document.addEventListener('bdv-pheduyet', function (e) { soCho = e.detail; ve(); });
   // Trang chung hiện thẳng; trang các nhóm: xem được 1 nhóm thì hiện thẳng, từ 2 nhóm trở lên (vd quản lý) gom vào "Công việc nhóm"
   function ve() {
     var n = nguoi();
     var ql = !!n && n.vaiTro === 'quanLy';
+    if (ql && soCho === null) demCho(n); else if (!ql) soCho = null;
     var duoc = function (t) { return !!n && (t[3] !== 'quanLy' || ql) && (!t[2] || ql || (n.nhom || []).indexOf(t[2]) > -1); };
     h.querySelector('.brand').setAttribute('href', n && !ql ? '/cua-toi/' : '/');
     var chung = TRANG.filter(function (t) { return !t[2] && duoc(t); });

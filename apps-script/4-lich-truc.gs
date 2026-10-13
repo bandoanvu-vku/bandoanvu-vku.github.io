@@ -178,7 +178,8 @@ function docYeuCau_(ss) {
       ten: chuoi_(r[2]), email: chuoi_(r[3]).toLowerCase(), loai: chuoi_(r[4]), goc: chuoi_(r[5]),
       ngay: ngayISO_(r[6], MUI_GIO) || '', buoi: (TRUC.BUOI.filter(function (b) { return b.ten === chuoi_(r[7]); })[0] || {}).ma || '',
       tu: gioChu_(r[8]), den: gioChu_(r[9]), lyDo: chuoi_(r[10]), trangThai: chuoi_(r[11]) || TT.CHO,
-      nguoiDuyet: chuoi_(r[12]), ghiChuDuyet: chuoi_(r[14])
+      nguoiDuyet: chuoi_(r[12]), ghiChuDuyet: chuoi_(r[14]),
+      duyetLuc: Object.prototype.toString.call(r[13]) === '[object Date]' ? Utilities.formatDate(r[13], MUI_GIO, 'dd/MM HH:mm') : chuoi_(r[13])
     };
   }).filter(function (x) { return x.id; });
 }
@@ -288,13 +289,33 @@ function lichTruc_(nd, tuan) {
       const vang = p.ds.filter(function (x) { return conHieuLuc_(x) && x.trangThai !== TT.CHO && !x.diemDanh && daQua_(x.ngay, x.den, now); }).length;
       return { ten: p.ten, email: p.email, nhom: p.nhom, gioDangKy: g.dangKy, gioDiemDanh: g.diemDanh, gioChoDuyet: g.choDuyet, vang: vang };
     }).sort(function (a, b) { return a.gioDangKy - b.gioDangKy || (a.ten < b.ten ? -1 : 1); });
-    o.choDuyet = yc.filter(function (x) { return x.trangThai === TT.CHO; }).map(function (x) { return Object.assign({ kieu: 'yeuCau' }, x); })
-      .concat(tat.filter(function (x) { return x.loai === 'Đột xuất' && x.trangThai === TT.CHO; }).map(function (x) {
-        return { kieu: 'dotXuat', id: 'D' + x.dong, dong: x.dong, ten: x.ten, email: x.email, loai: 'Trực đột xuất', ngay: x.ngay, buoi: x.buoi, tu: x.tu, den: x.den, diemDanh: x.diemDanh, cach: x.cach };
-      }));
+    o.choDuyet = choDuyetTruc_(yc, tat);
     o.viTri = { lat: cd.lat, lng: cd.lng };
   }
   return o;
+}
+
+function dotXuatRa_(x) {
+  return { kieu: 'dotXuat', id: 'D' + x.dong, dong: x.dong, ten: x.ten, email: x.email, loai: 'Trực đột xuất', ngay: x.ngay, buoi: x.buoi,
+    tu: x.tu, den: x.den, diemDanh: x.diemDanh, cach: x.cach, trangThai: x.trangThai, ghiChu: x.ghiChu || '' };
+}
+function choDuyetTruc_(yc, tat) {
+  return yc.filter(function (x) { return x.trangThai === TT.CHO; }).map(function (x) { return Object.assign({ kieu: 'yeuCau' }, x); })
+    .concat(tat.filter(function (x) { return x.loai === 'Đột xuất' && x.trangThai === TT.CHO; }).map(dotXuatRa_));
+}
+
+/* ---------------- trang Phê duyệt (quản lý): mọi thứ thành viên gửi lên chờ duyệt */
+
+function pheDuyet_(nd, req) {
+  if (nd.vaiTro !== 'quanLy') throw loiQuyen_('Chỉ quản lý mới xem được mục Phê duyệt.');
+  const ss = sheetTruc_(), now = bayGio_();
+  const yc = docYeuCau_(ss), tat = docTruc_(ss);
+  const cho = choDuyetTruc_(yc, tat);
+  if (req && req.dem) return { so: cho.length };
+  const tu = themNgay_(now.ngay, -14);
+  const daXuLy = yc.filter(function (x) { return x.trangThai !== TT.CHO; }).slice(-20).reverse().map(function (x) { return Object.assign({ kieu: 'yeuCau' }, x); })
+    .concat(tat.filter(function (x) { return x.loai === 'Đột xuất' && x.ngay >= tu && (x.trangThai === TT.DUYET || x.trangThai === TT.TU_CHOI); }).map(dotXuatRa_).reverse());
+  return { so: cho.length, choDuyet: cho, daXuLy: daXuLy, homNay: now.ngay, gio: now.gio };
 }
 
 /* ---------------- thành viên tự đăng ký / huỷ (khi đang mở) */
@@ -399,6 +420,7 @@ function rutYeuCau_(nd, req) {
 /** Quản lý duyệt / từ chối: yêu cầu (kieu 'yeuCau', id) hoặc buổi trực đột xuất (kieu 'dotXuat', dong). */
 function duyetTruc_(nd, req) {
   if (nd.vaiTro !== 'quanLy') throw loiQuyen_('Chỉ quản lý mới duyệt được.');
+  const traVe = function (ngay) { return req.ve === 'pheDuyet' ? pheDuyet_(nd, {}) : lichTruc_(nd, ngay); };
   return voiKhoa_(function () {
     const ss = sheetTruc_(), cd = caiDatTruc_(ss), now = bayGio_(), dongY = req.dongY === true;
     const ghiChu = chuoi_(req.ghiChu).slice(0, 200);
@@ -406,14 +428,14 @@ function duyetTruc_(nd, req) {
       const x = docTruc_(ss).filter(function (y) { return y.dong === Number(req.dong) && y.loai === 'Đột xuất' && y.trangThai === TT.CHO; })[0];
       if (!x) throw new Error('Không tìm thấy buổi đột xuất đang chờ (có thể đã được duyệt).');
       datTrangThai_(ss, x.dong, dongY ? TT.DUYET : TT.TU_CHOI, ghiChu ? 'Quản lý: ' + ghiChu : '');
-      return lichTruc_(nd, x.ngay);
+      return traVe(x.ngay);
     }
     const y = docYeuCau_(ss).filter(function (x) { return x.id === req.id; })[0];
     if (!y) throw new Error('Không tìm thấy yêu cầu.');
     if (y.trangThai !== TT.CHO) throw new Error('Yêu cầu này đã được xử lý.');
     const s = ss.getSheetByName('Yêu cầu');
     const ketThuc = function (tt) { s.getRange(y.dong, 12, 1, 4).setValues([[tt, nd.ten, new Date(), ghiChu]]); };
-    if (!dongY) { ketThuc(TT.TU_CHOI); return lichTruc_(nd, y.ngay || req.tuan); }
+    if (!dongY) { ketThuc(TT.TU_CHOI); return traVe(y.ngay || req.tuan); }
 
     const nguoi = { ten: y.ten, email: y.email };
     const ds = docTruc_(ss).filter(cuaNguoi_(nguoi));
@@ -432,7 +454,7 @@ function duyetTruc_(nd, req) {
     // ghi dòng mới trước rồi mới huỷ ca gốc (appendRow không làm lệch số dòng của ca gốc)
     if (goc) datTrangThai_(ss, goc.dong, TT.HUY, (y.loai === LOAI_YC.doi ? 'Đổi ca' : 'Huỷ ca') + ' theo yêu cầu ' + y.id);
     ketThuc(TT.DUYET);
-    return lichTruc_(nd, y.ngay || (goc && goc.ngay) || req.tuan);
+    return traVe(y.ngay || (goc && goc.ngay) || req.tuan);
   });
 }
 

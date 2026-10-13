@@ -40,12 +40,13 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 ## Phân quyền
 
 - Chưa đăng nhập: không thấy dữ liệu. Thành viên: Của tôi (gồm cả tổng quan nhóm mình; vào `/` tự chuyển sang `/cua-toi/`), Lịch trực, trang nhóm mình.
-  Quản lý: xem tất cả (chỉ xem ở trang nhóm), thống kê trực, đặt vị trí văn phòng.
+  Quản lý: xem tất cả (chỉ xem ở trang nhóm), thống kê trực, đặt vị trí văn phòng, mục **Phê duyệt** (`/phe-duyet/`, action `pheDuyet`;
+  menu hiện số mục chờ). Loại việc cần duyệt mới sau này: thêm vào `pheDuyet_` + mảng `LOAI` trong `phe-duyet/index.html`.
 - Kiểm tra quyền luôn ở máy chủ (`canNhom_`, `nguoiDung_`); tên ghi vào sheet lấy từ tài khoản, không tin client.
 
 ## Trang
 
-`/` tổng quan · `/cua-toi/` · `/lich-truc/` · `/4t/` · `/nghiep-vu/` `/csdl-csvc/` `/noi-vu/` (dùng chung `nhom.js`) · `/bao-mat/`.
+`/` tổng quan · `/cua-toi/` · `/lich-truc/` · `/phe-duyet/` (quản lý) · `/4t/` · `/nghiep-vu/` `/csdl-csvc/` `/noi-vu/` (dùng chung `nhom.js`) · `/bao-mat/`.
 `menu.js` vẽ menu theo quyền (xem được ≥2 nhóm thì gom vào menu thả xuống "Công việc nhóm"; cột 4 = 'quanLy' là trang chỉ quản lý thấy) và tự nạp `dangnhap.js`. Thêm trang: thêm một dòng vào `TRANG` trong `menu.js`.
 
 ## Cách làm việc (để tiết kiệm thời gian/token)

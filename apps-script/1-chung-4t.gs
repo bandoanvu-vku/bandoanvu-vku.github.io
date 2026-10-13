@@ -64,6 +64,7 @@ function doPost(e) {
       guiYeuCau: function () { return guiYeuCau_(nd, req); },
       rutYeuCau: function () { return rutYeuCau_(nd, req); },
       duyetTruc: function () { return duyetTruc_(nd, req); },
+      pheDuyet: function () { return pheDuyet_(nd, req); },
       quanLySuaTruc: function () { return quanLySuaTruc_(nd, req); },
       congBoTruc: function () { return congBoTruc_(nd, req); }
     };
