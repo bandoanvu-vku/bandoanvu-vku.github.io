@@ -189,7 +189,7 @@
     var tr = D.truc && D.truc.toiThieuGio ? '<div class="panel"><h2>Trực văn phòng tuần này</h2><div class="sub">Mỗi thành viên trực ít nhất ' + D.truc.toiThieuGio + ' giờ / tuần (2 buổi).</div>' +
       '<div style="margin-top:8px;font-size:14px">Đã đăng ký <b>' + g(D.truc.gioDangKy) + '</b> · đã điểm danh <b>' + g(D.truc.gioDiemDanh) + '</b>' +
       (D.truc.gioDangKy < D.truc.toiThieuGio ? ' · <span class="late">còn thiếu ' + g(D.truc.toiThieuGio - D.truc.gioDangKy) + '</span>' : '') +
-      ' · <a href="/lich-truc/">Mở lịch trực →</a></div></div>' : '';
+      ' · <a href="/lich-truc/">Mở lịch trực →</a> · <a href="/thong-ke/">Thống kê của bạn →</a></div></div>' : '';
     var kpi = '<div class="kpis k4">' +
       '<div class="kpi"><div class="v">' + chua.length + '</div><div class="l">Việc chưa xong</div></div>' +
       '<div class="kpi' + (tre ? ' alert' : '') + '"><div class="v">' + tre + '</div><div class="l">Quá hạn</div></div>' +

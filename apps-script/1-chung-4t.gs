@@ -65,6 +65,7 @@ function doPost(e) {
       rutYeuCau: function () { return rutYeuCau_(nd, req); },
       duyetTruc: function () { return duyetTruc_(nd, req); },
       pheDuyet: function () { return pheDuyet_(nd, req); },
+      thongKe: function () { return thongKe_(nd, req); },
       quanLySuaTruc: function () { return quanLySuaTruc_(nd, req); },
       congBoTruc: function () { return congBoTruc_(nd, req); }
     };

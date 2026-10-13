@@ -6,6 +6,7 @@
     ['/cua-toi/', 'Của tôi', ''],
     ['/lich-truc/', 'Lịch trực', ''],
     ['/phe-duyet/', 'Phê duyệt', '', 'quanLy'],
+    ['/thong-ke/', 'Thống kê', '', 'quanLy'],
     ['/4t/', 'Truyền thông - Thông tin', '4t'],
     ['/nghiep-vu/', 'Nghiệp vụ', 'nghiep-vu'],
     ['/csdl-csvc/', 'CSDL - CSVC', 'csdl-csvc'],
