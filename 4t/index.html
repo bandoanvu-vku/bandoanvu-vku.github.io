@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<base target="_blank">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dashboard nhóm Truyền thông - Thông tin · Ban Đoàn vụ</title>
@@ -189,7 +188,7 @@
   function homNay() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
   function ngay(iso) { if (!iso) return null; var p = iso.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function soNgay(iso) { return Math.round((ngay(iso) - homNay()) / 864e5); }
-  function link(s) { return /^https?:\/\//i.test(s) ? '<a href="' + esc(s) + '" rel="noopener">' + esc(s) + '</a>' : esc(s); }
+  function link(s) { return /^https?:\/\//i.test(s) ? '<a href="' + esc(s) + '" target="_blank" rel="noopener">' + esc(s) + '</a>' : esc(s); }
 
   var tT;
   function toast(msg, err) {
@@ -424,7 +423,7 @@
     document.querySelector('.tabs').style.display = 'none'; $('reload').style.display = 'none';
     if (!BDV.nguoi()) BDV.veCong($('view'));
     else $('view').innerHTML = '<div class="empty-box">' + esc(thongBao || 'Tài khoản của bạn không thuộc nhóm Truyền thông - Thông tin, nên không xem được trang này.') +
-      '<br><a href="/cua-toi/">Xem việc của tôi</a> · <a href="/">Tổng quan nhóm của bạn</a></div>';
+      '<br><a href="/cua-toi/">Về trang chủ (việc của tôi, tổng quan nhóm)</a></div>';
   }
   function moKhoa() { document.querySelector('.tabs').style.display = ''; $('reload').style.display = ''; }
   document.addEventListener('bdv-nguoi', function (e) {
