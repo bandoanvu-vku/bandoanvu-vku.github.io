@@ -53,7 +53,7 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 `menu.js` vẽ thanh menu bên trái chia nhóm mục theo vai trò (hàm `cauHinh`; trên điện thoại mở bằng nút ☰) và tự nạp `dangnhap.js`.
 Thêm trang: thêm một mục vào `cauHinh()` trong `menu.js`. Trang mới dùng chung `/chung.css` + `/chung.js` (T.$, T.esc, T.toast, T.khoi).
 Server `6-ho-so-noi-dung.gs`: hồ sơ (cột Chức vụ/MSSV/Lớp/Số điện thoại tự thêm vào sheet tài khoản; thành viên sửa MSSV/Lớp/SĐT,
-chức vụ do quản lý), tab "Tài liệu" + "Cẩm nang" trong sheet tài khoản (quản lý sửa), cài đặt lịch trực (`caiDat`/`luuCaiDat`).
+chức vụ do quản lý), tab "Tài liệu" (cột Nhóm: chung/4t/…; trang chia tab Chung + 4 nhóm, thành viên thấy Chung + nhóm mình) + "Cẩm nang" trong sheet tài khoản (quản lý sửa), cài đặt lịch trực (`caiDat`/`luuCaiDat`).
 Server `7-hoat-dong-nhom.gs` + giao diện `/hoat-dong.js` (BDVHD.cnXanh / kiemKe / hopNhom), lưu ở các tab "CN xanh", "CN xanh - xin vắng",
 "Kiểm kê", "Họp nhóm" của sheet lịch trực. Trang CSDL - CSVC có tab riêng cho 5 mảng (Chủ nhật xanh, Hệ thống quản lý Đoàn viên, Quản lý công văn,
 Quản lý CSVC, Quản lý Đoàn vụ; khớp tên mảng theo từ khoá trong `MANG_RIENG` ở nhom.js). Phụ trách chính của mảng = cột "Phụ trách chính" tab Mảng công việc.

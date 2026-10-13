@@ -9,7 +9,7 @@ const HO_SO = {
   COT_THEM: ['Chức vụ', 'MSSV', 'Lớp', 'Số điện thoại'],
   TU_SUA: { mssv: 'MSSV', lop: 'Lớp', sdt: 'Số điện thoại' }
 };
-const COT_TL = ['Mã', 'Tiêu đề', 'Link', 'Danh mục', 'Mô tả', 'Cập nhật bởi', 'Cập nhật lúc'];
+const COT_TL = ['Mã', 'Tiêu đề', 'Link', 'Danh mục', 'Mô tả', 'Cập nhật bởi', 'Cập nhật lúc', 'Nhóm']; // Nhóm: chung | 4t | nghiep-vu | csdl-csvc | noi-vu
 const COT_CN = ['Mã', 'Thứ tự', 'Tiêu đề', 'Nội dung', 'Cập nhật bởi', 'Cập nhật lúc'];
 
 function ssTaiKhoan_() {
@@ -93,20 +93,35 @@ function docTaiLieu_() {
   const s = ssTaiKhoan_().getSheetByName('Tài liệu');
   if (!s || s.getLastRow() < 2) return [];
   return s.getRange(2, 1, s.getLastRow() - 1, COT_TL.length).getValues().map(function (r, i) {
-    return { dong: i + 2, ma: chuoi_(r[0]), tieuDe: chuoi_(r[1]), link: chuoi_(r[2]), danhMuc: chuoi_(r[3]) || 'Khác', moTa: chuoi_(r[4]), boi: chuoi_(r[5]), luc: lucChu_(r[6]) };
+    const nh = chuoi_(r[7]);
+    return { dong: i + 2, ma: chuoi_(r[0]), tieuDe: chuoi_(r[1]), link: chuoi_(r[2]), danhMuc: chuoi_(r[3]) || 'Khác', moTa: chuoi_(r[4]), boi: chuoi_(r[5]), luc: lucChu_(r[6]),
+      nhom: Object.prototype.hasOwnProperty.call(TEN_NHOM, nh) ? nh : 'chung' };
   }).filter(function (x) { return x.ma && x.tieuDe; });
 }
-function taiLieu_(nd) { return { ds: docTaiLieu_().map(function (x) { delete x.dong; return x; }), quanLy: nd.vaiTro === 'quanLy' }; }
+/** Quản lý thấy tài liệu của tất cả; thành viên thấy tài liệu Chung + các nhóm mình thuộc. */
+function taiLieu_(nd) {
+  const ql = nd.vaiTro === 'quanLy', nhom = ql ? Object.keys(TEN_NHOM) : nd.nhom.slice();
+  return {
+    ds: docTaiLieu_().filter(function (x) { return x.nhom === 'chung' || nhom.indexOf(x.nhom) > -1; }).map(function (x) { delete x.dong; return x; }),
+    nhom: nhom, quanLy: ql
+  };
+}
 function luuTaiLieu_(nd, req) {
   canQuanLy_(nd, 'sửa được tài liệu');
   return voiKhoa_(function () {
-    const s = tabNoiDung_('Tài liệu', COT_TL, [90, 280, 340, 140, 320, 150, 130]);
+    const s = tabNoiDung_('Tài liệu', COT_TL, [90, 280, 340, 140, 320, 150, 130, 110]);
+    if (chuoi_(s.getRange(1, COT_TL.length).getValue()) !== 'Nhóm') {
+      s.getRange(1, COT_TL.length).setValue('Nhóm').setFontWeight('bold').setBackground('#1a56c4').setFontColor('#ffffff');
+      s.getRange(1, COT_TL.length).setNote('chung | 4t | nghiep-vu | csdl-csvc | noi-vu (để trống = Chung)');
+    }
     const cu = req.ma ? docTaiLieu_().filter(function (x) { return x.ma === req.ma; })[0] : null;
     if (req.viec === 'xoa') { if (!cu) throw new Error('Không tìm thấy tài liệu.'); s.deleteRow(cu.dong); return taiLieu_(nd); }
     const tieuDe = chuoi_(req.tieuDe).slice(0, 150), link = chuoi_(req.link).slice(0, 1000);
     if (!tieuDe) throw new Error('Nhập tên tài liệu.');
     if (!/^https:\/\/[^\s"<>]+$/i.test(link)) throw new Error('Link phải bắt đầu bằng https:// (ví dụ link Google Drive).');
-    const dong = [cu ? cu.ma : maMoi_('TL'), tieuDe, link, chuoi_(req.danhMuc).slice(0, 60) || 'Khác', chuoi_(req.moTa).slice(0, 300), nd.ten, new Date()];
+    const nhom = String(req.nhom || 'chung');
+    if (nhom !== 'chung' && !Object.prototype.hasOwnProperty.call(TEN_NHOM, nhom)) throw new Error('Nhóm không hợp lệ.');
+    const dong = [cu ? cu.ma : maMoi_('TL'), tieuDe, link, chuoi_(req.danhMuc).slice(0, 60) || 'Khác', chuoi_(req.moTa).slice(0, 300), nd.ten, new Date(), nhom];
     if (req.viec === 'sua') { if (!cu) throw new Error('Không tìm thấy tài liệu.'); s.getRange(cu.dong, 1, 1, COT_TL.length).setValues([dong]); }
     else s.appendRow(dong);
     return taiLieu_(nd);
