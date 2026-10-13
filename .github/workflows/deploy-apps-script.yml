@@ -45,6 +45,9 @@ jobs:
           npm install -g @google/clasp@2.4.2
           printf '%s' "$CLASPRC" > ~/.clasprc.json
 
+      - name: Kiểm tra trùng tên hàm giữa các file .gs
+        run: bash scripts/build-apps-script.sh > /dev/null
+
       - name: Đưa code lên Apps Script
         if: steps.check.outputs.skip != 'true'
         run: clasp push --force

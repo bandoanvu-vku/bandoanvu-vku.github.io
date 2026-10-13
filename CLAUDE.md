@@ -54,6 +54,13 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 Thêm trang: thêm một mục vào `cauHinh()` trong `menu.js`. Trang mới dùng chung `/chung.css` + `/chung.js` (T.$, T.esc, T.toast, T.khoi).
 Server `6-ho-so-noi-dung.gs`: hồ sơ (cột Chức vụ/MSSV/Lớp/Số điện thoại tự thêm vào sheet tài khoản; thành viên sửa MSSV/Lớp/SĐT,
 chức vụ do quản lý), tab "Tài liệu" + "Cẩm nang" trong sheet tài khoản (quản lý sửa), cài đặt lịch trực (`caiDat`/`luuCaiDat`).
+Server `7-hoat-dong-nhom.gs` + giao diện `/hoat-dong.js` (BDVHD.cnXanh / kiemKe / hopNhom), lưu ở các tab "CN xanh", "CN xanh - xin vắng",
+"Kiểm kê", "Họp nhóm" của sheet lịch trực. Trang CSDL - CSVC có tab riêng cho 5 mảng (Chủ nhật xanh, Hệ thống quản lý Đoàn viên, Quản lý công văn,
+Quản lý CSVC, Quản lý Đoàn vụ; khớp tên mảng theo từ khoá trong `MANG_RIENG` ở nhom.js). Phụ trách chính của mảng = cột "Phụ trách chính" tab Mảng công việc.
+CN xanh: 2 người/CN, đăng ký cùng khung lịch trực, sau khoá thì xin vắng + chọn người thay → phụ trách chính/quản lý duyệt (cũng hiện ở Phê duyệt).
+Kiểm kê: phụ trách mảng Quản lý CSVC đăng ký ngày + phân công mỗi tháng. Họp tháng: tab "Họp nhóm" ở cả 4 nhóm (thành viên nhóm đăng ký, quản lý xem;
+bảng tổng hợp ở tab Chung của Tổng quan). Quản lý công văn: chờ link sheet công văn có sẵn của nhóm.
+Tất cả file .gs chung một không gian tên — build script / workflow dừng nếu trùng tên hàm.
 Lộ trình đã thống nhất: (2) Đơn từ & xin nghỉ → duyệt ở Phê duyệt; (3) Giao việc trên dashboard + Nhắc việc tự động (email, cần cấp quyền).
 
 ## Cách làm việc (để tiết kiệm thời gian/token)

@@ -163,6 +163,24 @@
       thang: g === '4t' ? D.thang : []
     };
   }
+  // Lịch họp tháng của các nhóm (quản lý, tab Chung)
+  var HT = null, htDang = false;
+  function veHopThang() {
+    if (!HT) {
+      if (!htDang) { htDang = true; BDV.goi('hopThang', {}).then(function (d) { HT = d; htDang = false; var el = $('hopThang'); if (el) el.innerHTML = veHopThang(); }).catch(function () { htDang = false; }); }
+      return '<h2>Lịch họp tháng của các nhóm</h2><div class="sub">Đang tải…</div>';
+    }
+    var THU = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    var o = function (h) {
+      if (!h) return '<span class="pill bad">Chưa đăng ký</span>';
+      var p = h.ngay.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]);
+      return '<b>' + THU[d.getDay()] + ' ' + p[2] + '/' + p[1] + ' · ' + esc(h.gio) + '</b> · ' + esc(h.diaDiem) + (h.noiDung ? '<div style="font-size:12.5px;color:var(--muted)">' + esc(h.noiDung.split('\n')[0].slice(0, 120)) + '</div>' : '');
+    };
+    var tt = function (ym) { return 'Tháng ' + (+ym.slice(5)) + '/' + ym.slice(0, 4); };
+    return '<h2>Lịch họp tháng của các nhóm</h2><div class="sub">Do trưởng nhóm / thành viên đại diện đăng ký ở tab "Họp nhóm" của từng nhóm</div>' +
+      '<table><thead><tr><th>Nhóm</th><th style="text-align:left">' + tt(HT.thang[0]) + '</th><th style="text-align:left">' + tt(HT.thang[1]) + '</th></tr></thead><tbody>' +
+      HT.nhom.map(function (n) { return '<tr><td><a href="/' + n.ma + '/#hop">' + esc(n.ten) + '</a></td><td style="text-align:left">' + o(n.hop[0]) + '</td><td style="text-align:left">' + o(n.hop[1]) + '</td></tr>'; }).join('') + '</tbody></table>';
+  }
   window.addEventListener('hashchange', function () { docTab(); hetNguoi = false; if (D) ve(); });
 
   function ve() {
@@ -238,7 +256,8 @@
           '<div class="val"><b>' + t.xong + '</b> / ' + t.viec + ' xong</div></div>';
       }).join('') : '<div class="empty">Timeline chưa có hoạt động nào.</div>') + '</div>';
 
-    $('app').innerHTML = tabs + kpi + nhom + '<div class="grid2"><div>' + nguoi + '</div><div>' + due + thang + '</div></div>';
+    var hopHtml = tab === 'chung' && D.phamVi !== 'nhom' ? '<div class="panel" id="hopThang">' + veHopThang() + '</div>' : '';
+    $('app').innerHTML = tabs + kpi + nhom + hopHtml + '<div class="grid2"><div>' + nguoi + '</div><div>' + due + thang + '</div></div>';
     var tc = $('app').querySelector('.tabs [aria-selected=true]'); if (tc && tc.scrollIntoView && tab !== 'chung') tc.scrollIntoView({ block: 'nearest', inline: 'center' });
     var n = new Date();
     $('foot').textContent = 'Cập nhật lúc ' + ('0' + n.getHours()).slice(-2) + ':' + ('0' + n.getMinutes()).slice(-2) + '. Số liệu lấy từ sheet Timeline và ba sheet theo dõi nhiệm vụ; khối lượng thành viên tính theo người phụ trách chính.';

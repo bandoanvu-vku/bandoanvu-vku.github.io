@@ -310,11 +310,11 @@ function pheDuyet_(nd, req) {
   if (nd.vaiTro !== 'quanLy') throw loiQuyen_('Chỉ quản lý mới xem được mục Phê duyệt.');
   const ss = sheetTruc_(), now = bayGio_();
   const yc = docYeuCau_(ss), tat = docTruc_(ss);
-  const cho = choDuyetTruc_(yc, tat);
+  const cho = choDuyetTruc_(yc, tat).concat(choDuyetCnXanh_());
   if (req && req.dem) return { so: cho.length };
   const tu = themNgay_(now.ngay, -14);
   const daXuLy = yc.filter(function (x) { return x.trangThai !== TT.CHO; }).slice(-20).reverse().map(function (x) { return Object.assign({ kieu: 'yeuCau' }, x); })
-    .concat(tat.filter(function (x) { return x.loai === 'Đột xuất' && x.ngay >= tu && (x.trangThai === TT.DUYET || x.trangThai === TT.TU_CHOI); }).map(dotXuatRa_).reverse());
+    .concat(tat.filter(function (x) { return x.loai === 'Đột xuất' && x.ngay >= tu && (x.trangThai === TT.DUYET || x.trangThai === TT.TU_CHOI); }).map(dotXuatRa_).reverse()).concat(daXuLyCnXanh_());
   return { so: cho.length, choDuyet: cho, daXuLy: daXuLy, homNay: now.ngay, gio: now.gio };
 }
 

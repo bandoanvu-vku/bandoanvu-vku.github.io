@@ -74,6 +74,16 @@ function doPost(e) {
       luuCamNang: function () { return luuCamNang_(nd, req); },
       caiDat: function () { return caiDat_(nd); },
       luuCaiDat: function () { return luuCaiDat_(nd, req); },
+      cnXanh: function () { return cnXanh_(nd); },
+      luuCnXanh: function () { return luuCnXanh_(nd, req); },
+      xinVangCnXanh: function () { return xinVangCnXanh_(nd, req); },
+      rutXinVangCnXanh: function () { return rutXinVangCnXanh_(nd, req); },
+      duyetCnXanh: function () { return duyetCnXanh_(nd, req); },
+      kiemKe: function () { return kiemKe_(nd); },
+      luuKiemKe: function () { return luuKiemKe_(nd, req); },
+      hopNhom: function () { return hopNhom_(nd, req); },
+      luuHopNhom: function () { return luuHopNhom_(nd, req); },
+      hopThang: function () { return hopThang_(nd); },
       quanLySuaTruc: function () { return quanLySuaTruc_(nd, req); },
       congBoTruc: function () { return congBoTruc_(nd, req); }
     };

@@ -3,6 +3,22 @@
 (function () {
   var NHOM = document.body.getAttribute('data-nhom');
   var TRANG_THAI = ['Chưa làm', 'Đang làm', 'Chờ duyệt', 'Hoàn thành'];
+  // Mảng công việc thường nhật có tab riêng (khớp tên mảng trong tab "Mảng công việc" của sheet nhóm theo các từ khoá)
+  var MANG_RIENG = {
+    'csdl-csvc': [
+      ['chu-nhat-xanh', 'Chủ nhật xanh', ['chủ nhật xanh', 'cn xanh'], 'cnXanh'],
+      ['doan-vien', 'Hệ thống quản lý Đoàn viên', ['đoàn viên'], ''],
+      ['cong-van', 'Quản lý công văn', ['công văn'], 'congVan'],
+      ['csvc', 'Quản lý CSVC', ['csvc', 'cơ sở vật chất'], 'kiemKe'],
+      ['doan-vu', 'Quản lý Đoàn vụ', ['đoàn vụ'], '']
+    ]
+  };
+  var DS_MANG = MANG_RIENG[NHOM] || [];
+  var TABS = [['nv', 'Nhiệm vụ nhóm'], ['toi', 'Việc của tôi']].concat(DS_MANG.map(function (m) { return [m[0], m[1]]; }))
+    .concat([['hop', 'Họp nhóm'], ['mang', 'Mảng và thành viên']]);
+  if (!window.BDVHD && !document.querySelector('script[src="/hoat-dong.js"]')) {
+    var hd = document.createElement('script'); hd.src = '/hoat-dong.js'; hd.onload = function () { if (typeof ve === 'function') ve(); }; document.head.appendChild(hd);
+  }
 
   var css = [
     ':root{--bg:#f4f6fa;--card:#fff;--line:#dfe4ec;--text:#17202e;--muted:#5d6b80;--accent:#1a56c4;--accent-soft:#e6eefc;--on-accent:#fff;',
@@ -62,14 +78,18 @@
     '<div class="sub">Năm học 2026 - 2027 · dữ liệu lấy trực tiếp từ sheet theo dõi nhiệm vụ của nhóm</div></div>' +
     '<div class="who"><span id="me" class="me"></span>' +
     '<button class="ghost" id="reload" type="button">Tải lại</button></div></div>' +
-    '<div class="kpis" id="kpis"></div><div class="tabs" role="tablist">' +
-    '<button type="button" role="tab" data-view="nv">Nhiệm vụ</button><button type="button" role="tab" data-view="toi">Việc của tôi</button>' +
-    '<button type="button" role="tab" data-view="mang">Mảng và thành viên</button></div>' +
+    '<div class="kpis" id="kpis"></div><div class="tabs" role="tablist">' + TABS.map(function (t) {
+      return '<button type="button" role="tab" data-view="' + t[0] + '">' + t[1] + '</button>';
+    }).join('') + '</div>' +
     '<div id="view"><div class="empty-box">Đang tải dữ liệu từ sheet…</div></div>' +
     '<div class="foot"><span>Nhận việc, đổi trạng thái và dán link tại đây sẽ được ghi thẳng vào sheet. Giao việc, sửa hạn, thêm nhiệm vụ: làm trong sheet.</span><span id="stamp"></span></div></div>' +
     '<div id="toast" role="status"></div>');
 
   var D = null, view = 'nv', loc = 'all', locMang = '', busy = false;
+  // Tab đang xem ghi trên địa chỉ (#chu-nhat-xanh…) để tải lại vẫn giữ
+  function docView() { var h = location.hash.slice(1); view = TABS.some(function (t) { return t[0] === h; }) ? h : 'nv'; }
+  docView();
+  window.addEventListener('hashchange', function () { docView(); ve(); });
   var $ = function (id) { return document.getElementById(id); };
   function nho(k, v) {
     try { if (v === undefined) return localStorage.getItem(k) || ''; localStorage.setItem(k, v); } catch (e) {}
@@ -143,7 +163,32 @@
     if (!D) return;
     veKpi();
     [].forEach.call(document.querySelectorAll('.tabs button'), function (b) { b.setAttribute('aria-selected', b.dataset.view === view); });
-    if (view === 'mang') veMang(); else veNhiemVu(view === 'toi');
+    if (view === 'mang') veMang();
+    else if (view === 'hop') veHop();
+    else if (view === 'nv' || view === 'toi') veNhiemVu(view === 'toi');
+    else veMangRieng(DS_MANG.filter(function (m) { return m[0] === view; })[0]);
+    var c = document.querySelector('.tabs [aria-selected=true]'); if (c && c.scrollIntoView && view !== 'nv') c.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }
+  function khopMang(ten, khoa) { var t = String(ten || '').toLowerCase(); return khoa.some(function (k) { return t.indexOf(k) > -1; }); }
+  function veHop() {
+    $('view').innerHTML = '<div id="modHd"></div>';
+    if (window.BDVHD) BDVHD.hopNhom($('modHd'), NHOM); else $('modHd').innerHTML = '<div class="empty-box">Đang tải…</div>';
+  }
+  function veMangRieng(m) {
+    if (!m) { view = 'nv'; ve(); return; }
+    var row = D.mang.filter(function (x) { return khopMang(x.ten, m[2]); })[0];
+    var ds = D.nhiemVu.filter(function (v) { return khopMang(v.mang, m[2]); }).sort(function (a, b) {
+      if (xong(a) !== xong(b)) return xong(a) ? 1 : -1;
+      var x = a.han || '9999', y = b.han || '9999'; return x < y ? -1 : x > y ? 1 : a.dong - b.dong;
+    });
+    var info = row ? '<div class="people" style="margin:0 0 12px"><b>Phụ trách chính:</b> ' + (esc(row.chinh) || 'chưa có') + (row.hoTroChinh ? ' · <b>Hỗ trợ chính:</b> ' + esc(row.hoTroChinh) : '') +
+      (row.thamGia ? ' · <b>Tham gia:</b> ' + esc(row.thamGia) : '') + '</div>'
+      : '<div class="people" style="margin:0 0 12px;color:var(--muted)">Chưa có mảng "' + esc(m[1]) + '" trong tab Mảng công việc của sheet nhóm — thêm vào để ghi phụ trách chính.</div>';
+    var mod = m[3] === 'congVan' ? '<div class="empty-box" style="margin-bottom:12px">Phần theo dõi tình trạng lưu công văn đang chờ kết nối với sheet công văn của nhóm.</div>'
+      : m[3] ? '<div id="modHd"></div>' : '';
+    $('view').innerHTML = info + mod + '<h2>Nhiệm vụ của mảng ' + esc(m[1]) + ' (' + ds.length + ')</h2>' +
+      (ds.length ? ds.map(the).join('') : '<div class="empty-box">Chưa có nhiệm vụ nào thuộc mảng này. Ghi đúng tên mảng ở cột "Mảng công việc" trong tab Nhiệm vụ để hiện ở đây.</div>');
+    if (m[3] && m[3] !== 'congVan') { if (window.BDVHD) BDVHD[m[3]]($('modHd')); else $('modHd').innerHTML = '<div class="empty-box">Đang tải…</div>'; }
   }
   function veKpi() {
     var tong = D.nhiemVu.length, x = 0, q = 0, cn = 0;
@@ -238,7 +283,12 @@
     var v = D.nhiemVu.filter(function (x) { return x.dong === +n.dataset.dong; })[0];
     return v ? { v: v, n: n } : null;
   }
-  document.querySelector('.tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { view = b.dataset.view; ve(); } });
+  document.querySelector('.tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    view = b.dataset.view;
+    try { history.replaceState(null, '', view === 'nv' ? location.pathname : '#' + view); } catch (er) {}
+    ve();
+  });
   $('view').addEventListener('click', function (e) {
     var f = e.target.closest('[data-loc]'); if (f) { loc = f.dataset.loc; ve(); return; }
     var a = e.target.closest('button[data-act]'); if (!a) return;

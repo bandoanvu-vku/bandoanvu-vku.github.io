@@ -76,12 +76,13 @@
 (function () {
   var THU = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
   // Mỗi loại việc cần duyệt: [mã, tên hiển thị, mảng]. Sau này thêm loại mới (vd. xin nghỉ, đề xuất…) thì thêm dòng ở đây.
-  var LOAI = [['Đổi ca', 'Đổi ca trực', 'Lịch trực'], ['Huỷ ca', 'Huỷ ca trực', 'Lịch trực'], ['Thêm ca', 'Xin thêm ca trực', 'Lịch trực'], ['Trực đột xuất', 'Trực đột xuất', 'Lịch trực']];
+  var LOAI = [['Đổi ca', 'Đổi ca trực', 'Lịch trực'], ['Huỷ ca', 'Huỷ ca trực', 'Lịch trực'], ['Thêm ca', 'Xin thêm ca trực', 'Lịch trực'], ['Trực đột xuất', 'Trực đột xuất', 'Lịch trực'], ['Xin vắng Chủ nhật xanh', 'Xin vắng Chủ nhật xanh', 'CSDL - CSVC']];
   var D = null, busy = false, loc = '', tab = 'cho';
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function thu(iso) { var p = iso.split('-'); var t = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay(); return t === 0 ? 7 : t; }
   function ngayCa(iso, tu, den) { var p = iso.split('-'); return THU[thu(iso)] + ' ' + p[2] + '/' + p[1] + ' · ' + tu + ' – ' + den; }
+  function mangLoai(l) { var x = LOAI.filter(function (k) { return k[0] === l; })[0]; return x ? x[2] : 'Khác'; }
   function tenLoai(l) { var x = LOAI.filter(function (k) { return k[0] === l; })[0]; return x ? x[1] : l; }
   var tT;
   function toast(m, err) { var t = $('toast'); t.textContent = m; t.className = err ? 'err' : ''; t.style.display = 'block'; clearTimeout(tT); tT = setTimeout(function () { t.style.display = 'none'; }, err ? 7000 : 3000); }
@@ -100,6 +101,7 @@
 
   function chiTiet(y) {
     var moi = y.ngay ? ngayCa(y.ngay, y.tu, y.den) : '';
+    if (y.kieu === 'cnXanh') { var p = y.ngay.split('-'); return 'Chủ nhật <b>' + p[2] + '/' + p[1] + '</b> · người trực thay: <b>' + esc(y.thay) + '</b><br>Lý do: ' + esc(y.lyDo || '—') + ' · gửi ' + esc(y.guiLuc); }
     if (y.kieu === 'dotXuat') return 'Đã điểm danh <b>' + esc(moi) + '</b>' + (y.diemDanh ? ' lúc ' + esc(y.diemDanh) : '') + (y.cach != null ? ' · cách văn phòng ' + y.cach + ' m' : '');
     var s = '';
     if (y.goc) s += (y.loai === 'Huỷ ca' ? 'Huỷ <b>' : 'Ca hiện tại <b>') + esc(y.goc) + '</b>';
@@ -107,15 +109,15 @@
     return s + '<br>Lý do: ' + esc(y.lyDo || '—') + ' · gửi ' + esc(y.guiLuc);
   }
   function dongCho(y) {
-    var key = y.kieu === 'dotXuat' ? 'data-kieu="dotXuat" data-d="' + y.dong + '"' : 'data-kieu="yeuCau" data-id="' + esc(y.id) + '"';
-    return '<div class="req"><div><span class="mang">Lịch trực</span> · <span class="pill loai">' + esc(tenLoai(y.loai)) + '</span> · <b>' + esc(y.ten) + '</b><div class="s">' + chiTiet(y) + '</div></div>' +
+    var key = y.kieu === 'dotXuat' ? 'data-kieu="dotXuat" data-d="' + y.dong + '"' : 'data-kieu="' + y.kieu + '" data-id="' + esc(y.id) + '"';
+    return '<div class="req"><div><span class="mang">' + esc(mangLoai(y.loai)) + '</span> · <span class="pill loai">' + esc(tenLoai(y.loai)) + '</span> · <b>' + esc(y.ten) + '</b><div class="s">' + chiTiet(y) + '</div></div>' +
       '<div class="b"><input type="text" placeholder="Ghi chú (không bắt buộc)"><button type="button" class="btn" data-ok="1" ' + key + '>Duyệt</button>' +
       '<button type="button" class="ghost sm bad" data-ok="0" ' + key + '>Từ chối</button></div></div>';
   }
   function dongXong(y) {
     var duyet = y.trangThai === 'Đã duyệt';
-    var gc = y.kieu === 'dotXuat' ? (y.ghiChu || '').replace(/^Quản lý: /, '') : (!/^dong:/.test(y.ghiChuDuyet || '') ? y.ghiChuDuyet : '');
-    return '<div class="req"><div><span class="mang">Lịch trực</span> · <span class="pill loai">' + esc(tenLoai(y.loai)) + '</span> · <b>' + esc(y.ten) + '</b><div class="s">' + chiTiet(y) +
+    var gc = y.kieu === 'cnXanh' ? y.ghiChuDuyet : y.kieu === 'dotXuat' ? (y.ghiChu || '').replace(/^Quản lý: /, '') : (!/^dong:/.test(y.ghiChuDuyet || '') ? y.ghiChuDuyet : '');
+    return '<div class="req"><div><span class="mang">' + esc(mangLoai(y.loai)) + '</span> · <span class="pill loai">' + esc(tenLoai(y.loai)) + '</span> · <b>' + esc(y.ten) + '</b><div class="s">' + chiTiet(y) +
       (gc && !/^Trực đột xuất, chờ/.test(gc) ? '<br>Ghi chú: ' + esc(gc) : '') + '</div></div>' +
       '<div class="b"><span class="pill ' + (duyet ? 'ok">Đã duyệt' : 'bad">' + esc(y.trangThai)) + '</span>' +
       (y.nguoiDuyet ? '<span class="s">' + esc(y.nguoiDuyet) + (y.duyetLuc ? ' · ' + esc(y.duyetLuc) : '') + '</span>' : '') + '</div></div>';
@@ -149,7 +151,7 @@
     if (b.dataset.ok === undefined || busy) return;
     var r = b.closest('.req'), ok = b.dataset.ok === '1', gc = r.querySelector('input');
     busy = true; r.classList.add('busy');
-    BDV.goi('duyetTruc', { kieu: b.dataset.kieu, id: b.dataset.id, dong: +b.dataset.d, dongY: ok, ghiChu: gc ? gc.value : '', ve: 'pheDuyet' })
+    BDV.goi(b.dataset.kieu === 'cnXanh' ? 'duyetCnXanh' : 'duyetTruc', { kieu: b.dataset.kieu, id: b.dataset.id, dong: +b.dataset.d, dongY: ok, ghiChu: gc ? gc.value : '', ve: 'pheDuyet' })
       .then(function (d) { busy = false; D = d; ve(); baoMenu(); toast(ok ? 'Đã duyệt' : 'Đã từ chối'); })
       .catch(function (er) { busy = false; r.classList.remove('busy'); loi(er); });
   });
