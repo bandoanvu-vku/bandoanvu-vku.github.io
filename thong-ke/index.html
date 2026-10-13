@@ -210,7 +210,7 @@
         (theoGio.length ? theoGio.map(function (p) {
           var dat = mucTieu && p.gioTruc >= mucTieu;
           return '<div class="hb' + (p.ten === chon ? ' chon' : '') + '" data-ten="' + esc(p.ten) + '" data-tip="' + esc(p.ten + '\nĐăng ký: ' + g(p.gioDangKy) + ' giờ (' + p.soCa + ' ca)\nTrực thực tế: ' + g(p.gioTruc) + ' giờ' +
-              (p.gioDotXuat ? ' (đột xuất ' + g(p.gioDotXuat) + ')' : '') + (p.gioCho ? '\nĐột xuất chờ duyệt: ' + g(p.gioCho) + ' giờ' : '') + '\nVắng: ' + p.vang + ' ca') + '">' +
+              (p.gioDotXuat ? ' (đột xuất ' + g(p.gioDotXuat) + ')' : '') + (p.gioCho ? '\nĐột xuất chờ duyệt: ' + g(p.gioCho) + ' giờ' : '') + '\nVắng: ' + p.vang + ' ca' + (p.vangPhep ? ' · vắng có phép: ' + p.vangPhep : '')) + '">' +
             '<div class="n">' + esc(p.ten) + '<small>' + esc(p.nhom.map(function (m) { return NGAN[m] || m; }).join(', ') || '—') + (p.vang ? ' · <span class="late">vắng ' + p.vang + '</span>' : '') + '</small></div>' +
             '<div class="bar"><i class="dk" style="width:' + (p.gioDangKy / maxG * 100) + '%"></i><i class="tt" style="width:' + (p.gioTruc / maxG * 100) + '%"></i>' +
             (mucTieu ? '<span class="mt" style="left:' + (mucTieu / maxG * 100) + '%"></span>' : '') + '</div>' +
@@ -230,7 +230,7 @@
         }).join('') : '<div class="empty">Không có thành viên nào.</div>') + '</div>';
       html += '<div class="grid2"><div>' + gioHtml + '</div><div>' + hdHtml + '</div></div>';
 
-      var COT = [['ten', 'Thành viên'], ['gioDangKy', 'Giờ đăng ký'], ['gioTruc', 'Giờ thực tế'], ['gioDotXuat', 'Đột xuất'], ['soCa', 'Số ca'], ['vang', 'Vắng'],
+      var COT = [['ten', 'Thành viên'], ['gioDangKy', 'Giờ đăng ký'], ['gioTruc', 'Giờ thực tế'], ['gioDotXuat', 'Đột xuất'], ['soCa', 'Số ca'], ['vang', 'Vắng'], ['vangPhep', 'Vắng có phép'],
         ['phuTrach', 'Phụ trách'], ['hoTro', 'Hỗ trợ'], ['truyenThong', 'Truyền thông'], ['xong', 'Đã xong']];
       var bang = ds.slice().sort(function (a, b) { var k = sapXep[0], x = a[k], y = b[k]; return (x < y ? -1 : x > y ? 1 : 0) * sapXep[1]; });
       html += '<div class="panel"><div class="ph"><div><h2>Bảng số liệu</h2><div class="sub">Bấm tiêu đề cột để sắp xếp</div></div><button type="button" class="ghost sm" id="csv">Tải file CSV</button></div><div class="tblw"><table><thead><tr>' +
@@ -252,8 +252,8 @@
   }
 
   function taiCSV() {
-    var COT = ['ten', 'nhom', 'gioDangKy', 'gioTruc', 'gioDotXuat', 'soCa', 'vang', 'phuTrach', 'hoTro', 'truyenThong', 'xong'];
-    var dau = ['Thành viên', 'Nhóm', 'Giờ đăng ký', 'Giờ thực tế', 'Giờ đột xuất', 'Số ca', 'Vắng', 'Phụ trách', 'Hỗ trợ', 'Truyền thông', 'Đã xong'];
+    var COT = ['ten', 'nhom', 'gioDangKy', 'gioTruc', 'gioDotXuat', 'soCa', 'vang', 'vangPhep', 'phuTrach', 'hoTro', 'truyenThong', 'xong'];
+    var dau = ['Thành viên', 'Nhóm', 'Giờ đăng ký', 'Giờ thực tế', 'Giờ đột xuất', 'Số ca', 'Vắng', 'Vắng có phép', 'Phụ trách', 'Hỗ trợ', 'Truyền thông', 'Đã xong'];
     var dong = [dau].concat(locNguoi().map(function (p) { return COT.map(function (k) { return k === 'nhom' ? p.nhom.map(function (m) { return TEN[m] || m; }).join('; ') : /^gio/.test(k) ? g(p[k]) : p[k]; }); }));
     var csv = '﻿' + dong.map(function (r) { return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));

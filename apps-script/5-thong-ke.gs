@@ -22,7 +22,7 @@ function thongKe_(nd, req) {
   const tao = function (ten, email, nhom) {
     if (!nguoi[ten]) {
       nguoi[ten] = { ten: ten, email: email || '', nhom: [], gioDangKy: 0, gioTruc: 0, gioDotXuat: 0, gioCho: 0, soCa: 0, vang: 0,
-        phuTrach: 0, hoTro: 0, truyenThong: 0, xong: 0, tuan: {} };
+        phuTrach: 0, hoTro: 0, truyenThong: 0, xong: 0, vangPhep: 0, tuan: {} };
     }
     const p = nguoi[ten];
     (nhom || []).forEach(function (m) { if (p.nhom.indexOf(m) === -1) p.nhom.push(m); });
@@ -44,7 +44,9 @@ function thongKe_(nd, req) {
   const ss = sheetTruc_(), cd = caiDatTruc_(ss);
   let ngayDau = null;
   docTruc_(ss).forEach(function (x) {
-    if (x.ngay < tu || x.ngay > den || !conHieuLuc_(x)) return;
+    if (x.ngay < tu || x.ngay > den) return;
+    if (x.trangThai === TT.HUY && /^Vắng có phép/.test(x.ghiChu || '')) { const pv = lay(x.ten, x.email); if (pv) pv.vangPhep++; return; }
+    if (!conHieuLuc_(x)) return;
     const p = lay(x.ten, x.email);
     if (!p) return;
     const m = soPhut_(x), dx = x.loai === 'Đột xuất';
@@ -96,7 +98,7 @@ function thongKe_(nd, req) {
     return {
       ten: p.ten, email: p.email, nhom: p.nhom,
       gioDangKy: p.gioDangKy / 60, gioTruc: p.gioTruc / 60, gioDotXuat: p.gioDotXuat / 60, gioCho: p.gioCho / 60,
-      soCa: p.soCa, vang: p.vang, phuTrach: p.phuTrach, hoTro: p.hoTro, truyenThong: p.truyenThong, xong: p.xong,
+      soCa: p.soCa, vang: p.vang, vangPhep: p.vangPhep, phuTrach: p.phuTrach, hoTro: p.hoTro, truyenThong: p.truyenThong, xong: p.xong,
       tuan: Object.keys(p.tuan).sort().map(function (w) { return { tuan: w, dangKy: p.tuan[w].dk / 60, truc: p.tuan[w].tt / 60 }; })
     };
   });

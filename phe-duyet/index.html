@@ -76,7 +76,7 @@
 (function () {
   var THU = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
   // Mỗi loại việc cần duyệt: [mã, tên hiển thị, mảng]. Sau này thêm loại mới (vd. xin nghỉ, đề xuất…) thì thêm dòng ở đây.
-  var LOAI = [['Đổi ca', 'Đổi ca trực', 'Lịch trực'], ['Huỷ ca', 'Huỷ ca trực', 'Lịch trực'], ['Thêm ca', 'Xin thêm ca trực', 'Lịch trực'], ['Trực đột xuất', 'Trực đột xuất', 'Lịch trực'], ['Xin vắng Chủ nhật xanh', 'Xin vắng Chủ nhật xanh', 'CSDL - CSVC']];
+  var LOAI = [['Đổi ca', 'Đổi ca trực', 'Lịch trực'], ['Huỷ ca', 'Huỷ ca trực', 'Lịch trực'], ['Thêm ca', 'Xin thêm ca trực', 'Lịch trực'], ['Xin vắng', 'Xin vắng ca trực', 'Lịch trực'], ['Trực đột xuất', 'Trực đột xuất', 'Lịch trực'], ['Xin vắng Chủ nhật xanh', 'Xin vắng Chủ nhật xanh', 'CSDL - CSVC']];
   var D = null, busy = false, loc = '', tab = 'cho';
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -104,7 +104,7 @@
     if (y.kieu === 'cnXanh') { var p = y.ngay.split('-'); return 'Chủ nhật <b>' + p[2] + '/' + p[1] + '</b> · người trực thay: <b>' + esc(y.thay) + '</b><br>Lý do: ' + esc(y.lyDo || '—') + ' · gửi ' + esc(y.guiLuc); }
     if (y.kieu === 'dotXuat') return 'Đã điểm danh <b>' + esc(moi) + '</b>' + (y.diemDanh ? ' lúc ' + esc(y.diemDanh) : '') + (y.cach != null ? ' · cách văn phòng ' + y.cach + ' m' : '');
     var s = '';
-    if (y.goc) s += (y.loai === 'Huỷ ca' ? 'Huỷ <b>' : 'Ca hiện tại <b>') + esc(y.goc) + '</b>';
+    if (y.goc) s += (y.loai === 'Huỷ ca' ? 'Huỷ <b>' : y.loai === 'Xin vắng' ? 'Vắng ca <b>' : 'Ca hiện tại <b>') + esc(y.goc) + '</b>';
     if (moi) s += (s ? ' → ' : 'Xin thêm <b>') + (s ? '<b>' : '') + esc(moi) + '</b>';
     return s + '<br>Lý do: ' + esc(y.lyDo || '—') + ' · gửi ' + esc(y.guiLuc);
   }
@@ -127,7 +127,7 @@
     var cho = D.choDuyet, dem = {};
     cho.forEach(function (y) { dem[y.loai] = (dem[y.loai] || 0) + 1; });
     var kpi = '<div class="kpis"><div class="kpi' + (cho.length ? ' alert' : '') + '"><div class="v">' + cho.length + '</div><div class="l">Đang chờ duyệt</div></div>' +
-      '<div class="kpi"><div class="v">' + ((dem['Đổi ca'] || 0) + (dem['Huỷ ca'] || 0)) + '</div><div class="l">Đổi / huỷ ca trực</div></div>' +
+      '<div class="kpi"><div class="v">' + ((dem['Đổi ca'] || 0) + (dem['Huỷ ca'] || 0) + (dem['Xin vắng'] || 0)) + '</div><div class="l">Đổi ca / xin vắng</div></div>' +
       '<div class="kpi"><div class="v">' + (dem['Thêm ca'] || 0) + '</div><div class="l">Xin thêm ca</div></div>' +
       '<div class="kpi"><div class="v">' + (dem['Trực đột xuất'] || 0) + '</div><div class="l">Trực đột xuất</div></div></div>';
     var ds = tab === 'cho' ? cho : D.daXuLy;

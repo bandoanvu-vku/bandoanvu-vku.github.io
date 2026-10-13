@@ -84,6 +84,9 @@
   .btn { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 10px; padding: 10px 18px; font-weight: 600; font-size: 15px; min-height: 44px; }
   .btn:disabled { opacity: .55; cursor: default; }
   .btn.ok { background: var(--s-done); border-color: var(--s-done); }
+  .ddn { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ghost.xv { min-height: 44px; padding: 10px 18px; font-weight: 600; font-size: 15px; border-radius: 10px; }
+  @media (max-width: 560px) { .ddn { width: 100%; } .ddn > * { flex: 1 1 auto; } }
   .msg { font-size: 13.5px; margin-top: 10px; line-height: 1.45; }
   .msg.bad { color: var(--bad); } .msg.good { color: var(--s-done); font-weight: 600; }
   .nav2 { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 4px 0 12px; }
@@ -267,13 +270,36 @@
       var sap = homNay.filter(function (x) { return !x.diemDanh && p < phut(x.tu); })[0];
       mo = '<b>Ngoài giờ trực</b><div>' + (sap ? 'Hôm nay bạn trực ' + sap.tu + ' – ' + sap.den + '.' : 'Điểm danh được từ 15 phút trước giờ bắt đầu ca, khi đang ở văn phòng.') + '</div>';
     }
-    return '<div class="panel" style="margin-top:14px"><div class="dd"><div class="t">' + mo + them + '</div>' + nut + '</div>' +
+    // Nút xin vắng cạnh nút điểm danh: ca đang tới giờ / ca tiếp theo chưa điểm danh
+    var dsV = caXinVang(), uuTien = chua[0] || dsV.filter(function (x) { return x.ngay === D.homNay; })[0] || dsV[0];
+    if (uuTien && dsV.some(function (x) { return x.dong === uuTien.dong; })) {
+      nut += dangXinVang(uuTien) ? '<span class="pill soon">Đã xin vắng ca ' + uuTien.tu + ' – ' + uuTien.den + (uuTien.ngay !== D.homNay ? ' ' + dm(uuTien.ngay) : '') + ', chờ duyệt</span>'
+        : '<button class="ghost xv" type="button" id="xv" data-d="' + uuTien.dong + '" title="Xin vắng ca ' + uuTien.tu + ' – ' + uuTien.den + ' ' + dm(uuTien.ngay) + '">Xin vắng</button>';
+    }
+    return '<div class="panel" style="margin-top:14px"><div class="dd"><div class="t">' + mo + them + '</div><div class="ddn">' + nut + '</div></div>' +
       (thongBao ? '<div class="msg ' + thongBao[0] + '">' + esc(thongBao[1]) + '</div>' : '') + '</div>';
   }
 
   /* ---------- vẽ ---------- */
   var PHU_DE = null;
   function cheDoDiemDanh() { return location.hash === '#diem-danh'; }
+  // Ca có thể xin vắng: ca hôm nay chưa kết thúc + các ca sắp tới (chưa điểm danh, không đang chờ duyệt)
+  function caXinVang() {
+    var p = phut(D.gio), ds = [], co = {};
+    (D.toi.homNay || []).concat(D.toi.sapToi || []).forEach(function (x) {
+      if (co[x.dong] || x.diemDanh || x.trangThai === 'Chờ duyệt' || x.loai === 'Đột xuất') return;
+      if (x.ngay === D.homNay && phut(x.den) <= p) return;
+      co[x.dong] = 1; ds.push(x);
+    });
+    return ds.sort(function (a, b) { return a.ngay < b.ngay ? -1 : a.ngay > b.ngay ? 1 : phut(a.tu) - phut(b.tu); });
+  }
+  function dangXinVang(x) {
+    return D.yeuCau.some(function (y) { return y.trangThai === 'Chờ duyệt' && y.loai === 'Xin vắng' && String(y.ghiChuDuyet || '') === 'dong:' + x.dong; });
+  }
+  function moXinVang(x) {
+    moForm({ tieuDe: 'Xin vắng ca trực', sub: 'Quản lý duyệt xong thì ca được ghi "vắng có phép", không tính là vắng.', action: 'guiYeuCau', chonGoc: true, loai: 'vang',
+      goc: x ? { dong: x.dong, ngay: x.ngay, tu: x.tu, den: x.den } : null, ngay: D.homNay, buoi: 'sang', cheDo: 'buoi', coLyDo: true, nut: 'Gửi xin vắng', thanhCong: 'Đã gửi xin vắng, chờ quản lý duyệt' });
+  }
   function veDiemDanh() {
     $('tieuDe').textContent = 'Điểm danh';
     $('phuDe').textContent = 'Đến văn phòng, mở trang này trên điện thoại và bấm điểm danh · được điểm danh từ 15 phút trước giờ bắt đầu ca';
@@ -300,8 +326,8 @@
     var dong = st.dong.split(' '), moL = st.mo.split(' ')[0];
     var ban = st.ma === 'mo' ? '<span><b>Đang mở đăng ký</b> đến ' + dong[1] + ' chủ nhật ' + dm(dong[0]) + '. Chỉ bạn thấy lịch của mình; những người khác hiện dạng số người.</span>'
       : st.ma === 'chuaMo' ? '<span><b>Chưa mở đăng ký.</b> Mở từ thứ 6 ' + dm(moL) + ' đến ' + dong[1] + ' chủ nhật ' + dm(dong[0]) + '.</span>'
-      : st.ma === 'khoa' ? '<span><b>Đã khoá đăng ký</b>, chờ quản lý công bố. Muốn đổi / huỷ / thêm ca thì gửi yêu cầu.</span>' + (D.quanLy ? '<button class="btn sm" type="button" id="congbo">Công bố lịch tuần này</button>' : '')
-      : '<span><b>Lịch đã công bố.</b> Muốn đổi / huỷ / thêm ca thì gửi yêu cầu để quản lý duyệt.</span>';
+      : st.ma === 'khoa' ? '<span><b>Đã khoá đăng ký</b>, chờ quản lý công bố. Muốn đổi ca, xin vắng hoặc thêm ca thì gửi yêu cầu.</span>' + (D.quanLy ? '<button class="btn sm" type="button" id="congbo">Công bố lịch tuần này</button>' : '')
+      : '<span><b>Lịch đã công bố.</b> Muốn đổi ca, xin vắng hoặc thêm ca thì gửi yêu cầu để quản lý duyệt.</span>';
     var kpi = '<div class="kpis k3">' +
       '<div class="kpi' + (D.toi.dangKy < D.toiThieuGio ? ' alert' : '') + '"><div class="v">' + gio(D.toi.dangKy).replace(' giờ', '') + '<small> / ' + D.toiThieuGio + ' giờ</small></div><div class="l">Giờ bạn đã đăng ký ' + (tuanNay ? 'tuần này' : 'tuần đang xem') + '</div></div>' +
       '<div class="kpi"><div class="v">' + gio(D.toi.diemDanh).replace(' giờ', '') + '<small> giờ</small></div><div class="l">Đã điểm danh</div></div>' +
@@ -321,7 +347,7 @@
             var x2 = '';
             if (!x.diemDanh && !qua(x.ngay, x.tu)) {
               if (x.toi && dangMo) x2 = '<button type="button" class="x" title="Huỷ" data-act="huy" data-d="' + x.dong + '" data-n="' + x.ngay + '" data-tu="' + x.tu + '">×</button>';
-              else if (x.toi && x.trangThai !== 'Chờ duyệt') x2 = '<button type="button" class="x" title="Đổi / huỷ ca" data-act="yc" data-d="' + x.dong + '" data-n="' + x.ngay + '" data-tu="' + x.tu + '">⇄</button>';
+              else if (x.toi && x.trangThai !== 'Chờ duyệt') x2 = '<button type="button" class="x" title="Đổi ca / xin vắng" data-act="yc" data-d="' + x.dong + '" data-n="' + x.ngay + '" data-tu="' + x.tu + '">⇄</button>';
               else if (D.quanLy && !x.toi) x2 = '<button type="button" class="x" title="Xoá khỏi lịch" data-act="qlxoa" data-d="' + x.dong + '" data-n="' + x.ngay + '" data-tu="' + x.tu + '">×</button>';
             }
             return '<span class="chip' + (x.toi ? ' me' : '') + (x.diemDanh && x.trangThai !== 'Chờ duyệt' ? ' done' : '') + (x.trangThai === 'Chờ duyệt' ? ' wait' : '') + '" title="' +
@@ -340,9 +366,9 @@
             (khac > 0 ? '<span class="count">+' + khac + ' người khác</span>' : '') + '</div>' + nut + '</div>';
         }).join('') + '</div>';
     }).join('') + '</div><div class="legend" style="margin-top:10px"><span><span class="chip me">Bạn</span></span><span><span class="chip done">Đã điểm danh</span></span><span><span class="chip wait">Chờ duyệt</span></span>' +
-      '<span>' + (dangMo ? '× để huỷ ca của bạn.' : '⇄ trên ca của bạn hoặc nút "Tạo yêu cầu đổi lịch" bên dưới để xin đổi / huỷ.') + '</span></div>';
+      '<span>' + (dangMo ? '× để huỷ ca của bạn.' : '⇄ trên ca của bạn hoặc nút "Tạo yêu cầu đổi lịch" bên dưới để xin đổi ca / xin vắng.') + '</span></div>';
 
-    var ycHtml = '<div class="panel"><div class="yc-top"><div><h2>Yêu cầu đổi lịch trực</h2><div class="sub">Lịch đã khoá hoặc đã công bố thì muốn đổi ca, huỷ ca hay xin thêm ca đều gửi yêu cầu để quản lý duyệt.</div></div>' +
+    var ycHtml = '<div class="panel"><div class="yc-top"><div><h2>Yêu cầu đổi lịch trực</h2><div class="sub">Lịch đã khoá hoặc đã công bố thì muốn đổi ca, xin vắng hay xin thêm ca đều gửi yêu cầu để quản lý duyệt.</div></div>' +
       '<button type="button" class="btn sm" data-act="taoyc">+ Tạo yêu cầu đổi lịch</button></div><div style="margin-top:6px">' + (D.yeuCau.length ? D.yeuCau.map(function (y) {
       var moi = y.ngay ? THU[thu(y.ngay)] + ' ' + dm(y.ngay) + ' ' + y.tu + '–' + y.den : '';
       return '<div class="req"><div><b>' + esc(y.loai) + '</b> · <span class="pill ' + (y.trangThai === 'Đã duyệt' ? 'ok' : y.trangThai === 'Chờ duyệt' ? 'soon' : 'plain') + '">' + esc(y.trangThai) + '</span>' +
@@ -353,7 +379,7 @@
     var ql = '';
     if (D.quanLy) {
       var cd = D.choDuyet || [];
-      ql += '<div class="panel" style="margin-top:14px"><h2>Chờ duyệt</h2><div class="sub">' + (cd.length ? 'Có <b>' + cd.length + '</b> yêu cầu đổi / huỷ / thêm ca hoặc trực đột xuất đang chờ.' : 'Không có gì chờ duyệt.') +
+      ql += '<div class="panel" style="margin-top:14px"><h2>Chờ duyệt</h2><div class="sub">' + (cd.length ? 'Có <b>' + cd.length + '</b> yêu cầu đổi ca / xin vắng / thêm ca hoặc trực đột xuất đang chờ.' : 'Không có gì chờ duyệt.') +
         ' Duyệt ở mục <a href="/phe-duyet/">Phê duyệt →</a></div></div>';
       var tk = D.thongKe || [];
       ql += '<div class="panel"><h2>Thống kê trực tuần ' + dm(dau) + ' – ' + dm(cuoi) + '</h2><div class="sub">Tính theo giờ (1 buổi = 3 giờ). Chưa đủ ' + D.toiThieuGio + ' giờ đăng ký được tô đỏ. Vắng = số ca đã qua mà không điểm danh.</div>' +
@@ -381,12 +407,12 @@
     if (F.cacLoai) html += '<div class="seg">' + F.cacLoai.map(function (l) { return '<button type="button" data-loai="' + l[0] + '" aria-pressed="' + (F.loai === l[0]) + '">' + l[1] + '</button>'; }).join('') + '</div>';
     if (F.coTen) html += '<label>Thành viên</label><select id="fTen">' + (D.thongKe || []).map(function (p) { return '<option' + (p.ten === F.ten ? ' selected' : '') + '>' + esc(p.ten) + '</option>'; }).join('') + '</select>';
     if (F.chonGoc && F.loai !== 'them') {
-      var sap = D.toi.sapToi || [];
-      html += '<label>Ca muốn ' + (F.loai === 'huy' ? 'huỷ' : 'đổi') + '</label>' + (sap.length
+      var sap = F.loai === 'vang' ? caXinVang() : (D.toi.sapToi || []);
+      html += '<label>Ca muốn ' + (F.loai === 'vang' ? 'xin vắng' : 'đổi') + '</label>' + (sap.length
         ? '<select id="fGoc">' + sap.map(function (x, i) { return '<option value="' + i + '"' + (F.goc && F.goc.dong === x.dong ? ' selected' : '') + '>' + THU[thu(x.ngay)] + ' ' + dm(x.ngay) + ' · ' + x.tu + ' – ' + x.den + '</option>'; }).join('') + '</select>'
-        : '<div class="sub warn2">Bạn chưa có ca nào sắp tới để ' + (F.loai === 'huy' ? 'huỷ' : 'đổi') + '. Chọn "Xin thêm ca" nếu muốn trực thêm.</div>');
+        : '<div class="sub warn2">Bạn chưa có ca nào sắp tới để ' + (F.loai === 'vang' ? 'xin vắng' : 'đổi') + '. Chọn "Xin thêm ca" nếu muốn trực thêm.</div>');
     }
-    if (F.loai !== 'huy') {
+    if (F.loai !== 'vang') {
       var ngayDs = D.ngay.filter(function (n) { return D.ngayNghi.indexOf(n) === -1 && !qua(n, '17:00'); });
       if (F.coNgay) {
         if (ngayDs.indexOf(F.ngay) === -1 && ngayDs.length) F.ngay = ngayDs[0];
@@ -414,7 +440,7 @@
     if ($('fNgay')) F.ngay = $('fNgay').value;
     if ($('fTuH')) F.tu = docGio('fTu', phut(D.ngayKt) / 60);
     if ($('fDenH')) F.den = docGio('fDen', phut(D.ngayKt) / 60);
-    if ($('fGoc')) { var g = (D.toi.sapToi || [])[+$('fGoc').value]; if (g) F.goc = { dong: g.dong, ngay: g.ngay, tu: g.tu, den: g.den }; }
+    if ($('fGoc')) { var g = (F.loai === 'vang' ? caXinVang() : (D.toi.sapToi || []))[+$('fGoc').value]; if (g) F.goc = { dong: g.dong, ngay: g.ngay, tu: g.tu, den: g.den }; }
     if ($('fLyDo')) F.lyDo = $('fLyDo').value;
     if ($('fTen')) F.ten = $('fTen').value;
   }
@@ -424,17 +450,17 @@
     if (e.target === $('dlg')) { dongForm(); return; }
     var bt = e.target.closest('button'); if (!bt) return;
     docForm();
-    if (bt.dataset.loai) { F.loai = bt.dataset.loai; F.nut = F.loai === 'huy' ? 'Gửi yêu cầu huỷ' : F.loai === 'them' ? 'Gửi yêu cầu' : 'Gửi yêu cầu đổi'; veForm(); return; }
+    if (bt.dataset.loai) { F.loai = bt.dataset.loai; F.nut = F.loai === 'vang' ? 'Gửi xin vắng' : F.loai === 'them' ? 'Gửi yêu cầu' : 'Gửi yêu cầu đổi'; veForm(); return; }
     if (bt.dataset.che) { F.cheDo = bt.dataset.che; veForm(); return; }
     if (bt.dataset.buoi) { F.buoi = bt.dataset.buoi; veForm(); return; }
     if (bt.dataset.f === 'huy') { dongForm(); return; }
     if (bt.dataset.f !== 'ok') return;
     var b = buoi(F.buoi), ca = F.cheDo === 'gio' ? { tu: F.tu, den: F.den } : { tu: b.bd, den: b.kt };
-    if (F.chonGoc && F.loai !== 'them' && !F.goc) { veForm('Chọn ca muốn ' + (F.loai === 'huy' ? 'huỷ' : 'đổi') + '.'); return; }
+    if (F.chonGoc && F.loai !== 'them' && !F.goc) { veForm('Chọn ca muốn ' + (F.loai === 'vang' ? 'xin vắng' : 'đổi') + '.'); return; }
     var req;
     if (F.action === 'dangKyTruc') req = { ngay: F.ngay, buoi: F.buoi, tu: ca.tu, den: ca.den };
     else if (F.action === 'quanLySuaTruc') req = { viec: 'them', ten: F.ten, ngay: F.ngay, buoi: F.buoi, tu: ca.tu, den: ca.den };
-    else req = { loai: F.loai, lyDo: F.lyDo, goc: F.goc, moi: F.loai === 'huy' ? null : { ngay: F.ngay, buoi: F.buoi, tu: ca.tu, den: ca.den } };
+    else req = { loai: F.loai, lyDo: F.lyDo, goc: F.goc, moi: F.loai === 'vang' ? null : { ngay: F.ngay, buoi: F.buoi, tu: ca.tu, den: ca.den } };
     bt.disabled = true;
     lam(F.action, req, null, true).then(function () { var m = F.thanhCong; dongForm(); toast(m || 'Đã lưu'); }).catch(function (er) { bt.disabled = false; veForm(er && er.message ? er.message : String(er)); });
   });
@@ -451,7 +477,7 @@
     if (a === 'xin') { moForm({ tieuDe: 'Xin thêm ca', sub: 'Lịch đã khoá nên cần quản lý duyệt.', action: 'guiYeuCau', loai: 'them', ngay: b.dataset.n, buoi: b.dataset.b, cheDo: 'buoi', coNgay: true, coLyDo: true, nut: 'Gửi yêu cầu', thanhCong: 'Đã gửi yêu cầu, chờ quản lý duyệt' }); return; }
     if (a === 'yc') {
       var c = timCa(b); if (!c) return;
-      moForm({ tieuDe: 'Đổi / huỷ ca', sub: 'Ca hiện tại: ' + THU[thu(c.ngay)] + ' ' + dm(c.ngay) + ' · ' + c.tu + ' – ' + c.den, action: 'guiYeuCau', loai: 'doi', cacLoai: [['doi', 'Đổi sang ca khác'], ['huy', 'Huỷ ca']],
+      moForm({ tieuDe: 'Đổi ca / xin vắng', sub: 'Ca hiện tại: ' + THU[thu(c.ngay)] + ' ' + dm(c.ngay) + ' · ' + c.tu + ' – ' + c.den, action: 'guiYeuCau', loai: 'doi', cacLoai: [['doi', 'Đổi sang ca khác'], ['vang', 'Xin vắng']],
         goc: { dong: c.dong, ngay: c.ngay, tu: c.tu }, ngay: c.ngay, buoi: c.buoi, cheDo: caBuoi(c) ? 'buoi' : 'gio', tu: c.tu, den: c.den, coNgay: true, coLyDo: true, nut: 'Gửi yêu cầu đổi', thanhCong: 'Đã gửi yêu cầu, chờ quản lý duyệt' });
       return;
     }
@@ -459,7 +485,7 @@
       var sapToi = D.toi.sapToi || [], g0 = sapToi[0];
       var ngayDau = D.ngay.filter(function (n) { return D.ngayNghi.indexOf(n) === -1 && !qua(n, '17:00'); })[0] || D.ngay[0];
       moForm({ tieuDe: 'Tạo yêu cầu đổi lịch', sub: 'Quản lý duyệt xong lịch sẽ tự cập nhật.', action: 'guiYeuCau', chonGoc: true,
-        loai: g0 ? 'doi' : 'them', cacLoai: [['doi', 'Đổi ca'], ['huy', 'Huỷ ca'], ['them', 'Xin thêm ca']],
+        loai: g0 ? 'doi' : 'them', cacLoai: [['doi', 'Đổi ca'], ['vang', 'Xin vắng'], ['them', 'Xin thêm ca']],
         goc: g0 ? { dong: g0.dong, ngay: g0.ngay, tu: g0.tu, den: g0.den } : null, ngay: ngayDau, buoi: 'sang', cheDo: 'buoi', coNgay: true, coLyDo: true,
         nut: g0 ? 'Gửi yêu cầu đổi' : 'Gửi yêu cầu', thanhCong: 'Đã gửi yêu cầu, chờ quản lý duyệt' });
       return;
@@ -472,6 +498,7 @@
       lam('duyetTruc', { kieu: b.dataset.kieu, id: b.dataset.id, dong: +b.dataset.d, dongY: ok, ghiChu: gc ? gc.value : '' }, b.closest('.req')).then(function () { toast(ok ? 'Đã duyệt' : 'Đã từ chối'); }).catch(function () {});
       return;
     }
+    if (b.id === 'xv') { var cx = caXinVang().filter(function (x) { return x.dong === +b.dataset.d; })[0]; moXinVang(cx); return; }
     if (b.id === 'congbo') { lam('congBoTruc', { tuan: D.tuan }, b).then(function () { toast('Đã công bố lịch tuần ' + dm(D.tuan)); }).catch(function () {}); return; }
     if (b.id === 'dd') {
       var den = docGio('ddDen', phut(D.ngayKt) / 60) || '';

@@ -36,7 +36,7 @@ const COT_TRUC = ['Ngày', 'Ca', 'Họ và tên', 'Email', 'Đăng ký lúc', '�
 const COT_YC = ['Mã', 'Gửi lúc', 'Họ và tên', 'Email', 'Loại', 'Ca hiện tại', 'Ngày mới', 'Buổi mới', 'Từ', 'Đến', 'Lý do',
   'Trạng thái', 'Người duyệt', 'Duyệt lúc', 'Ghi chú duyệt'];
 const TT = { DK: 'Đã đăng ký', CHO: 'Chờ duyệt', DUYET: 'Đã duyệt', TU_CHOI: 'Từ chối', HUY: 'Đã huỷ' };
-const LOAI_YC = { doi: 'Đổi ca', huy: 'Huỷ ca', them: 'Thêm ca' };
+const LOAI_YC = { doi: 'Đổi ca', huy: 'Huỷ ca', them: 'Thêm ca', vang: 'Xin vắng' }; // 'huy' chỉ còn để xử lý yêu cầu cũ; giao diện dùng 'vang'
 
 /* ---------------- sheet */
 
@@ -385,9 +385,11 @@ function guiYeuCau_(nd, req) {
       goc = timDong_(ss, req.goc || {}, cuaNguoi_(nd));
       if (!conHieuLuc_(goc) || goc.trangThai === TT.CHO) throw new Error('Ca này không còn hiệu lực.');
       if (goc.diemDanh) throw new Error('Ca này bạn đã điểm danh.');
-      if (daQua_(goc.ngay, goc.tu, now)) throw new Error('Ca này đã bắt đầu, không gửi yêu cầu được nữa.');
+      if (req.loai === 'vang' ? daQua_(goc.ngay, goc.den, now) : daQua_(goc.ngay, goc.tu, now)) {
+        throw new Error(req.loai === 'vang' ? 'Ca này đã kết thúc.' : 'Ca này đã bắt đầu, không gửi yêu cầu được nữa.');
+      }
     }
-    if (req.loai !== 'huy') {
+    if (req.loai !== 'huy' && req.loai !== 'vang') {
       const m = req.moi || {};
       const c = kiemTraCa_(m.ngay, m.buoi, m.tu, m.den, cd);
       if (daQua_(m.ngay, c.den, now)) throw new Error('Ca mới đã qua.');
@@ -445,14 +447,14 @@ function duyetTruc_(nd, req) {
       goc = ds.filter(function (x) { return conHieuLuc_(x) && (x.dong === d || moTaCa_(x.ngay, x.buoi, x.tu, x.den) === y.goc); })[0];
       if (!goc) throw new Error('Ca gốc của yêu cầu không còn (có thể đã bị xoá). Hãy từ chối yêu cầu này.');
     }
-    if (y.loai !== LOAI_YC.huy) {
+    if (y.loai !== LOAI_YC.huy && y.loai !== LOAI_YC.vang) {
       const c = kiemTraCa_(y.ngay, y.buoi, y.tu, y.den, cd);
       const tr = trungGio_(ds, y.ngay, c.tu, c.den, goc ? goc.dong : null);
       if (tr) throw new Error(y.ten + ' đã có ca ' + tr.tu + ' - ' + tr.den + ' trùng giờ, không duyệt được.');
       themDong_(ss, y.ngay, c, nguoi, y.loai === LOAI_YC.doi ? 'Đổi ca' : (c.caBuoi ? 'Cả buổi' : 'Ca ghép'), TT.DK, 'Theo yêu cầu ' + y.id);
     }
     // ghi dòng mới trước rồi mới huỷ ca gốc (appendRow không làm lệch số dòng của ca gốc)
-    if (goc) datTrangThai_(ss, goc.dong, TT.HUY, (y.loai === LOAI_YC.doi ? 'Đổi ca' : 'Huỷ ca') + ' theo yêu cầu ' + y.id);
+    if (goc) datTrangThai_(ss, goc.dong, TT.HUY, (y.loai === LOAI_YC.doi ? 'Đổi ca' : y.loai === LOAI_YC.vang ? 'Vắng có phép' : 'Huỷ ca') + ' theo yêu cầu ' + y.id);
     ketThuc(TT.DUYET);
     return traVe(y.ngay || (goc && goc.ngay) || req.tuan);
   });

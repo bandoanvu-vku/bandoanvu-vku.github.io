@@ -32,7 +32,7 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
   Trạng thái = Đã đăng ký/Chờ duyệt/Đã duyệt/Từ chối/Đã huỷ — không xoá dòng sau khi khoá), Yêu cầu (đổi/huỷ/thêm ca),
   Công bố (tuần đã công bố), Cài đặt (vị trí văn phòng, bán kính, số buổi tối thiểu, ngày nghỉ).
   Buổi: sáng 8–11h, chiều 14–17h, T2–T6; ca tự chọn giờ:phút bất kỳ trong 8:00–17:00, tối thiểu 1 giờ (bắt đầu trước 12:30 xếp buổi sáng);
-  trực đột xuất tính từ lúc điểm danh, đến giờ tự chọn ≤ 17:00; tính theo giờ (1 buổi = 3 giờ). Trang Lịch trực có nút "Tạo yêu cầu đổi lịch" (đổi/huỷ/thêm).
+  trực đột xuất tính từ lúc điểm danh, đến giờ tự chọn ≤ 17:00; tính theo giờ (1 buổi = 3 giờ). Trang Lịch trực có nút "Tạo yêu cầu đổi lịch" (đổi ca / xin vắng / thêm ca; bỏ "Huỷ ca") và nút "Xin vắng" cạnh nút Điểm danh. Duyệt xin vắng → ca Đã huỷ với ghi chú "Vắng có phép…" (Thống kê đếm riêng).
   Quy trình tuần: mở đăng ký 00:00 thứ 6 → khoá 17:00 CN tuần trước; trong lúc mở thành viên chỉ thấy lịch mình + số người;
   khoá xong quản lý chỉnh rồi Công bố; sau khoá muốn đổi/huỷ/thêm thì gửi yêu cầu cho quản lý duyệt;
   trực đột xuất điểm danh luôn → "Chờ duyệt" → quản lý duyệt mới tính giờ. Tuần trước 19/10/2026 coi như đã công bố.
