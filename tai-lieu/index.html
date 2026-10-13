@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tài liệu TITLE biểu mẫu · Ban Đoàn vụ</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/chung.css">
+<style>
+  .loc { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .loc input { flex: 1 1 220px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: var(--card); }
+  .loc .seg { display: flex; gap: 4px; flex-wrap: wrap; }
+  .loc .seg button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 4px 12px; font-size: 13px; color: var(--muted); }
+  .loc .seg button[aria-pressed=true] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .dm { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  .tl { display: grid; grid-template-columns: 36px 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .tl:first-of-type { border-top: 0; }
+  .tl .ic { width: 36px; height: 36px; border-radius: 9px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; }
+  .tl a.t { font-weight: 600; text-decoration: none; overflow-wrap: anywhere; } .tl a.t:hover { text-decoration: underline; }
+  .tl .s { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+  .tl .b { display: flex; gap: 6px; }
+  @media (max-width: 560px) { .tl { grid-template-columns: 36px 1fr; } .tl .b { grid-column: 2; } }
+</style>
+</head>
+<body>
+<div class="wrap hep">
+  <div class="top"><div><h1>Tài liệu & biểu mẫu</h1><div class="sub">Biểu mẫu, văn bản, kế hoạch dùng chung của Ban · bấm để mở trên Google Drive</div></div>
+    <button class="btn" type="button" id="them" style="display:none">+ Thêm tài liệu</button></div>
+  <div id="app"><div class="panel empty">Đang tải…</div></div>
+</div>
+<div class="dlg" id="dlg" role="dialog" aria-modal="true"><div id="dlgBody"></div></div>
+<script src="/dangnhap.js"></script>
+<script src="/chung.js"></script>
+<script>
+(function () {
+  var app = T.$('app'), D = null, esc = T.esc, tim = '', dm = '', F = null;
+  var IC = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>';
+  function tai() { BDV.goi('taiLieu', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function nhan(d) { D = d; T.$('them').style.display = d.quanLy ? '' : 'none'; ve(); }
+  function ve() {
+    var cacDm = []; D.ds.forEach(function (x) { if (cacDm.indexOf(x.danhMuc) < 0) cacDm.push(x.danhMuc); });
+    if (dm && cacDm.indexOf(dm) < 0) dm = '';
+    var q = tim.toLowerCase();
+    var ds = D.ds.filter(function (x) { return (!dm || x.danhMuc === dm) && (!q || (x.tieuDe + ' ' + x.moTa + ' ' + x.danhMuc).toLowerCase().indexOf(q) > -1); });
+    var loc = D.ds.length ? '<div class="loc"><input type="search" id="tim" placeholder="Tìm tài liệu…" value="' + esc(tim) + '" aria-label="Tìm tài liệu">' +
+      (cacDm.length > 1 ? '<div class="seg"><button type="button" data-dm="" aria-pressed="' + !dm + '">Tất cả</button>' + cacDm.map(function (d) { return '<button type="button" data-dm="' + esc(d) + '" aria-pressed="' + (dm === d) + '">' + esc(d) + '</button>'; }).join('') + '</div>' : '') + '</div>' : '';
+    var nhom = {}; ds.forEach(function (x) { (nhom[x.danhMuc] = nhom[x.danhMuc] || []).push(x); });
+    var html = Object.keys(nhom).map(function (k) {
+      return '<div class="panel"><div class="dm">' + esc(k) + '</div>' + nhom[k].map(function (x) {
+        return '<div class="tl"><div class="ic">' + IC + '</div><div><a class="t" href="' + esc(x.link) + '" target="_blank" rel="noopener">' + esc(x.tieuDe) + '</a>' +
+          (x.moTa ? '<div class="s">' + esc(x.moTa) + '</div>' : '') + '</div>' +
+          (D.quanLy ? '<div class="b"><button type="button" class="ghost sm" data-sua="' + esc(x.ma) + '">Sửa</button><button type="button" class="ghost sm bad" data-xoa="' + esc(x.ma) + '">Xoá</button></div>' : '<div></div>') + '</div>';
+      }).join('') + '</div>';
+    }).join('');
+    app.innerHTML = loc + (html || '<div class="panel empty">' + (D.ds.length ? 'Không có tài liệu nào khớp.' : 'Chưa có tài liệu nào.' + (D.quanLy ? ' Bấm "+ Thêm tài liệu" để thêm link Google Drive / Docs.' : '')) + '</div>');
+    var o = T.$('tim'); if (o && tim) { o.focus(); o.setSelectionRange(tim.length, tim.length); }
+  }
+  function moForm(x, loi) {
+    F = x || { tieuDe: '', link: '', danhMuc: '', moTa: '' };
+    var cacDm = []; D.ds.forEach(function (y) { if (cacDm.indexOf(y.danhMuc) < 0) cacDm.push(y.danhMuc); });
+    ['Biểu mẫu', 'Văn bản - Quy chế', 'Kế hoạch'].forEach(function (d) { if (cacDm.indexOf(d) < 0) cacDm.push(d); });
+    T.$('dlgBody').innerHTML = '<form class="form" id="f"><h2>' + (F.ma ? 'Sửa tài liệu' : 'Thêm tài liệu') + '</h2>' +
+      '<label for="fT">Tên tài liệu</label><input id="fT" required maxlength="150" value="' + esc(F.tieuDe) + '">' +
+      '<label for="fL">Link (Google Drive / Docs / Sheets…)</label><input id="fL" required type="url" placeholder="https://" value="' + esc(F.link) + '">' +
+      '<label for="fD">Danh mục</label><input id="fD" list="dsDm" maxlength="60" placeholder="Ví dụ: Biểu mẫu" value="' + esc(F.danhMuc) + '"><datalist id="dsDm">' + cacDm.map(function (d) { return '<option value="' + esc(d) + '">'; }).join('') + '</datalist>' +
+      '<label for="fM">Mô tả ngắn (không bắt buộc)</label><input id="fM" maxlength="300" value="' + esc(F.moTa) + '">' +
+      (loi ? '<div class="err">' + esc(loi) + '</div>' : '') +
+      '<div class="note" style="margin-top:8px">Nhớ chia sẻ file trên Drive cho thành viên (ít nhất "Người xem") để mọi người mở được.</div>' +
+      '<div class="acts"><button type="button" class="ghost" data-dong="1">Đóng</button><button class="btn" type="submit">Lưu</button></div></form>';
+    T.$('dlg').className = 'dlg mo'; T.$('fT').focus();
+  }
+  function dong() { T.$('dlg').className = 'dlg'; F = null; }
+  T.$('them').addEventListener('click', function () { moForm(null); });
+  T.$('dlg').addEventListener('click', function (e) { if (e.target === T.$('dlg') || e.target.dataset.dong) dong(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && F) dong(); });
+  T.$('dlg').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var x = { ma: F.ma, tieuDe: T.$('fT').value.trim(), link: T.$('fL').value.trim(), danhMuc: T.$('fD').value.trim(), moTa: T.$('fM').value.trim() };
+    var b = e.target.querySelector('button[type=submit]'); b.disabled = true;
+    BDV.goi('luuTaiLieu', Object.assign({ viec: F.ma ? 'sua' : 'them' }, x)).then(function (d) { dong(); nhan(d); T.toast('Đã lưu'); })
+      .catch(function (er) { moForm(x, er.message || String(er)); });
+  });
+  app.addEventListener('input', function (e) { if (e.target.id === 'tim') { tim = e.target.value; ve(); } });
+  app.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || !D) return;
+    if (b.dataset.dm !== undefined) { dm = b.dataset.dm; ve(); return; }
+    if (b.dataset.sua) { moForm(D.ds.filter(function (x) { return x.ma === b.dataset.sua; })[0]); return; }
+    if (b.dataset.xoa) {
+      if (b.dataset.chac !== '1') { b.dataset.chac = '1'; b.textContent = 'Bấm lần nữa để xoá'; setTimeout(function () { if (b.isConnected) { b.dataset.chac = ''; b.textContent = 'Xoá'; } }, 4000); return; }
+      b.closest('.tl').classList.add('busy');
+      BDV.goi('luuTaiLieu', { viec: 'xoa', ma: b.dataset.xoa }).then(function (d) { nhan(d); T.toast('Đã xoá'); }).catch(function (er) { T.toast(er.message || String(er), true); ve(); });
+    }
+  });
+  T.khoi(app, tai);
+})();
+</script>
+<script src="/menu.js"></script>
+</body>
+</html>

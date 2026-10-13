@@ -159,8 +159,8 @@
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>Lịch trực văn phòng</h1>
-      <div class="sub">Thứ 2 – Thứ 6 · Sáng 8h – 11h · Chiều 14h – 17h · đăng ký cả buổi hoặc tự chọn giờ (8:00 – 17:00) · tối thiểu <span id="tt">6</span> giờ / tuần</div>
+      <h1 id="tieuDe">Lịch trực văn phòng</h1>
+      <div class="sub" id="phuDe">Thứ 2 – Thứ 6 · Sáng 8h – 11h · Chiều 14h – 17h · đăng ký cả buổi hoặc tự chọn giờ (8:00 – 17:00) · tối thiểu <span id="tt">6</span> giờ / tuần</div>
     </div>
     <button class="ghost" id="reload" type="button">Tải lại</button>
   </div>
@@ -272,8 +272,29 @@
   }
 
   /* ---------- vẽ ---------- */
+  var PHU_DE = null;
+  function cheDoDiemDanh() { return location.hash === '#diem-danh'; }
+  function veDiemDanh() {
+    $('tieuDe').textContent = 'Điểm danh';
+    $('phuDe').textContent = 'Đến văn phòng, mở trang này trên điện thoại và bấm điểm danh · được điểm danh từ 15 phút trước giờ bắt đầu ca';
+    var hn = D.toi.homNay || [], sap = (D.toi.sapToi || []).filter(function (x) { return x.ngay !== D.homNay; }).slice(0, 5);
+    var dong = function (x, ngay) {
+      var tt = x.trangThai === 'Chờ duyệt' ? '<span class="pill soon">Chờ duyệt</span>' : x.diemDanh ? '<span class="pill ok">✓ Đã điểm danh ' + esc(x.diemDanh) + '</span>'
+        : qua(x.ngay, x.den) ? '<span class="pill bad">Vắng</span>' : '<span class="pill plain">Chưa điểm danh</span>';
+      return '<div class="req"><div><b>' + (ngay ? THU[thu(x.ngay)] + ' ' + dm(x.ngay) + ' · ' : '') + x.tu + ' – ' + x.den + '</b><div class="s">' + esc(x.loai) + '</div></div><div class="b">' + (ngay ? '' : tt) + '</div></div>';
+    };
+    $('app').innerHTML = theDiemDanh() +
+      '<div class="panel"><h2>Ca của bạn hôm nay · ' + THU[thu(D.homNay)] + ' ' + dm(D.homNay) + '</h2><div style="margin-top:4px">' +
+      (hn.length ? hn.map(function (x) { return dong(x, false); }).join('') : '<div class="empty" style="padding:12px 8px">Hôm nay bạn không có ca trực.</div>') + '</div></div>' +
+      '<div class="panel"><h2>Ca sắp tới</h2><div style="margin-top:4px">' + (sap.length ? sap.map(function (x) { return dong(x, true); }).join('') : '<div class="empty" style="padding:12px 8px">Chưa có ca nào sắp tới.</div>') + '</div>' +
+      '<div class="foot"><a href="/lich-truc/">Xem lịch cả tuần / đăng ký ca →</a></div></div>';
+    $('foot').textContent = 'Điểm danh dùng vị trí của điện thoại / máy tính, chỉ được ghi nhận khi bạn ở gần văn phòng.';
+  }
   function ve() {
     $('reload').style.display = '';
+    if (PHU_DE === null) PHU_DE = $('phuDe').innerHTML;
+    if (cheDoDiemDanh()) { veDiemDanh(); return; }
+    $('tieuDe').textContent = 'Lịch trực văn phòng'; $('phuDe').innerHTML = PHU_DE;
     $('tt').textContent = D.toiThieuGio;
     var dau = D.tuan, cuoi = cong(dau, 4), tuanNay = D.homNay >= dau && D.homNay <= cong(dau, 6), st = D.trangThaiTuan;
     var dong = st.dong.split(' '), moL = st.mo.split(' ')[0];
@@ -473,6 +494,7 @@
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && F) dongForm(); });
   $('reload').addEventListener('click', function () { thongBao = null; tai(); });
+  window.addEventListener('hashchange', function () { if (D) { thongBao = null; ve(); window.scrollTo(0, 0); } });
   $('app').addEventListener('change', function (e) { if (/^ddDen/.test(e.target.id)) { ddDen = docGio('ddDen', phut(D.ngayKt) / 60); ve(); } });
   document.addEventListener('bdv-nguoi', function (e) {
     if (!e.detail) { chan(); return; }
@@ -480,7 +502,7 @@
   });
   // Mặc định: đang mở đăng ký tuần sau (thứ 6 → CN) thì mở thẳng tuần sau
   function tuanMacDinh() { var d = new Date(), t = d.getDay(); if (t === 5 || t === 6 || (t === 0 && d.getHours() < 17)) { var n = new Date(d.getTime() + (t === 0 ? 1 : 8 - t) * 864e5); return n.getFullYear() + '-' + ('0' + (n.getMonth() + 1)).slice(-2) + '-' + ('0' + n.getDate()).slice(-2); } return ''; }
-  if (!BDV.nguoi()) chan(); else tai(tuanMacDinh());
+  if (!BDV.nguoi()) chan(); else tai(cheDoDiemDanh() ? '' : tuanMacDinh());
   setInterval(function () { if (!document.hidden && D && !busy && !F) tai(); }, 120000);
 })();
 </script>

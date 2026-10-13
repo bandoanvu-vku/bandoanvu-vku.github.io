@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hồ sơ của tôi · Ban Đoàn vụ</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/chung.css">
+<style>
+  .the { display: flex; gap: 16px; align-items: center; }
+  .av { flex: none; width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; }
+  .the h2 { font-size: 19px; } .tags { margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; font-size: 12.5px; text-decoration: none; }
+  .tag.ql { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  @media (prefers-color-scheme: dark) { .tag.ql { color: #0d1522; } }
+</style>
+</head>
+<body>
+<div class="wrap hep">
+  <div class="top"><div><h1>Hồ sơ của tôi</h1><div class="sub">Thông tin của bạn trong Ban Đoàn vụ · chỉ bạn và quản lý Ban xem được</div></div></div>
+  <div id="app"><div class="panel empty">Đang tải…</div></div>
+</div>
+<script src="/dangnhap.js"></script>
+<script src="/chung.js"></script>
+<script>
+(function () {
+  var TEN = { '4t': 'Truyền thông - Thông tin', 'nghiep-vu': 'Nghiệp vụ', 'csdl-csvc': 'CSDL - CSVC', 'noi-vu': 'Nội vụ' };
+  var app = T.$('app'), D = null, esc = T.esc;
+  function tai() { BDV.goi('hoSo', {}).then(function (d) { D = d; ve(); }).catch(function (e) { T.loi(app, e); }); }
+  function ve(loi) {
+    var chu = D.ten.split(' ').pop().charAt(0).toUpperCase();
+    app.innerHTML = '<div class="panel"><div class="the"><div class="av" aria-hidden="true">' + esc(chu) + '</div><div><h2>' + esc(D.ten) + '</h2>' +
+      '<div class="tags">' + (D.vaiTro === 'quanLy' ? '<span class="tag ql">Quản lý</span>' : '<span class="tag">Thành viên</span>') +
+      (D.chucVu ? '<span class="tag">' + esc(D.chucVu) + '</span>' : '') + '</div></div></div></div>' +
+      '<form class="panel form" id="f" autocomplete="off"><h2>Thông tin</h2>' +
+      '<div class="row2"><div><label>Họ và tên</label><input readonly value="' + esc(D.ten) + '"></div><div><label>Email Google</label><input readonly value="' + esc(D.email) + '"></div></div>' +
+      '<div class="row2"><div><label for="chucVu">Chức vụ</label><input id="chucVu" maxlength="60" value="' + esc(D.chucVu) + '"' + (D.suaChucVu ? ' placeholder="Ví dụ: Trưởng ban, Phó ban, Trưởng nhóm"' : ' readonly placeholder="Quản lý Ban cập nhật"') + '></div>' +
+      '<div><label>Nhóm</label><input readonly value="' + esc(D.nhom.map(function (m) { return TEN[m] || m; }).join(', ') || 'Chưa thuộc nhóm nào') + '"></div></div>' +
+      '<div class="row2"><div><label for="mssv">MSSV</label><input id="mssv" maxlength="20" inputmode="text" value="' + esc(D.mssv) + '" placeholder="Ví dụ: 23IT123"></div>' +
+      '<div><label for="lop">Lớp</label><input id="lop" maxlength="40" value="' + esc(D.lop) + '" placeholder="Ví dụ: 23GIT"></div></div>' +
+      '<label for="sdt">Số điện thoại</label><input id="sdt" maxlength="20" inputmode="tel" value="' + esc(D.sdt) + '" placeholder="Ví dụ: 0905 123 456">' +
+      (loi ? '<div class="err">' + esc(loi) + '</div>' : '') +
+      '<div class="acts"><button class="btn" type="submit">Lưu thay đổi</button></div>' +
+      '<div class="note" style="margin-top:10px">' + (D.suaChucVu ? 'Chức vụ của thành viên khác: ghi ở cột "Chức vụ" trong sheet tài khoản.' : 'Họ tên, email, nhóm và chức vụ do quản lý Ban cập nhật. Cần sửa thì báo quản lý.') + '</div></form>';
+  }
+  app.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = T.$('f'), b = f.querySelector('button[type=submit]'); b.disabled = true; b.textContent = 'Đang lưu…';
+    var req = { mssv: T.$('mssv').value.trim(), lop: T.$('lop').value.trim(), sdt: T.$('sdt').value.trim() };
+    if (D.suaChucVu) req.chucVu = T.$('chucVu').value.trim();
+    BDV.goi('luuHoSo', req).then(function (d) { D = d; ve(); T.toast('Đã lưu hồ sơ'); })
+      .catch(function (er) { if (er && er.canDangNhap) { T.loi(app, er); return; } D.mssv = req.mssv; D.lop = req.lop; D.sdt = req.sdt; if (req.chucVu !== undefined) D.chucVu = req.chucVu; ve(er.message || String(er)); });
+  });
+  T.khoi(app, tai);
+})();
+</script>
+<script src="/menu.js"></script>
+</body>
+</html>

@@ -66,6 +66,14 @@ function doPost(e) {
       duyetTruc: function () { return duyetTruc_(nd, req); },
       pheDuyet: function () { return pheDuyet_(nd, req); },
       thongKe: function () { return thongKe_(nd, req); },
+      hoSo: function () { return hoSoCuaToi_(nd); },
+      luuHoSo: function () { return luuHoSo_(nd, req); },
+      taiLieu: function () { return taiLieu_(nd); },
+      luuTaiLieu: function () { return luuTaiLieu_(nd, req); },
+      camNang: function () { return camNang_(nd); },
+      luuCamNang: function () { return luuCamNang_(nd, req); },
+      caiDat: function () { return caiDat_(nd); },
+      luuCaiDat: function () { return luuCaiDat_(nd, req); },
       quanLySuaTruc: function () { return quanLySuaTruc_(nd, req); },
       congBoTruc: function () { return congBoTruc_(nd, req); }
     };

@@ -1,0 +1,49 @@
+/* Kiểu dùng chung cho các trang mới (hồ sơ, tài liệu, cẩm nang, cài đặt). */
+:root {
+  --bg: #f4f6fa; --card: #ffffff; --line: #dfe4ec; --text: #17202e; --muted: #5d6b80; --accent: #1a56c4; --accent-soft: #e8f0fd;
+  --bad: #b3261e; --bad-soft: #fde7e5; --warn: #9a5b00; --warn-soft: #fdf0d5; --track: #e9edf3; --ok: #1baf7a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10151d; --card: #19212c; --line: #2c3746; --text: #e8edf4; --muted: #9aa8bb; --accent: #7fb0ff; --accent-soft: #1d2a40;
+    --bad: #ff9d94; --bad-soft: #40201d; --warn: #f2c063; --warn-soft: #3a2d10; --track: #242e3b; --ok: #199e70;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 22px 16px 56px; }
+.wrap.hep { max-width: 760px; }
+h1 { font-size: 24px; line-height: 1.25; margin: 0; letter-spacing: -.01em; }
+h2 { font-size: 16px; margin: 0 0 2px; }
+.sub { color: var(--muted); font-size: 13px; }
+a { color: var(--accent); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.top { display: flex; gap: 12px 20px; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
+.ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; min-height: 38px; }
+.ghost:hover { border-color: var(--accent); color: var(--accent); }
+.ghost.sm { padding: 4px 10px; min-height: 32px; font-size: 13px; } .ghost.bad { color: var(--bad); }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 10px; padding: 8px 16px; font-weight: 600; font-size: 14px; min-height: 40px; }
+.btn:disabled { opacity: .55; cursor: default; }
+@media (prefers-color-scheme: dark) { .btn { color: #0d1522; } }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; min-width: 0; }
+.ph { display: flex; gap: 8px 14px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+.empty { color: var(--muted); text-align: center; padding: 22px 8px; font-size: 14px; }
+.note { font-size: 12.5px; color: var(--muted); }
+.foot { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+.busy { opacity: .5; pointer-events: none; }
+.pill { border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 600; white-space: nowrap; background: var(--track); }
+.form label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+.form input, .form select, .form textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--card); }
+.form input:focus, .form select:focus, .form textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.form input[readonly] { background: var(--track); color: var(--muted); }
+.form textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+.form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.form .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+.err { color: var(--bad); font-size: 13.5px; margin-top: 10px; }
+.dlg { position: fixed; inset: 0; z-index: 9; background: rgba(10,15,25,.45); display: none; align-items: center; justify-content: center; padding: 16px; }
+.dlg.mo { display: flex; }
+.dlg > div { background: var(--card); border-radius: 14px; width: 100%; max-width: 560px; padding: 18px; box-shadow: 0 10px 40px rgba(0,0,0,.25); max-height: calc(100vh - 32px); overflow: auto; }
+#toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); max-width: calc(100vw - 32px); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; display: none; z-index: 10; }
+#toast.err { background: var(--bad); color: #fff; }
+@media (max-width: 560px) { .form .row2 { grid-template-columns: 1fr; } }

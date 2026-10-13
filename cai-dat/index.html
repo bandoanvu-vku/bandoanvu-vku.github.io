@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cài đặt · Ban Đoàn vụ</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/chung.css">
+<style>
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 2px 4px 2px 10px; font-size: 13px; background: var(--track); }
+  .chip.qua { opacity: .6; }
+  .chip button { border: 0; background: none; padding: 0 6px; font-size: 15px; color: var(--muted); }
+  .nhap { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .nhap input { width: auto !important; }
+  .hint { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap hep">
+  <div class="top"><div><h1>Cài đặt</h1><div class="sub">Thiết lập chung cho lịch trực và điểm danh · chỉ quản lý</div></div></div>
+  <div id="app"><div class="panel empty">Đang tải…</div></div>
+</div>
+<script src="/dangnhap.js"></script>
+<script src="/chung.js"></script>
+<script>
+(function () {
+  var app = T.$('app'), D = null, esc = T.esc, nghi = [];
+  var THU = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  function tai() { BDV.goi('caiDat', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function nhan(d) { D = d; nghi = d.ngayNghi.slice(); ve(); }
+  function nhanNgay(s) { var p = s.split('-'); return THU[new Date(+p[0], +p[1] - 1, +p[2]).getDay()] + ' ' + p[2] + '/' + p[1] + '/' + p[0]; }
+  function veNghi() {
+    T.$('dsNghi').innerHTML = nghi.length ? nghi.map(function (x) { return '<span class="chip' + (x < D.homNay ? ' qua' : '') + '">' + nhanNgay(x) + '<button type="button" data-bo="' + x + '" aria-label="Bỏ ngày ' + nhanNgay(x) + '">×</button></span>'; }).join('')
+      : '<span class="hint">Chưa có ngày nghỉ nào.</span>';
+  }
+  function ve() {
+    app.innerHTML =
+      '<form class="panel form" id="f1"><h2>Vị trí văn phòng & điểm danh</h2><div class="sub">Thành viên phải đứng trong bán kính này quanh văn phòng mới điểm danh được.</div>' +
+      '<div class="row2"><div><label for="lat">Vĩ độ</label><input id="lat" inputmode="decimal" value="' + (D.lat == null ? '' : D.lat) + '" placeholder="Ví dụ: 15.975300"></div>' +
+      '<div><label for="lng">Kinh độ</label><input id="lng" inputmode="decimal" value="' + (D.lng == null ? '' : D.lng) + '" placeholder="Ví dụ: 108.253000"></div></div>' +
+      '<div class="nhap" style="margin-top:8px"><button type="button" class="ghost sm" id="gps">📍 Lấy vị trí chỗ tôi đang đứng</button>' +
+      (D.lat != null ? '<a class="note" href="https://www.google.com/maps?q=' + D.lat + ',' + D.lng + '" target="_blank" rel="noopener">Xem trên bản đồ</a>' : '<span class="hint">Chưa đặt vị trí — chưa ai điểm danh được.</span>') + '</div>' +
+      '<label for="bk">Bán kính điểm danh (m)</label><input id="bk" type="number" min="30" max="2000" step="10" value="' + D.banKinh + '">' +
+      '<div class="acts"><button class="btn" type="submit">Lưu vị trí</button></div></form>' +
+      '<form class="panel form" id="f2"><h2>Số buổi trực tối thiểu</h2><div class="sub">1 buổi = 3 giờ. Có thể ghi lẻ nửa buổi (ví dụ 2,5).</div>' +
+      '<label for="sb">Số buổi mỗi tuần</label><input id="sb" type="number" min="0" max="10" step="0.5" value="' + D.soBuoi + '">' +
+      '<div class="hint" id="sbGio">= ' + String(D.soBuoi * 3).replace('.', ',') + ' giờ mỗi tuần</div>' +
+      '<div class="acts"><button class="btn" type="submit">Lưu</button></div></form>' +
+      '<form class="panel form" id="f3"><h2>Ngày nghỉ (không trực)</h2><div class="sub">Ngày lễ, thi, nghỉ của trường. Những ngày này không có ca trực và không tính vào lịch.</div>' +
+      '<div class="nhap" style="margin-top:10px"><input type="date" id="ngay" aria-label="Chọn ngày nghỉ"><button type="button" class="ghost sm" id="themNgay">+ Thêm ngày</button></div>' +
+      '<div class="chips" id="dsNghi"></div>' +
+      '<div class="acts"><button class="btn" type="submit">Lưu ngày nghỉ</button></div></form>' +
+      '<div class="note">Muốn thêm thành viên hoặc đổi quyền: sửa sheet "Tài khoản dashboard - Ban Đoàn vụ" (cột Vai trò, Chức vụ).</div>';
+    veNghi();
+  }
+  function luu(req, f, tb) {
+    var b = f.querySelector('button[type=submit]'); b.disabled = true;
+    return BDV.goi('luuCaiDat', req).then(function (d) { nhan(d); T.toast(tb); }).catch(function (er) { b.disabled = false; T.toast(er.message || String(er), true); });
+  }
+  app.addEventListener('submit', function (e) {
+    e.preventDefault(); var f = e.target;
+    if (f.id === 'f1') {
+      var lat = T.$('lat').value.replace(',', '.').trim(), lng = T.$('lng').value.replace(',', '.').trim(), req = { banKinh: +T.$('bk').value };
+      if (lat || lng) { req.lat = lat; req.lng = lng; }
+      luu(req, f, 'Đã lưu vị trí văn phòng');
+    }
+    if (f.id === 'f2') luu({ soBuoi: +String(T.$('sb').value).replace(',', '.') }, f, 'Đã lưu số buổi tối thiểu');
+    if (f.id === 'f3') luu({ ngayNghi: nghi }, f, 'Đã lưu ngày nghỉ');
+  });
+  app.addEventListener('input', function (e) { if (e.target.id === 'sb') T.$('sbGio').textContent = '= ' + String((+e.target.value || 0) * 3).replace('.', ',') + ' giờ mỗi tuần'; });
+  app.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'themNgay') { var v = T.$('ngay').value; if (v && nghi.indexOf(v) < 0) { nghi.push(v); nghi.sort(); veNghi(); } return; }
+    if (b.dataset.bo) { nghi = nghi.filter(function (x) { return x !== b.dataset.bo; }); veNghi(); return; }
+    if (b.id === 'gps') {
+      if (!navigator.geolocation) { T.toast('Trình duyệt không hỗ trợ lấy vị trí.', true); return; }
+      b.disabled = true; b.textContent = 'Đang lấy vị trí…';
+      navigator.geolocation.getCurrentPosition(function (p) {
+        T.$('lat').value = p.coords.latitude.toFixed(6); T.$('lng').value = p.coords.longitude.toFixed(6);
+        b.disabled = false; b.textContent = '📍 Lấy vị trí chỗ tôi đang đứng';
+        T.toast('Sai số khoảng ' + Math.round(p.coords.accuracy) + ' m. Bấm "Lưu vị trí" để lưu.', p.coords.accuracy > 100);
+      }, function () { b.disabled = false; b.textContent = '📍 Lấy vị trí chỗ tôi đang đứng'; T.toast('Không lấy được vị trí. Cho phép trang dùng vị trí rồi thử lại.', true); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+    }
+  });
+  T.khoi(app, tai);
+})();
+</script>
+<script src="/menu.js"></script>
+</body>
+</html>

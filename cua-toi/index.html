@@ -92,7 +92,7 @@
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>Của tôi</h1>
+      <h1 id="tieuDe">Của tôi</h1>
       <div class="sub">Thông tin tài khoản, việc của bạn và tổng quan nhóm</div>
     </div>
     <button class="ghost" id="reload" type="button">Tải lại</button>
@@ -173,6 +173,7 @@
   }
   function ve() {
     $('reload').style.display = '';
+    $('tieuDe').textContent = D.nguoi.vaiTro === 'quanLy' ? 'Việc của tôi' : 'Trang chủ';
     var n = D.nguoi, hn = ngay(D.homNay);
     var chua = D.viec.filter(function (v) { return !v.xong; }), xong = D.viec.filter(function (v) { return v.xong; });
     var tre = 0, sap = 0;
@@ -184,7 +185,7 @@
       '<dt>Email</dt><dd>' + esc(n.email) + '</dd>' +
       '<dt>Vai trò</dt><dd>' + (n.vaiTro === 'quanLy' ? '<span class="tag ql">Quản lý</span> xem được toàn bộ dashboard' : 'Thành viên') + '</dd>' +
       '<dt>Nhóm</dt><dd>' + (n.nhom.length ? n.nhom.map(function (m) { return '<a class="tag" href="/' + m + '/">' + esc(TEN[m] || m) + '</a>'; }).join('')
-        : '<span class="note">Chưa có tên trong danh sách thành viên của nhóm nào.</span>') + '</dd></dl></div>';
+        : '<span class="note">Chưa có tên trong danh sách thành viên của nhóm nào.</span>') + '</dd></dl><div class="note" style="margin-top:8px"><a href="/ho-so/">Xem / cập nhật hồ sơ của tôi →</a></div></div>';
     var g = function (n) { return String(Math.round(n * 10) / 10).replace('.', ',') + ' giờ'; };
     var tr = D.truc && D.truc.toiThieuGio ? '<div class="panel"><h2>Trực văn phòng tuần này</h2><div class="sub">Mỗi thành viên trực ít nhất ' + D.truc.toiThieuGio + ' giờ / tuần (2 buổi).</div>' +
       '<div style="margin-top:8px;font-size:14px">Đã đăng ký <b>' + g(D.truc.gioDangKy) + '</b> · đã điểm danh <b>' + g(D.truc.gioDiemDanh) + '</b>' +

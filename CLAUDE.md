@@ -48,8 +48,13 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 
 ## Trang
 
-`/` tổng quan · `/cua-toi/` · `/lich-truc/` · `/phe-duyet/` `/thong-ke/` (quản lý) · `/4t/` · `/nghiep-vu/` `/csdl-csvc/` `/noi-vu/` (dùng chung `nhom.js`) · `/bao-mat/`.
-`menu.js` vẽ menu theo quyền (xem được ≥2 nhóm thì gom vào menu thả xuống "Công việc nhóm"; cột 4 = 'quanLy' là trang chỉ quản lý thấy) và tự nạp `dangnhap.js`. Thêm trang: thêm một dòng vào `TRANG` trong `menu.js`.
+`/` tổng quan (quản lý) · `/cua-toi/` (Trang chủ của thành viên / Việc của tôi của quản lý) · `/lich-truc/` (`#diem-danh` = chế độ Điểm danh) ·
+`/phe-duyet/` `/thong-ke/` `/cai-dat/` (quản lý) · `/ho-so/` `/tai-lieu/` `/cam-nang/` · `/4t/` · `/nghiep-vu/` `/csdl-csvc/` `/noi-vu/` (dùng chung `nhom.js`) · `/bao-mat/`.
+`menu.js` vẽ thanh menu bên trái chia nhóm mục theo vai trò (hàm `cauHinh`; trên điện thoại mở bằng nút ☰) và tự nạp `dangnhap.js`.
+Thêm trang: thêm một mục vào `cauHinh()` trong `menu.js`. Trang mới dùng chung `/chung.css` + `/chung.js` (T.$, T.esc, T.toast, T.khoi).
+Server `6-ho-so-noi-dung.gs`: hồ sơ (cột Chức vụ/MSSV/Lớp/Số điện thoại tự thêm vào sheet tài khoản; thành viên sửa MSSV/Lớp/SĐT,
+chức vụ do quản lý), tab "Tài liệu" + "Cẩm nang" trong sheet tài khoản (quản lý sửa), cài đặt lịch trực (`caiDat`/`luuCaiDat`).
+Lộ trình đã thống nhất: (2) Đơn từ & xin nghỉ → duyệt ở Phê duyệt; (3) Giao việc trên dashboard + Nhắc việc tự động (email, cần cấp quyền).
 
 ## Cách làm việc (để tiết kiệm thời gian/token)
 

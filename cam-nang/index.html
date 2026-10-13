@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cẩm nang · Ban Đoàn vụ</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/chung.css">
+<style>
+  .bo { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: start; }
+  .muc-luc { position: sticky; top: 68px; }
+  .muc-luc a { display: block; padding: 6px 10px; border-radius: 8px; font-size: 13.5px; color: var(--text); text-decoration: none; }
+  .muc-luc a:hover { background: var(--track); }
+  .muc-luc b { display: block; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 0 10px 6px; }
+  .sec { scroll-margin-top: 70px; }
+  .sec h2 { font-size: 18px; display: flex; gap: 10px; align-items: baseline; }
+  .sec h2 span { color: var(--muted); font-weight: 500; font-size: 14px; }
+  .nd { margin-top: 8px; font-size: 15px; line-height: 1.65; overflow-wrap: anywhere; }
+  .nd p { margin: 0 0 8px; } .nd ul { margin: 0 0 8px; padding-left: 22px; } .nd li { margin: 2px 0; }
+  .sec .b { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .sec .cn { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  @media (max-width: 820px) { .bo { grid-template-columns: 1fr; } .muc-luc { position: static; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div><h1>Cẩm nang Ban Đoàn vụ</h1><div class="sub">Quy chế, quy trình và hướng dẫn cho thành viên</div></div>
+    <button class="btn" type="button" id="them" style="display:none">+ Thêm mục</button></div>
+  <div id="app"><div class="panel empty">Đang tải…</div></div>
+</div>
+<div class="dlg" id="dlg" role="dialog" aria-modal="true"><div id="dlgBody"></div></div>
+<script src="/dangnhap.js"></script>
+<script src="/chung.js"></script>
+<script>
+(function () {
+  var app = T.$('app'), D = null, esc = T.esc, F = null;
+  function tai() { BDV.goi('camNang', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function nhan(d) { D = d; T.$('them').style.display = d.quanLy ? '' : 'none'; ve(); }
+  // Định dạng đơn giản: dòng bắt đầu "- " thành gạch đầu dòng, **chữ đậm**, link https tự bấm được
+  function dinhDang(s) {
+    var inl = function (t) {
+      return esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(https:\/\/[^\s<]+[^\s<.,;:!?)])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    };
+    var out = '', ul = false;
+    String(s || '').split(/\r?\n/).forEach(function (l) {
+      var m = /^\s*[-•*]\s+(.*)$/.exec(l);
+      if (m) { if (!ul) { out += '<ul>'; ul = true; } out += '<li>' + inl(m[1]) + '</li>'; return; }
+      if (ul) { out += '</ul>'; ul = false; }
+      if (l.trim()) out += '<p>' + inl(l) + '</p>';
+    });
+    return out + (ul ? '</ul>' : '');
+  }
+  function ve() {
+    if (!D.ds.length) { app.innerHTML = '<div class="panel empty">Cẩm nang chưa có nội dung.' + (D.quanLy ? ' Bấm "+ Thêm mục" để viết.' : '') + '</div>'; return; }
+    var ml = '<nav class="panel muc-luc" aria-label="Mục lục"><b>Mục lục</b>' + D.ds.map(function (x, i) { return '<a href="#' + esc(x.ma) + '">' + (i + 1) + '. ' + esc(x.tieuDe) + '</a>'; }).join('') + '</nav>';
+    var nd = D.ds.map(function (x, i) {
+      return '<section class="panel sec" id="' + esc(x.ma) + '"><h2><span>' + (i + 1) + '.</span>' + esc(x.tieuDe) + '</h2><div class="nd">' + dinhDang(x.noiDung) + '</div>' +
+        (D.quanLy ? '<div class="cn">Cập nhật ' + esc(x.luc) + (x.boi ? ' · ' + esc(x.boi) : '') + '</div><div class="b"><button type="button" class="ghost sm" data-sua="' + esc(x.ma) + '">Sửa</button>' +
+          (i ? '<button type="button" class="ghost sm" data-di="len" data-ma="' + esc(x.ma) + '">↑ Lên</button>' : '') + (i < D.ds.length - 1 ? '<button type="button" class="ghost sm" data-di="xuong" data-ma="' + esc(x.ma) + '">↓ Xuống</button>' : '') +
+          '<button type="button" class="ghost sm bad" data-xoa="' + esc(x.ma) + '">Xoá</button></div>' : '') + '</section>';
+    }).join('');
+    app.innerHTML = '<div class="bo">' + ml + '<div>' + nd + '</div></div>';
+  }
+  function moForm(x, loi) {
+    F = x || { tieuDe: '', noiDung: '' };
+    T.$('dlgBody').innerHTML = '<form class="form" id="f"><h2>' + (F.ma ? 'Sửa mục' : 'Thêm mục') + '</h2>' +
+      '<label for="fT">Tiêu đề</label><input id="fT" required maxlength="150" value="' + esc(F.tieuDe) + '">' +
+      '<label for="fN">Nội dung</label><textarea id="fN" rows="12">' + esc(F.noiDung) + '</textarea>' +
+      '<div class="note">Mỗi dòng là một đoạn. Bắt đầu dòng bằng "- " để thành gạch đầu dòng, **hai dấu sao** để in đậm, dán link https:// sẽ bấm được.</div>' +
+      (loi ? '<div class="err">' + esc(loi) + '</div>' : '') +
+      '<div class="acts"><button type="button" class="ghost" data-dong="1">Đóng</button><button class="btn" type="submit">Lưu</button></div></form>';
+    T.$('dlg').className = 'dlg mo'; T.$('fT').focus();
+  }
+  function dong() { T.$('dlg').className = 'dlg'; F = null; }
+  function gui(req, el, tb) {
+    if (el) el.classList.add('busy');
+    return BDV.goi('luuCamNang', req).then(function (d) { nhan(d); if (tb) T.toast(tb); }).catch(function (er) { if (el) el.classList.remove('busy'); T.toast(er.message || String(er), true); throw er; });
+  }
+  T.$('them').addEventListener('click', function () { moForm(null); });
+  T.$('dlg').addEventListener('click', function (e) { if (e.target === T.$('dlg') || e.target.dataset.dong) dong(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && F) dong(); });
+  T.$('dlg').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var x = { ma: F.ma, tieuDe: T.$('fT').value.trim(), noiDung: T.$('fN').value };
+    e.target.querySelector('button[type=submit]').disabled = true;
+    BDV.goi('luuCamNang', Object.assign({ viec: F.ma ? 'sua' : 'them' }, x)).then(function (d) { dong(); nhan(d); T.toast('Đã lưu'); })
+      .catch(function (er) { moForm(x, er.message || String(er)); });
+  });
+  app.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || !D) return;
+    if (b.dataset.sua) { moForm(D.ds.filter(function (x) { return x.ma === b.dataset.sua; })[0]); return; }
+    if (b.dataset.di) { gui({ viec: b.dataset.di, ma: b.dataset.ma }, b.closest('.sec')).catch(function () {}); return; }
+    if (b.dataset.xoa) {
+      if (b.dataset.chac !== '1') { b.dataset.chac = '1'; b.textContent = 'Bấm lần nữa để xoá'; setTimeout(function () { if (b.isConnected) { b.dataset.chac = ''; b.textContent = 'Xoá'; } }, 4000); return; }
+      gui({ viec: 'xoa', ma: b.dataset.xoa }, b.closest('.sec'), 'Đã xoá mục').catch(function () {});
+    }
+  });
+  T.khoi(app, tai);
+})();
+</script>
+<script src="/menu.js"></script>
+</body>
+</html>
