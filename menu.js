@@ -44,6 +44,13 @@
     ];
   }
 
+  /* Năm học: chọn ở đầu thanh menu, nhớ trong trình duyệt. Hiện chỉ năm hiện tại có dữ liệu;
+     chọn năm khác thì các trang theo năm (việc, lịch trực, thống kê…) hiện "chưa có dữ liệu". Khi bổ sung dữ liệu năm cũ: thêm vào CO_DU_LIEU. */
+  var NAM_HOC = ['2026 - 2027', '2025 - 2026', '2024 - 2025', '2023 - 2024'];
+  var HIEN_TAI = '2026 - 2027', CO_DU_LIEU = ['2026 - 2027'];
+  var KHONG_THEO_NAM = ['/ho-so/', '/cam-nang/', '/cai-dat/', '/tai-lieu/', '/bao-mat/'];
+  var namHoc = (function () { try { var v = localStorage.getItem('bdv.namHoc'); return NAM_HOC.indexOf(v) > -1 ? v : HIEN_TAI; } catch (e) { return HIEN_TAI; } })();
+  window.BDV_NAM_HOC = { chon: function () { return namHoc; }, hienTai: HIEN_TAI, ds: NAM_HOC };
   var o = location.pathname.replace(/index\.html$/, ''); if (o.slice(-1) !== '/') o += '/';
   function key() { return o + (location.hash === '#diem-danh' ? '#diem-danh' : ''); }
 
@@ -57,6 +64,12 @@
     'body.bdv-co-side .bdv-side{display:block}' +
     '.bdv-side .logo{display:block;padding:6px 10px 14px;text-decoration:none;color:var(--text,#17202e)}' +
     '.bdv-side .logo b{display:block;font-size:16px}.bdv-side .logo span{font-size:12px;color:var(--muted,#5d6b80)}' +
+    '.bdv-side .nam{display:flex;align-items:center;gap:6px;margin:-6px 10px 6px;font-size:12px;color:var(--muted,#5d6b80)}' +
+    '.bdv-side .nam select{flex:1;font:inherit;font-size:13px;color:var(--text,#17202e);background:var(--card,#fff);border:1px solid var(--line,#dfe4ec);border-radius:8px;padding:5px 8px}' +
+    '.bdv-side .nam.cu select{border-color:#c77700;color:#9a5b00;font-weight:600}' +
+    'body.bdv-nam-cu .wrap,body.bdv-nam-cu .dlg{display:none!important}' +
+    '.bdv-namcu{max-width:760px;margin:40px auto;padding:0 16px}.bdv-namcu>div{background:var(--card,#fff);border:1px dashed var(--line,#dfe4ec);border-radius:14px;padding:32px 22px;text-align:center;color:var(--muted,#5d6b80);font-size:15px}' +
+    '.bdv-namcu h2{margin:0 0 8px;font-size:19px;color:var(--text,#17202e)}.bdv-namcu button{margin-top:14px;font:inherit;font-weight:600;border:1px solid var(--accent,#1a56c4);background:var(--accent,#1a56c4);color:#fff;border-radius:10px;padding:8px 16px;cursor:pointer}' +
     '.bdv-side .phan{margin-top:10px}' +
     '.bdv-side .td{display:flex;width:100%;align-items:center;justify-content:space-between;border:0;background:none;padding:8px 10px 4px;font:inherit;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#5d6b80);cursor:pointer}' +
     '.bdv-side .td svg{width:14px;height:14px;transition:transform .15s}.bdv-side .phan.dong .td svg{transform:rotate(-90deg)}.bdv-side .phan.dong .ds{display:none}' +
@@ -114,17 +127,34 @@
     var n = nguoi(), ql = !!n && n.vaiTro === 'quanLy';
     document.body.classList.toggle('bdv-co-side', !!n);
     h.querySelector('.brand').setAttribute('href', n && !ql ? '/cua-toi/' : '/');
-    if (!n) { side.innerHTML = ''; soCho = null; document.body.classList.remove('bdv-mo-side'); if (window.BDV) BDV.veNut(); return; }
+    if (!n) { side.innerHTML = ''; soCho = null; document.body.classList.remove('bdv-mo-side'); veNam(null); if (window.BDV) BDV.veNut(); return; }
     if (ql && soCho === null) demCho(n);
-    side.innerHTML = '<a class="logo" href="' + (ql ? '/' : '/cua-toi/') + '"><b>Ban Đoàn vụ</b><span>VKU · năm học 2026 - 2027</span></a>' +
+    var cu = namHoc !== HIEN_TAI;
+    side.innerHTML = '<a class="logo" href="' + (ql ? '/' : '/cua-toi/') + '"><b>Ban Đoàn vụ</b><span>VKU</span></a>' +
+      '<label class="nam' + (cu ? ' cu' : '') + '">Năm học <select id="bdvNam" aria-label="Chọn năm học">' + NAM_HOC.map(function (y) {
+        return '<option' + (y === namHoc ? ' selected' : '') + '>' + y + '</option>'; }).join('') + '</select></label>' +
       cauHinh(n).map(function (p) {
         var ds = '<div class="ds">' + p.ds.map(mucHtml).join('') + '</div>';
         if (!p.muc) return '<div class="phan">' + ds + '</div>';
         return '<div class="phan' + (dongPhan[p.muc] ? ' dong' : '') + '"><button type="button" class="td" data-phan="' + p.muc + '" aria-expanded="' + !dongPhan[p.muc] + '">' + p.muc +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' + ICON.chev + '</svg></button>' + ds + '</div>';
       }).join('');
+    veNam(n);
     if (window.BDV) BDV.veNut();
   }
+  // Năm học chưa có dữ liệu: ẩn nội dung trang theo năm, hiện thông báo
+  function veNam(n) {
+    var an = !!n && CO_DU_LIEU.indexOf(namHoc) === -1 && KHONG_THEO_NAM.indexOf(o) === -1;
+    document.body.classList.toggle('bdv-nam-cu', an);
+    var el = document.querySelector('.bdv-namcu');
+    if (!an) { if (el) el.remove(); return; }
+    if (!el) { el = document.createElement('div'); el.className = 'bdv-namcu'; phu.parentNode.insertBefore(el, phu.nextSibling); }
+    el.innerHTML = '<div><h2>Năm học ' + namHoc + '</h2>Chưa có dữ liệu của năm học này trên dashboard.<br>Dữ liệu các năm trước sẽ được bổ sung sau.' +
+      '<br><button type="button" data-ve-nam="1">Về năm học ' + HIEN_TAI + '</button></div>';
+  }
+  function doiNam(v) { namHoc = v; try { localStorage.setItem('bdv.namHoc', v); } catch (e) {} ve(); try { document.dispatchEvent(new CustomEvent('bdv-namhoc', { detail: v })); } catch (e) {} }
+  document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-ve-nam]')) doiNam(HIEN_TAI); });
+  side.addEventListener('change', function (e) { if (e.target.id === 'bdvNam') doiNam(e.target.value); });
   function demCho(n) {
     if (!n || n.vaiTro !== 'quanLy' || !window.BDV || o === '/phe-duyet/') return;
     try { var c = JSON.parse(sessionStorage.getItem('bdv.pd') || 'null'); if (c && Date.now() - c.t < 60000) { soCho = c.so; return; } } catch (e) {}

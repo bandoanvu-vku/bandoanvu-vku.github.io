@@ -60,6 +60,9 @@ Quản lý CSVC, Quản lý Đoàn vụ; khớp tên mảng theo từ khoá tron
 CN xanh: 2 người/CN, đăng ký cùng khung lịch trực, sau khoá thì xin vắng + chọn người thay → phụ trách chính/quản lý duyệt (cũng hiện ở Phê duyệt).
 Kiểm kê: phụ trách mảng Quản lý CSVC đăng ký ngày + phân công mỗi tháng. Họp tháng: tab "Họp nhóm" ở cả 4 nhóm (thành viên nhóm đăng ký, quản lý xem;
 bảng tổng hợp ở tab Chung của Tổng quan). Quản lý công văn: chờ link sheet công văn có sẵn của nhóm.
+Năm học: ô chọn ở đầu thanh menu (`menu.js`: NAM_HOC, HIEN_TAI, CO_DU_LIEU; nhớ ở localStorage `bdv.namHoc`, `window.BDV_NAM_HOC`).
+Hiện chỉ 2026 - 2027 có dữ liệu; năm khác thì trang theo năm hiện "chưa có dữ liệu" (trừ hồ sơ/cẩm nang/cài đặt/tài liệu/bảo mật).
+Khi bổ sung năm cũ: cần nguồn sheet theo năm ở máy chủ + thêm năm vào CO_DU_LIEU + truyền năm học trong các BDV.goi.
 Tất cả file .gs chung một không gian tên — build script / workflow dừng nếu trùng tên hàm.
 Lộ trình đã thống nhất: (2) Đơn từ & xin nghỉ → duyệt ở Phê duyệt; (3) Giao việc trên dashboard + Nhắc việc tự động (email, cần cấp quyền).
 
