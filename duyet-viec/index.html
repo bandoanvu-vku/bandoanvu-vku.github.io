@@ -15,13 +15,16 @@
   .vi .b { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
   .vi input { border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; background: var(--card); width: 210px; font-size: 13.5px; }
   .tag { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .tag.cho, .tag.ok { text-transform: none; letter-spacing: 0; font-weight: 600; border-radius: 999px; padding: 1px 8px; background: var(--warn-soft); color: var(--warn); }
+  .tag.ok { background: var(--accent-soft); color: var(--accent); }
+  details.panel summary { cursor: pointer; color: var(--accent); font-size: 14px; }
   .btn.sm { min-height: 34px; padding: 5px 14px; font-size: 13.5px; }
   @media (max-width: 640px) { .vi { grid-template-columns: 1fr; } .vi .b { justify-content: flex-start; } .vi input { flex: 1 1 100%; width: auto; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><div><h1>Duyệt việc</h1><div class="sub">Nhiệm vụ thành viên đã làm xong và chuyển sang "Chờ duyệt" · Duyệt = Hoàn thành, Trả lại = về Đang làm kèm ghi chú</div></div>
+  <div class="top"><div><h1>Duyệt việc</h1><div class="sub">Duyệt 2 cấp: thành viên gửi "Chờ duyệt" → trưởng nhóm duyệt → quản lý duyệt = Hoàn thành · Trả lại = về Đang làm kèm ghi chú để nhóm xử lý</div></div>
     <button class="ghost" id="reload" type="button">Tải lại</button></div>
   <div id="app"><div class="panel empty">Đang tải…</div></div>
 </div>
@@ -33,19 +36,25 @@
   function tai() { BDV.goi('duyetViecDs', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
   function nhan(d) { D = d; ve(); try { document.dispatchEvent(new CustomEvent('bdv-duyetviec', { detail: d.ds.length })); } catch (e) {} }
   function dm(iso) { var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+  function dong(v, i, ds) {
+    return '<div class="vi" data-ds="' + ds + '" data-i="' + i + '"><div><span class="tag">' + esc(v.tenNhom) + (v.mang ? ' · ' + esc(v.mang) : '') + '</span>' +
+      (ds === 'tn' ? ' <span class="tag cho">Chờ trưởng nhóm: ' + esc(v.truongNhom.join(', ')) + '</span>' : v.trangThai === 'Chờ duyệt' ? ' <span class="tag cho">Nhóm chưa có trưởng nhóm</span>' : /Trưởng nhóm duyệt/.test(v.ghiChu || '') ? ' <span class="tag ok">Trưởng nhóm đã duyệt</span>' : ' <span class="tag cho">Gửi thẳng quản lý</span>') +
+      '<div class="t">' + esc(v.ten) + '</div>' +
+      '<div class="s"><b>Phụ trách:</b> ' + esc(v.chinh || '—') + (v.hoTro ? ' · <b>Hỗ trợ:</b> ' + esc(v.hoTro) : '') + (v.han ? ' · Hạn ' + dm(v.han) : '') +
+      (v.link && /^https?:\/\//i.test(v.link) ? ' · <a href="' + esc(v.link) + '" target="_blank" rel="noopener">Xem sản phẩm ↗</a>' : ' · <i>chưa có link sản phẩm</i>') +
+      (v.moTa ? '<br>' + esc(v.moTa) : '') + (v.ghiChu ? '<br>Ghi chú: ' + esc(v.ghiChu) : '') + '</div></div>' +
+      '<div class="b"><input type="text" placeholder="Nhận xét (bắt buộc khi trả lại)" maxlength="300"><button type="button" class="' + (ds === 'tn' ? 'ghost' : 'btn') + ' sm" data-ok="1">' + (ds === 'tn' ? 'Duyệt luôn' : 'Duyệt') + '</button><button type="button" class="ghost sm bad" data-ok="0">Trả lại</button></div></div>';
+  }
   function ve() {
-    app.innerHTML = '<div class="panel">' + (D.ds.length ? D.ds.map(function (v, i) {
-      return '<div class="vi" data-i="' + i + '"><div><span class="tag">' + esc(v.tenNhom) + (v.mang ? ' · ' + esc(v.mang) : '') + '</span><div class="t">' + esc(v.ten) + '</div>' +
-        '<div class="s"><b>Phụ trách:</b> ' + esc(v.chinh || '—') + (v.hoTro ? ' · <b>Hỗ trợ:</b> ' + esc(v.hoTro) : '') + (v.han ? ' · Hạn ' + dm(v.han) : '') +
-        (v.link && /^https?:\/\//i.test(v.link) ? ' · <a href="' + esc(v.link) + '" target="_blank" rel="noopener">Xem sản phẩm ↗</a>' : ' · <i>chưa có link sản phẩm</i>') +
-        (v.moTa ? '<br>' + esc(v.moTa) : '') + (v.ghiChu ? '<br>Ghi chú: ' + esc(v.ghiChu) : '') + '</div></div>' +
-        '<div class="b"><input type="text" placeholder="Nhận xét (bắt buộc khi trả lại)" maxlength="300"><button type="button" class="btn sm" data-ok="1">Duyệt</button><button type="button" class="ghost sm bad" data-ok="0">Trả lại</button></div></div>';
-    }).join('') : '<div class="empty">Không có việc nào chờ duyệt. 🎉</div>') + '</div>' +
-      '<div class="foot">Nhiệm vụ của 3 nhóm Nghiệp vụ, CSDL - CSVC, Nội vụ. Thành viên chuyển trạng thái sang "Chờ duyệt" ở trang nhóm khi làm xong.</div>';
+    var tn = D.choTN || [];
+    app.innerHTML = '<div class="panel"><h2 style="margin:0 0 6px;font-size:15px">Chờ quản lý duyệt (' + D.ds.length + ')</h2>' + (D.ds.length ? D.ds.map(function (v, i) { return dong(v, i, 'ql'); }).join('')
+      : '<div class="empty">Không có việc nào chờ quản lý duyệt. 🎉</div>') + '</div>' +
+      (tn.length ? '<details class="panel"><summary>Đang chờ trưởng nhóm duyệt (' + tn.length + ') — quản lý có thể duyệt luôn nếu cần</summary>' + tn.map(function (v, i) { return dong(v, i, 'tn'); }).join('') + '</details>' : '') +
+      '<div class="foot">Nhiệm vụ của 3 nhóm Nghiệp vụ, CSDL - CSVC, Nội vụ. Trưởng nhóm = người có Chức vụ "Trưởng nhóm" trong sheet tài khoản; nhóm chưa có trưởng nhóm thì việc gửi thẳng quản lý.</div>';
   }
   app.addEventListener('click', function (e) {
     var b = e.target.closest('button[data-ok]'); if (!b || busy) return;
-    var r = b.closest('.vi'), v = D.ds[+r.dataset.i], ok = b.dataset.ok === '1', gc = r.querySelector('input').value.trim();
+    var r = b.closest('.vi'), v = (r.dataset.ds === 'tn' ? D.choTN : D.ds)[+r.dataset.i], ok = b.dataset.ok === '1', gc = r.querySelector('input').value.trim();
     if (!ok && !gc) { T.toast('Ghi lý do / việc cần sửa khi trả lại.', true); r.querySelector('input').focus(); return; }
     busy = true; r.classList.add('busy');
     BDV.goi('duyetViec', { nhom: v.nhom, dong: v.dong, ten: v.ten, dongY: ok, ghiChu: gc }).then(function (d) { busy = false; nhan(d); T.toast(ok ? 'Đã duyệt: hoàn thành' : 'Đã trả lại cho thành viên'); })

@@ -75,8 +75,10 @@ Hiện chỉ 2026 - 2027 có dữ liệu; năm khác thì trang theo năm hiện
 Khi bổ sung năm cũ: cần nguồn sheet theo năm ở máy chủ + thêm năm vào CO_DU_LIEU + truyền năm học trong các BDV.goi.
 Tất cả file .gs chung một không gian tên — build script / workflow dừng nếu trùng tên hàm.
 Quản lý không có "Việc của tôi"; thay bằng **Giao việc** (`/giao-viec/`, `8-giao-viec.gs`: tạo/sửa nhiệm vụ ghi vào tab Nhiệm vụ của 3 sheet nhóm,
-4T không giao được vì Timeline chỉ được ghi ô nhận/tick) và **Duyệt việc** (`/duyet-viec/`: việc "Chờ duyệt" → Duyệt = Hoàn thành, Trả lại = Đang làm + ghi chú;
-menu hiện số chờ qua `pheDuyet {dem}` → soViec).
+4T không giao được vì Timeline chỉ được ghi ô nhận/tick) và **Duyệt việc** 2 cấp: thành viên đặt "Chờ duyệt" (= chờ trưởng nhóm; nhóm chưa có trưởng nhóm
+hoặc chính trưởng nhóm gửi thì ghi thẳng "Chờ quản lý duyệt") → trưởng nhóm duyệt ở khung "Chờ trưởng nhóm duyệt" trên tab Nhiệm vụ nhóm (action `duyetViec`, `ve:'nhom'`)
+→ "Chờ quản lý duyệt" → quản lý duyệt ở `/duyet-viec/` = Hoàn thành. Trả lại (cả 2 cấp) = Đang làm + ghi chú. Menu đếm số chờ quản lý (`soViecChoQL_`).
+Xin vắng CN xanh vẫn 1 cấp (phụ trách chính duyệt).
 Xem như thành viên: quản lý chọn "Giao diện" trên header (Quản lý / Thành viên · nhóm X), nhớ ở localStorage `bdv.xemNhu`.
 `BDV.nguoi()` trả người "hiệu lực" (vai trò thành viên, nhom=[X]), `BDV.nguoiThat()` trả tài khoản thật; `BDV.goi` tự gửi `req.xemNhu`
 → máy chủ (doPost) chỉ cho các action đọc và lọc như thành viên nhóm X; thao tác ghi bị chặn.

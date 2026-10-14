@@ -3,6 +3,8 @@
 
 // Trạng thái nhiệm vụ của 3 nhóm (khớp danh sách chọn ở cột "Trạng thái" trong sheet nhóm)
 const TRANG_THAI = ['Chưa làm', 'Đang làm', 'Chờ duyệt', 'Hoàn thành'];
+// Duyệt việc 2 cấp: "Chờ duyệt" = chờ trưởng nhóm → "Chờ quản lý duyệt" → Hoàn thành (nhóm chưa có trưởng nhóm: gửi thẳng quản lý)
+const VIEC_CHO_QL = 'Chờ quản lý duyệt';
 
 // 3 nhóm có sheet theo dõi riêng. ID sheet lưu ở Script Properties, khoá SHEET_NHOM ({ ma: { id, ten } }).
 // Thành viên và mảng công việc nằm trong chính sheet của nhóm (tab "Thành viên", "Mảng công việc").
@@ -104,8 +106,10 @@ function nhomGhi(req) {
       chiNguoiLam();
       const tt = String(req.trangThai || '');
       if (TRANG_THAI.indexOf(tt) === -1) throw new Error('Trạng thái không hợp lệ.');
-      sheet.getRange(dong, 10).setValue(tt);
-      hanhDong = 'Trạng thái: ' + tt;
+      let ghiTT = tt;
+      if (tt === 'Chờ duyệt') { const tn = truongNhom_(maNhom); if (!tn.length || tn.indexOf(ten) > -1) ghiTT = VIEC_CHO_QL; }
+      sheet.getRange(dong, 10).setValue(ghiTT);
+      hanhDong = 'Trạng thái: ' + ghiTT;
     } else if (req.viec === 'link') {
       chiNguoiLam();
       const link = chuoi_(req.link).slice(0, 500);
@@ -203,7 +207,7 @@ function layTongQuan(moi) {
         const tre = !xong && !!v.han && v.han < homNay, sap = !xong && !!v.han && v.han >= homNay && v.han <= sau7;
         if (xong) o.xong++;
         else if (!v.chinh) o.chuaNhan++;
-        else if (v.trangThai === 'Đang làm' || v.trangThai === 'Chờ duyệt') o.dangLam++;
+        else if (v.trangThai === 'Đang làm' || v.trangThai === 'Chờ duyệt' || v.trangThai === VIEC_CHO_QL) o.dangLam++;
         else o.chuaLam++;
         if (tre) o.quaHan++;
         if (sap) o.sapHan++;

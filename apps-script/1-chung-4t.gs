@@ -62,7 +62,7 @@ function doPost(e) {
     const doc = {
       toi: function () { return nd; },
       data: function () { canNhom_(nd, '4t'); return layDuLieu(req.moi === true); },
-      nhom: function () { canNhom_(nd, String(req.n || '')); return layNhom(String(req.n || ''), req.moi === true); },
+      nhom: function () { const n = String(req.n || ''); canNhom_(nd, n); const d = layNhom(n, req.moi === true); try { d.truongNhom = n === '4t' ? [] : truongNhom_(n); } catch (e) { d.truongNhom = []; } return d; },
       tongquan: function () { return locTongQuan_(layTongQuan(req.moi === true), nd); },
       cuaToi: function () { const o = cuaToi_(nd, req.moi === true); o.truc = trucTuanNay_(nd); return o; },
       lichTruc: function () { return lichTruc_(nd, req.tuan); },

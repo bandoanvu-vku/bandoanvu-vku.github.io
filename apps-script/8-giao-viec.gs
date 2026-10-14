@@ -63,37 +63,55 @@ function giaoViec_(nd, req) {
   });
 }
 
-/** Các việc đang "Chờ duyệt" của 3 nhóm. */
+/** Các việc đang chờ duyệt của 3 nhóm. cap = 'tn' (chờ trưởng nhóm) | 'ql' (chờ quản lý; gồm cả "Chờ duyệt" của nhóm chưa có trưởng nhóm). */
 function viecChoDuyet_() {
   const ds = [];
   NHOM_MOI.forEach(function (n) {
     try {
+      const tn = truongNhom_(n.ma);
       layNhom(n.ma, false).nhiemVu.forEach(function (v) {
-        if (v.trangThai === 'Chờ duyệt') ds.push({ nhom: n.ma, tenNhom: n.ten, dong: v.dong, ten: v.ten, mang: v.mang, moTa: v.moTa, han: v.han, chinh: v.chinh, hoTro: v.hoTro, link: v.link, ghiChu: v.ghiChu });
+        if (v.trangThai !== 'Chờ duyệt' && v.trangThai !== VIEC_CHO_QL) return;
+        const cap = v.trangThai === VIEC_CHO_QL || !tn.length ? 'ql' : 'tn';
+        ds.push({ nhom: n.ma, tenNhom: n.ten, cap: cap, truongNhom: tn, trangThai: v.trangThai, dong: v.dong, ten: v.ten, mang: v.mang, moTa: v.moTa, han: v.han, chinh: v.chinh, hoTro: v.hoTro, link: v.link, ghiChu: v.ghiChu });
       });
     } catch (e) {}
   });
   return ds.sort(function (a, b) { return (a.han || '9999') < (b.han || '9999') ? -1 : 1; });
 }
-function duyetViecDs_(nd) { canQuanLyViec_(nd); return { homNay: bayGio_().ngay, ds: viecChoDuyet_() }; }
-
-function duyetViec_(nd, req) {
+function duyetViecDs_(nd) {
   canQuanLyViec_(nd);
+  const tat = viecChoDuyet_();
+  return { homNay: bayGio_().ngay, ds: tat.filter(function (v) { return v.cap === 'ql'; }), choTN: tat.filter(function (v) { return v.cap === 'tn'; }) };
+}
+/** Số việc chờ quản lý duyệt (menu). */
+function soViecChoQL_() { return viecChoDuyet_().filter(function (v) { return v.cap === 'ql'; }).length; }
+
+/** Trưởng nhóm duyệt cấp 1 (→ Chờ quản lý duyệt) · quản lý duyệt cấp 2 (→ Hoàn thành). Trả lại → Đang làm + ghi chú. */
+function duyetViec_(nd, req) {
   const ma = String(req.nhom || '');
   nhomMoiHopLe_(ma);
+  const laQL = nd.vaiTro === 'quanLy', tn = truongNhom_(ma), laTN = tn.indexOf(nd.ten) > -1;
+  if (!laQL && !laTN) throw loiQuyen_('Chỉ trưởng nhóm hoặc quản lý mới duyệt việc.');
   return voiKhoa_(function () {
     const ss = SpreadsheetApp.openById(sheetNhom_(ma).id), s = ss.getSheetByName('Nhiệm vụ'), dong = Number(req.dong);
     if (!(dong >= 3)) throw new Error('Việc không hợp lệ.');
-    const r = s.getRange(dong, 1, 1, 12).getValues()[0];
+    const r = s.getRange(dong, 1, 1, 12).getValues()[0], tt = chuoi_(r[9]);
     if (chuoi_(r[2]) !== chuoi_(req.ten)) throw new Error('Sheet vừa được chỉnh sửa. Tải lại trang rồi duyệt lại giúp nhé.');
-    if (chuoi_(r[9]) !== 'Chờ duyệt') throw new Error('Việc này không còn ở trạng thái Chờ duyệt.');
+    if (tt !== 'Chờ duyệt' && tt !== VIEC_CHO_QL) throw new Error('Việc này không còn ở trạng thái chờ duyệt.');
+    if (tt === VIEC_CHO_QL && !laQL) throw loiQuyen_('Việc này đã qua trưởng nhóm, đang chờ quản lý duyệt.');
     const gc = chuoi_(req.ghiChu).slice(0, 300), dongY = req.dongY === true;
     if (!dongY && !gc) throw new Error('Ghi lý do / việc cần sửa khi trả lại.');
-    s.getRange(dong, 10).setValue(dongY ? 'Hoàn thành' : 'Đang làm');
-    if (gc) s.getRange(dong, 12).setValue((chuoi_(r[11]) ? chuoi_(r[11]) + ' | ' : '') + (dongY ? 'Đã duyệt' : 'Trả lại') + ' (' + nd.ten + '): ' + gc);
-    ghiNhatKy_(ss, [new Date(), nd.ten, dongY ? 'Duyệt việc' : 'Trả lại việc', 'Nhiệm vụ', chuoi_(r[2]), gc]);
+    const capTN = tt === 'Chờ duyệt' && !laQL;
+    const moi = dongY ? (capTN ? VIEC_CHO_QL : 'Hoàn thành') : 'Đang làm';
+    const nhan = dongY ? (capTN ? 'Trưởng nhóm duyệt' : 'Quản lý duyệt') : (capTN ? 'Trưởng nhóm trả lại' : 'Quản lý trả lại, nhóm xử lý');
+    s.getRange(dong, 10).setValue(moi);
+    if (gc || capTN) s.getRange(dong, 12).setValue((chuoi_(r[11]) ? chuoi_(r[11]) + ' | ' : '') + nhan + ' (' + nd.ten + ')' + (gc ? ': ' + gc : ''));
+    ghiNhatKy_(ss, [new Date(), nd.ten, nhan, 'Nhiệm vụ', chuoi_(r[2]), gc]);
     SpreadsheetApp.flush();
-    nhoNhom_(docNhom_(ma, ss));
-    return duyetViecDs_(nd);
+    const d = docNhom_(ma, ss);
+    nhoNhom_(d);
+    if (laQL && req.ve !== 'nhom') return duyetViecDs_(nd);
+    d.truongNhom = tn;
+    return d;
   });
 }

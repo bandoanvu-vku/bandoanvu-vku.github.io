@@ -311,7 +311,7 @@ function pheDuyet_(nd, req) {
   const ss = sheetTruc_(), now = bayGio_();
   const yc = docYeuCau_(ss), tat = docTruc_(ss);
   const cho = choDuyetTruc_(yc, tat).concat(choDuyetCnXanh_(), choDuyetCsvc_());
-  if (req && req.dem) { let soViec = 0; try { soViec = viecChoDuyet_().length; } catch (e) {} return { so: cho.length, soViec: soViec }; }
+  if (req && req.dem) { let soViec = 0; try { soViec = soViecChoQL_(); } catch (e) {} return { so: cho.length, soViec: soViec }; }
   const tu = themNgay_(now.ngay, -14);
   const daXuLy = yc.filter(function (x) { return x.trangThai !== TT.CHO; }).slice(-20).reverse().map(function (x) { return Object.assign({ kieu: 'yeuCau' }, x); })
     .concat(tat.filter(function (x) { return x.loai === 'Đột xuất' && x.ngay >= tu && (x.trangThai === TT.DUYET || x.trangThai === TT.TU_CHOI); }).map(dotXuatRa_).reverse()).concat(daXuLyCnXanh_());

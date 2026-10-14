@@ -70,7 +70,7 @@
       '<div class="loc"><button type="button" data-loc="mo" aria-pressed="' + (loc === 'mo') + '">Chưa xong</button><button type="button" data-loc="cho" aria-pressed="' + (loc === 'cho') + '">Chưa có người</button>' +
       '<button type="button" data-loc="all" aria-pressed="' + (loc === 'all') + '">Tất cả</button><input type="search" id="tim" placeholder="Tìm…" value="' + esc(tim) + '"></div>' +
       (ds.length ? ds.map(function (v) {
-        var tt = v.trangThai === 'Hoàn thành' ? 'ok' : v.trangThai === 'Chờ duyệt' ? 'wait' : '';
+        var tt = v.trangThai === 'Hoàn thành' ? 'ok' : (v.trangThai === 'Chờ duyệt' || v.trangThai === 'Chờ quản lý duyệt') ? 'wait' : '';
         var han = v.han ? (soNgay(v.han) < 0 && v.trangThai !== 'Hoàn thành' ? '<span class="pill bad">Quá hạn ' + dm(v.han) + '</span>' : 'Hạn ' + dm(v.han)) : 'Chưa có hạn';
         return '<div class="vi' + (sua && sua.dong === v.dong ? ' dang' : '') + '"><div><b>' + esc(v.ten) + '</b><div class="s">' + (v.mang ? esc(v.mang) + ' · ' : '') + han +
           ' · ' + (v.chinh ? esc(v.chinh) : '<span style="color:var(--bad)">chưa có người phụ trách</span>') + (v.hoTro ? ' · hỗ trợ: ' + esc(v.hoTro) : '') + '</div></div>' +
