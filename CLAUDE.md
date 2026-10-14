@@ -58,7 +58,7 @@ Server `7-hoat-dong-nhom.gs` + giao diện `/hoat-dong.js` (BDVHD.cnXanh / kiemK
 "Kiểm kê", "Họp nhóm" của sheet lịch trực. Trang CSDL - CSVC có tab riêng cho 5 mảng (Chủ nhật xanh, Hệ thống quản lý Đoàn viên, Quản lý công văn,
 Quản lý CSVC, Quản lý Đoàn vụ; khớp tên mảng theo từ khoá trong `MANG_RIENG` ở nhom.js). Phụ trách chính của mảng = cột "Phụ trách chính" tab Mảng công việc.
 CN xanh: 2 người/CN, đăng ký cùng khung lịch trực, sau khoá thì xin vắng + chọn người thay → phụ trách chính/quản lý duyệt (cũng hiện ở Phê duyệt).
-Kiểm kê: phụ trách mảng Quản lý CSVC đăng ký ngày + phân công mỗi tháng. Họp tháng: tab "Họp nhóm" ở cả 4 nhóm (thành viên nhóm đăng ký, quản lý xem;
+Kiểm kê: phụ trách mảng Quản lý CSVC đăng ký ngày + phân công mỗi tháng. Họp tháng: mục riêng `/hop-nhom/` trên menu (tab theo nhóm; quản lý có tab Tổng hợp; thành viên nhóm đăng ký, quản lý xem;
 bảng tổng hợp ở tab Chung của Tổng quan). Quản lý công văn: chờ link sheet công văn có sẵn của nhóm.
 Năm học: ô chọn trên thanh header, bên trái — đối diện tài khoản (`menu.js`: NAM_HOC, HIEN_TAI, CO_DU_LIEU; nhớ ở localStorage `bdv.namHoc`, `window.BDV_NAM_HOC`).
 Hiện chỉ 2026 - 2027 có dữ liệu; năm khác thì trang theo năm hiện "chưa có dữ liệu" (trừ hồ sơ/cẩm nang/cài đặt/tài liệu/bảo mật).

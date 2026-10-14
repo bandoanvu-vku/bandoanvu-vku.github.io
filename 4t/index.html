@@ -155,7 +155,6 @@
     <button type="button" role="tab" data-view="hd">Hoạt động trong tháng</button>
     <button type="button" role="tab" data-view="toi">Việc của tôi</button>
     <button type="button" role="tab" data-view="tv">Thành viên</button>
-    <button type="button" role="tab" data-view="hop">Họp nhóm</button>
   </div>
   <div id="view"><div class="empty-box">Đang tải dữ liệu từ sheet…</div></div>
 
@@ -171,7 +170,7 @@
 (function () {
   var NHAN = { ctt: 'Content Tuổi trẻ', cvp: 'Content VPĐ', dtt: 'Thiết kế Tuổi trẻ', dvp: 'Thiết kế VPĐ', photo: 'Chụp hình' };
   var LOAI = { ctt: 'Viết bài', cvp: 'Viết bài', dtt: 'Thiết kế', dvp: 'Thiết kế', photo: 'Chụp ảnh' };
-  var D = null, iThang = -1, view = location.hash === '#hop' ? 'hop' : 'hd', loc = 'all', busy = false;
+  var D = null, iThang = -1, view = 'hd', loc = 'all', busy = false;
   var $ = function (id) { return document.getElementById(id); };
 
   function nho(k, v) {

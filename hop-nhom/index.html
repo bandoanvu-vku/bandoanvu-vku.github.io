@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Họp nhóm · Ban Đoàn vụ</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/chung.css">
+<style>
+  :root { --on-accent: #fff; --ok-soft: rgba(27,175,122,.14); --idle-soft: #eceff4; }
+  @media (prefers-color-scheme: dark) { :root { --on-accent: #0d1522; --idle-soft: #242e3b; } }
+  .tabs { display: flex; gap: 2px; overflow-x: auto; border-bottom: 1px solid var(--line); margin: 0 0 14px; }
+  .tabs a { flex: none; padding: 9px 14px 8px; font-size: 14.5px; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+  .tabs a[aria-selected=true] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 10px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  .s { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  .tblw { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div><h1>Họp nhóm</h1><div class="sub" id="phuDe">Lịch họp tháng của nhóm · trưởng nhóm hoặc thành viên đại diện đăng ký</div></div></div>
+  <div id="app"><div class="panel empty">Đang tải…</div></div>
+</div>
+<script src="/dangnhap.js"></script>
+<script src="/chung.js"></script>
+<script src="/hoat-dong.js"></script>
+<script>
+(function () {
+  var TEN = { '4t': 'Truyền thông - Thông tin', 'nghiep-vu': 'Nghiệp vụ', 'csdl-csvc': 'CSDL - CSVC', 'noi-vu': 'Nội vụ' };
+  var THU_TU = ['4t', 'nghiep-vu', 'csdl-csvc', 'noi-vu'], THU = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  var app = T.$('app'), esc = T.esc, tab = '', HT = null;
+  function cacTab() {
+    var n = BDV.nguoi(); if (!n) return [];
+    if (n.vaiTro === 'quanLy') return [['tong', 'Tổng hợp']].concat(THU_TU.map(function (m) { return [m, TEN[m]]; }));
+    return THU_TU.filter(function (m) { return (n.nhom || []).indexOf(m) > -1; }).map(function (m) { return [m, TEN[m]]; });
+  }
+  function ve() {
+    var ds = cacTab(), h = location.hash.slice(1);
+    if (!ds.length) { app.innerHTML = '<div class="panel empty">Tài khoản của bạn chưa thuộc nhóm nào.</div>'; return; }
+    tab = ds.some(function (t) { return t[0] === h; }) ? h : ds[0][0];
+    var tabs = ds.length > 1 ? '<div class="tabs" role="tablist">' + ds.map(function (t) { return '<a role="tab" href="#' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + t[1] + '</a>'; }).join('') + '</div>' : '';
+    app.innerHTML = tabs + '<div id="noiDung"></div>';
+    if (tab === 'tong') veTong(); else BDVHD.hopNhom(T.$('noiDung'), tab);
+  }
+  function o(h) {
+    if (!h) return '<span class="pill bad">Chưa đăng ký</span>';
+    var p = h.ngay.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]);
+    return '<b>' + THU[d.getDay()] + ' ' + p[2] + '/' + p[1] + ' · ' + esc(h.gio) + '</b> · ' + esc(h.diaDiem) +
+      (h.noiDung ? '<div class="s">' + esc(h.noiDung.split('\n')[0].slice(0, 140)) + '</div>' : '') + '<div class="s">Đăng ký bởi ' + esc(h.nguoi) + '</div>';
+  }
+  function veTong() {
+    var el = T.$('noiDung');
+    if (!HT) { el.innerHTML = '<div class="panel empty">Đang tải…</div>'; BDV.goi('hopThang', {}).then(function (d) { HT = d; if (tab === 'tong') veTong(); }).catch(function (e) { T.loi(el, e); }); return; }
+    var tt = function (ym) { return 'Tháng ' + (+ym.slice(5)) + '/' + ym.slice(0, 4); };
+    el.innerHTML = '<div class="panel"><h2>Lịch họp tháng của 4 nhóm</h2><div class="sub">Bấm tên nhóm để xem chi tiết các tháng</div><div class="tblw"><table style="margin-top:8px"><thead><tr><th>Nhóm</th><th>' + tt(HT.thang[0]) + '</th><th>' + tt(HT.thang[1]) + '</th></tr></thead><tbody>' +
+      HT.nhom.map(function (n) { return '<tr><td><a href="#' + n.ma + '"><b>' + esc(TEN[n.ma] || n.ten) + '</b></a></td><td>' + o(n.hop[0]) + '</td><td>' + o(n.hop[1]) + '</td></tr>'; }).join('') + '</tbody></table></div></div>';
+  }
+  window.addEventListener('hashchange', function () { if (BDV.nguoi()) ve(); });
+  T.khoi(app, ve);
+})();
+</script>
+<script src="/menu.js"></script>
+</body>
+</html>

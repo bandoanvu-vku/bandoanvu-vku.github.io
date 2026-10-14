@@ -15,7 +15,7 @@
   };
   var DS_MANG = MANG_RIENG[NHOM] || [];
   var TABS = [['nv', 'Nhiệm vụ nhóm'], ['toi', 'Việc của tôi']].concat(DS_MANG.map(function (m) { return [m[0], m[1]]; }))
-    .concat([['hop', 'Họp nhóm'], ['mang', 'Mảng và thành viên']]);
+    .concat([['mang', 'Mảng và thành viên']]);
   if (!window.BDVHD && !document.querySelector('script[src="/hoat-dong.js"]')) {
     var hd = document.createElement('script'); hd.src = '/hoat-dong.js'; hd.onload = function () { if (typeof ve === 'function') ve(); }; document.head.appendChild(hd);
   }

@@ -17,6 +17,7 @@
     gear: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
     bars: '<path d="M4 6h16M4 12h16M4 18h16"/>',
     chev: '<path d="m6 9 6 6 6-6"/>',
+    meet: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="9" cy="15" r="1.6"/><circle cx="15" cy="15" r="1.6"/>',
     send: '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/>'
   };
   function icon(k) { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[k] + '</svg>'; }
@@ -33,14 +34,14 @@
         { muc: null, ds: [{ href: '/', ten: 'Tổng quan', icon: 'home' }] },
         { muc: 'Điều hành', ds: [{ href: '/giao-viec/', ten: 'Giao việc', icon: 'send' }, { href: '/duyet-viec/', ten: 'Duyệt việc', icon: 'check', demViec: true },
           { href: '/phe-duyet/', ten: 'Phê duyệt', icon: 'inbox', dem: true }, { href: '/lich-truc/', ten: 'Lịch trực', icon: 'cal' }, muc] },
-        { muc: 'Theo dõi', ds: [{ href: '/thong-ke/', ten: 'Thống kê', icon: 'chart' }] },
+        { muc: 'Theo dõi', ds: [{ href: '/hop-nhom/', ten: 'Họp nhóm', icon: 'meet' }, { href: '/thong-ke/', ten: 'Thống kê', icon: 'chart' }] },
         { muc: 'Cá nhân', ds: [{ href: '/ho-so/', ten: 'Hồ sơ của tôi', icon: 'user' }] },
         { muc: 'Quản trị', ds: [{ href: '/tai-lieu/', ten: 'Tài liệu & biểu mẫu', icon: 'file' }, { href: '/cam-nang/', ten: 'Cẩm nang', icon: 'book' }, { href: '/cai-dat/', ten: 'Cài đặt', icon: 'gear' }] }
       ];
     }
     return [
       { muc: null, ds: [{ href: '/cua-toi/', ten: 'Trang chủ', icon: 'home' }] },
-      { muc: 'Hằng ngày', ds: [{ href: '/lich-truc/#diem-danh', ten: 'Điểm danh', icon: 'clock' }, { href: '/lich-truc/', ten: 'Đăng ký ca trực', icon: 'cal' }].concat(dsNhom.length ? [muc] : []) },
+      { muc: 'Hằng ngày', ds: [{ href: '/lich-truc/#diem-danh', ten: 'Điểm danh', icon: 'clock' }, { href: '/lich-truc/', ten: 'Đăng ký ca trực', icon: 'cal' }].concat(dsNhom.length ? [muc, { href: '/hop-nhom/', ten: 'Họp nhóm', icon: 'meet' }] : []) },
       { muc: 'Của tôi', ds: [{ href: '/ho-so/', ten: 'Hồ sơ của tôi', icon: 'user' }, { href: '/thong-ke/', ten: 'Thống kê của tôi', icon: 'chart' },
         { href: '/tai-lieu/', ten: 'Tài liệu & biểu mẫu', icon: 'file' }, { href: '/cam-nang/', ten: 'Cẩm nang', icon: 'book' }] }
     ];
