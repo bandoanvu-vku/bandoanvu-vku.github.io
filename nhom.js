@@ -12,8 +12,7 @@
       ['giay-de-nghi', 'Giấy đề nghị', ['giấy đề nghị'], ''],
       ['bieu-mau', 'Biểu mẫu', ['biểu mẫu'], ''],
       ['doan-vu', 'Thông tin Đoàn vụ', ['đoàn vụ'], ''],
-      ['csvc', 'Cơ sở vật chất', ['csvc', 'cơ sở vật chất'], 'kiemKe'],
-      ['doan-vien', 'Hệ thống QL Đoàn viên', ['đoàn viên'], '']
+      ['csvc', 'Cơ sở vật chất', ['csvc', 'cơ sở vật chất'], 'kiemKe']
     ]
   };
   var DS_MANG = MANG_RIENG[NHOM] || [];
