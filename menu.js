@@ -64,9 +64,11 @@
     'body.bdv-co-side .bdv-side{display:block}' +
     '.bdv-side .logo{display:block;padding:6px 10px 14px;text-decoration:none;color:var(--text,#17202e)}' +
     '.bdv-side .logo b{display:block;font-size:16px}.bdv-side .logo span{font-size:12px;color:var(--muted,#5d6b80)}' +
-    '.bdv-side .nam{display:flex;align-items:center;gap:6px;margin:-6px 10px 6px;font-size:12px;color:var(--muted,#5d6b80)}' +
-    '.bdv-side .nam select{flex:1;font:inherit;font-size:13px;color:var(--text,#17202e);background:var(--card,#fff);border:1px solid var(--line,#dfe4ec);border-radius:8px;padding:5px 8px}' +
-    '.bdv-side .nam.cu select{border-color:#c77700;color:#9a5b00;font-weight:600}' +
+    '.bdv-menu .nam{display:none;align-items:center;gap:8px;font-size:13px;color:var(--muted,#5d6b80);white-space:nowrap}body.bdv-co-side .bdv-menu .nam{display:flex}' +
+    '.bdv-menu .nam select{font:inherit;font-size:13.5px;font-weight:600;color:var(--text,#17202e);background:var(--card,#fff);border:1px solid var(--line,#dfe4ec);border-radius:8px;padding:5px 8px;min-height:34px;cursor:pointer}' +
+    '.bdv-menu .nam select:hover{border-color:var(--accent,#1a56c4)}' +
+    '.bdv-menu .nam.cu select{border-color:#c77700;color:#9a5b00;background:#fdf0d5}' +
+    '@media (prefers-color-scheme:dark){.bdv-menu .nam.cu select{color:#f2c063;background:#3a2d10}}' +
     'body.bdv-nam-cu .wrap,body.bdv-nam-cu .dlg{display:none!important}' +
     '.bdv-namcu{max-width:760px;margin:40px auto;padding:0 16px}.bdv-namcu>div{background:var(--card,#fff);border:1px dashed var(--line,#dfe4ec);border-radius:14px;padding:32px 22px;text-align:center;color:var(--muted,#5d6b80);font-size:15px}' +
     '.bdv-namcu h2{margin:0 0 8px;font-size:19px;color:var(--text,#17202e)}.bdv-namcu button{margin-top:14px;font:inherit;font-weight:600;border:1px solid var(--accent,#1a56c4);background:var(--accent,#1a56c4);color:#fff;border-radius:10px;padding:8px 16px;cursor:pointer}' +
@@ -86,7 +88,8 @@
     '.bdv-side .so{margin-left:auto;min-width:20px;padding:0 6px;border-radius:10px;background:#d93025;color:#fff;font-size:11.5px;font-weight:700;line-height:20px;text-align:center}' +
     '.bdv-phu{position:fixed;inset:0;z-index:6;background:rgba(10,15,25,.4);display:none}' +
     '@media (prefers-color-scheme:dark){.bdv-side .m[aria-current=page],.bdv-side .con a[aria-current=page]{background:rgba(127,176,255,.14)}}' +
-    '@media (min-width:1000px){body.bdv-co-side{padding-left:248px}body.bdv-co-side .bdv-menu .brand{visibility:hidden}}' +
+    '@media (min-width:1000px){body.bdv-co-side{padding-left:248px}body.bdv-co-side .bdv-menu .brand{display:none}}' +
+    '@media (max-width:640px){body.bdv-co-side .bdv-menu .brand{display:none}.bdv-menu .nam span{display:none}.bdv-menu .nam select{font-size:13px;padding:4px 6px}}' +
     '@media (max-width:999px){body.bdv-co-side .bdv-menu .mo-menu{display:inline-flex}' +
     '.bdv-side{transform:translateX(-100%);transition:transform .2s;box-shadow:0 10px 40px rgba(0,0,0,.2)}' +
     'body.bdv-mo-side .bdv-side{transform:none}body.bdv-mo-side .bdv-phu{display:block}}' +
@@ -95,7 +98,7 @@
 
   var h = document.createElement('header');
   h.className = 'bdv-menu';
-  h.innerHTML = '<div><button type="button" class="mo-menu" aria-label="Mở menu">' + icon('bars') + '</button><a class="brand" href="/">Ban Đoàn vụ</a></div>';
+  h.innerHTML = '<div><button type="button" class="mo-menu" aria-label="Mở menu">' + icon('bars') + '</button><a class="brand" href="/">Ban Đoàn vụ</a><label class="nam"><span>Năm học</span><select id="bdvNam" aria-label="Chọn năm học"></select></label></div>';
   var side = document.createElement('aside');
   side.className = 'bdv-side'; side.setAttribute('aria-label', 'Menu');
   var phu = document.createElement('div'); phu.className = 'bdv-phu';
@@ -129,10 +132,10 @@
     h.querySelector('.brand').setAttribute('href', n && !ql ? '/cua-toi/' : '/');
     if (!n) { side.innerHTML = ''; soCho = null; document.body.classList.remove('bdv-mo-side'); veNam(null); if (window.BDV) BDV.veNut(); return; }
     if (ql && soCho === null) demCho(n);
-    var cu = namHoc !== HIEN_TAI;
-    side.innerHTML = '<a class="logo" href="' + (ql ? '/' : '/cua-toi/') + '"><b>Ban Đoàn vụ</b><span>VKU</span></a>' +
-      '<label class="nam' + (cu ? ' cu' : '') + '">Năm học <select id="bdvNam" aria-label="Chọn năm học">' + NAM_HOC.map(function (y) {
-        return '<option' + (y === namHoc ? ' selected' : '') + '>' + y + '</option>'; }).join('') + '</select></label>' +
+    var cu = namHoc !== HIEN_TAI, nam = h.querySelector('.nam');
+    nam.className = 'nam' + (cu ? ' cu' : ''); nam.title = cu ? 'Đang xem năm học cũ' : '';
+    nam.querySelector('select').innerHTML = NAM_HOC.map(function (y) { return '<option' + (y === namHoc ? ' selected' : '') + '>' + y + '</option>'; }).join('');
+    side.innerHTML = '<a class="logo" href="' + (ql ? '/' : '/cua-toi/') + '"><b>Ban Đoàn vụ</b><span>VKU · năm học ' + namHoc + '</span></a>' +
       cauHinh(n).map(function (p) {
         var ds = '<div class="ds">' + p.ds.map(mucHtml).join('') + '</div>';
         if (!p.muc) return '<div class="phan">' + ds + '</div>';
@@ -154,7 +157,7 @@
   }
   function doiNam(v) { namHoc = v; try { localStorage.setItem('bdv.namHoc', v); } catch (e) {} ve(); try { document.dispatchEvent(new CustomEvent('bdv-namhoc', { detail: v })); } catch (e) {} }
   document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-ve-nam]')) doiNam(HIEN_TAI); });
-  side.addEventListener('change', function (e) { if (e.target.id === 'bdvNam') doiNam(e.target.value); });
+  h.addEventListener('change', function (e) { if (e.target.id === 'bdvNam') doiNam(e.target.value); });
   function demCho(n) {
     if (!n || n.vaiTro !== 'quanLy' || !window.BDV || o === '/phe-duyet/') return;
     try { var c = JSON.parse(sessionStorage.getItem('bdv.pd') || 'null'); if (c && Date.now() - c.t < 60000) { soCho = c.so; return; } } catch (e) {}
