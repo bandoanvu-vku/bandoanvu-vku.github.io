@@ -7,8 +7,7 @@
  *   - Thành viên tự đăng ký / huỷ trong khung đăng ký lịch trực của tuần đó (00:00 thứ 6 → 17:00 CN tuần trước).
  *   - Phụ trách chính (và quản lý) xếp / bỏ người bất kỳ lúc nào trước ngày đó.
  *   - Đã khoá mà muốn vắng: gửi "xin vắng", bắt buộc chọn người trực thay → phụ trách chính (hoặc quản lý) duyệt là đổi người.
- * Kiểm kê CSVC: theo tuần / tháng / năm học; phụ trách chính mảng Quản lý CSVC đăng ký ngày + phân công người thực hiện;
- *   người được phân công (hoặc phụ trách) đánh dấu đã kiểm kê, kèm ghi chú / link biên bản.
+ * Kiểm kê CSVC: hằng tuần / hằng tháng / giữa năm - cuối năm; đăng ký → duyệt 2 cấp → báo cáo (xem phần Kiểm kê bên dưới).
  * Họp tháng (cả 4 nhóm): trưởng nhóm / thành viên đại diện đăng ký ngày, giờ, địa điểm, nội dung; quản lý xem.
  */
 const CN_XANH = { NHOM: 'csdl-csvc', KHOA: ['chủ nhật xanh', 'cn xanh'], SO_NGUOI: 2, TUAN_TRUOC: 4, TUAN_TOI: 6 };
@@ -252,78 +251,114 @@ function daXuLyCnXanh_() {
   } catch (e) { return []; }
 }
 
-/* ---------------- Kiểm kê CSVC: theo tuần / tháng / năm học */
+/* ---------------- Kiểm kê CSVC */
 /*
- * Cột "Kỳ" (A) lưu chữ: "Tuần 2026-10-12" (thứ 2 đầu tuần) · "2026-10" (tháng — giữ như dữ liệu cũ) · "Năm học 2026-2027".
- * Mỗi kỳ: phụ trách chính đăng ký ngày (trong kỳ) + phân công người thực hiện; người được phân công / phụ trách đánh dấu đã kiểm kê.
+ * Kỳ (cột A): "Tuần YYYY-MM-DD" (thứ 2 đầu tuần; kiểm kê thứ 5 hoặc thứ 6 — tài sản biến động / dùng thường xuyên)
+ *   · "YYYY-MM" (hằng tháng, tuần cuối tháng = 7 ngày cuối — toàn bộ tài sản)
+ *   · "Giữa năm YYYY" (15 – 31/5) · "Cuối năm YYYY" (15 – 31/12) — biên bản tài sản cố định.
+ * Quy trình: phụ trách / trưởng nhóm đăng ký ngày + người thực hiện → duyệt 2 cấp (trưởng nhóm → quản lý)
+ *   → đến ngày, người thực hiện nộp báo cáo: link biên bản (sheet) + số liệu (tổng, tốt, hỏng, mất, mới thêm, thanh lý) + tóm tắt biến động.
+ * Dữ liệu cũ: "Đã lên lịch" coi như Đã duyệt, "Đã kiểm kê" coi như Đã báo cáo.
  */
+const TT_KK = { BAO_CAO: 'Đã báo cáo', CU_LICH: 'Đã lên lịch', CU_XONG: 'Đã kiểm kê' };
+const SO_KK = ['tong', 'tot', 'hong', 'mat', 'moi', 'thanhLy'];
 function themThang_(ym, n) { const p = ym.split('-').map(Number); const d = new Date(Date.UTC(p[0], p[1] - 1 + n, 1)); return d.toISOString().slice(0, 7); }
 function cuoiThang_(ym) { const p = ym.split('-').map(Number); return ym + '-' + ('0' + new Date(Date.UTC(p[0], p[1], 0)).getUTCDate()).slice(-2); }
-function namHocCua_(iso) { const y = +iso.slice(0, 4), m = +iso.slice(5, 7); return m >= 8 ? y : y - 1; }
-/** Mã kỳ → { loai, ky, nhan, tu, den } hoặc null. */
+/** Mã kỳ → { loai, ky, nhan, tu, den (khoảng của kỳ), chonTu, chonDen (khoảng được chọn ngày), luu } hoặc null. */
 function kyKk_(ky) {
   ky = chuoi_(ky);
   let m = /^Tuần (\d{4}-\d{2}-\d{2})$/.exec(ky);
-  if (m && thuCua_(m[1]) === 1) { const den = themNgay_(m[1], 6); return { loai: 'tuan', ky: ky, tu: m[1], den: den, nhan: 'Tuần ' + dmy_(m[1]).slice(0, 5) + ' – ' + dmy_(den) }; }
+  if (m && thuCua_(m[1]) === 1) { const den = themNgay_(m[1], 6); return { loai: 'tuan', ky: ky, tu: m[1], den: den, chonTu: themNgay_(m[1], 3), chonDen: themNgay_(m[1], 4), nhan: 'Tuần ' + dmy_(m[1]).slice(0, 5) + ' – ' + dmy_(den), luu: 'thứ 5 hoặc thứ 6' }; }
   m = /^(\d{4})-(\d{2})$/.exec(ky);
-  if (m && +m[2] >= 1 && +m[2] <= 12) return { loai: 'thang', ky: ky, tu: ky + '-01', den: cuoiThang_(ky), nhan: 'Tháng ' + (+m[2]) + '/' + m[1] };
-  m = /^Năm học (\d{4})-(\d{4})$/.exec(ky);
-  if (m && +m[2] === +m[1] + 1) return { loai: 'nam', ky: ky, tu: m[1] + '-08-01', den: m[2] + '-07-31', nhan: 'Năm học ' + m[1] + ' - ' + m[2] };
+  if (m && +m[2] >= 1 && +m[2] <= 12) { const den = cuoiThang_(ky); return { loai: 'thang', ky: ky, tu: ky + '-01', den: den, chonTu: themNgay_(den, -6), chonDen: den, nhan: 'Tháng ' + (+m[2]) + '/' + m[1], luu: 'tuần cuối tháng (7 ngày cuối)' }; }
+  m = /^(Giữa|Cuối) năm (\d{4})$/.exec(ky);
+  if (m) { const th = m[1] === 'Giữa' ? '05' : '12', y = m[2]; return { loai: 'nam', ky: ky, tu: y + '-' + th + '-15', den: y + '-' + th + '-31', chonTu: y + '-' + th + '-15', chonDen: y + '-' + th + '-31', nhan: 'Đợt ' + m[1].toLowerCase() + ' năm ' + y, luu: 'từ 15 đến 31/' + th }; }
   return null;
 }
+const COT_KK2 = COT_KK.concat(['Người đăng ký', 'Trưởng nhóm duyệt', 'Quản lý duyệt', 'Ghi chú duyệt', 'Link biên bản', 'Tổng số', 'Tốt', 'Hỏng', 'Mất', 'Mới thêm', 'Thanh lý', 'Tóm tắt biến động', 'Đề xuất', 'Báo cáo bởi', 'Báo cáo lúc']);
 function docKk_(ss) {
-  return docTabHd_(ss, 'Kiểm kê', COT_KK.length).map(function (r) {
+  return docTabHd_(ss, 'Kiểm kê', COT_KK2.length).map(function (r) {
     const raw = Object.prototype.toString.call(r[0]) === '[object Date]' ? ngayISO_(r[0], MUI_GIO).slice(0, 7) : chuoi_(r[0]);
-    return { dong: r.dong, ky: raw, ngay: ngayISO_(r[1], MUI_GIO) || '', phuTrach: chuoi_(r[2]), thucHien: tachTen_(r[3]),
-      trangThai: chuoi_(r[4]), ghiChu: chuoi_(r[5]), boi: chuoi_(r[6]), luc: lucChu2_(r[7]) };
+    let tt = chuoi_(r[4]);
+    if (tt === TT_KK.CU_LICH) tt = TT2.DUYET; else if (tt === TT_KK.CU_XONG) tt = TT_KK.BAO_CAO;
+    const so = function (v) { return v === '' || v === null ? null : Number(v); };
+    return { dong: r.dong, ky: raw, ngay: ngayISO_(r[1], MUI_GIO) || '', phuTrach: chuoi_(r[2]), thucHien: tachTen_(r[3]), trangThai: tt, ghiChu: chuoi_(r[5]), boi: chuoi_(r[6]), luc: lucChu2_(r[7]),
+      nguoiDangKy: chuoi_(r[8]) || chuoi_(r[2]), tnDuyet: chuoi_(r[9]), qlDuyet: chuoi_(r[10]), ghiChuDuyet: chuoi_(r[11]), bienBan: chuoi_(r[12]),
+      so: { tong: so(r[13]), tot: so(r[14]), hong: so(r[15]), mat: so(r[16]), moi: so(r[17]), thanhLy: so(r[18]) }, bienDong: chuoi_(r[19]), deXuat: chuoi_(r[20]), baoCaoBoi: chuoi_(r[21]), baoCaoLuc: lucChu2_(r[22]) };
   }).filter(function (x) { return kyKk_(x.ky); });
 }
 function kiemKe_(nd) {
   canNhom_(nd, KIEM_KE.NHOM);
-  const ctx = mangNhom_(KIEM_KE.NHOM, KIEM_KE.KHOA), ss = sheetTruc_(), now = bayGio_(), ds = docKk_(ss);
-  const t2 = dauTuan_(now.ngay), t0 = now.ngay.slice(0, 7), n0 = namHocCua_(now.ngay);
+  const ctx = mangNhom_(KIEM_KE.NHOM, KIEM_KE.KHOA), ss = sheetTruc_(), now = bayGio_(), ds = docKk_(ss), v = vaiDuyet_(nd, KIEM_KE.NHOM);
+  const t2 = dauTuan_(now.ngay), t0 = now.ngay.slice(0, 7), y = +now.ngay.slice(0, 4);
   const tao = function (dsKy) {
     return dsKy.map(function (k) {
-      const kk = kyKk_(k), x = ds.filter(function (y) { return y.ky === k; }).slice(-1)[0];
-      const o = x ? Object.assign({}, x) : { ky: k, trangThai: 'Chưa đăng ký', thucHien: [], ngay: '' };
-      delete o.dong;
-      o.nhan = kk.nhan; o.tu = kk.tu; o.den = kk.den; o.nay = kk.tu <= now.ngay && now.ngay <= kk.den; o.qua = kk.den < now.ngay;
+      const kk = kyKk_(k), x = ds.filter(function (z) { return z.ky === k; }).slice(-1)[0];
+      const o = x ? boDong_(x) : { ky: k, trangThai: 'Chưa đăng ký', thucHien: [], ngay: '', so: {} };
+      o.nhan = kk.nhan; o.tu = kk.tu; o.den = kk.den; o.chonTu = kk.chonTu; o.chonDen = kk.chonDen; o.luu = kk.luu;
+      o.nay = kk.tu <= now.ngay && now.ngay <= kk.den; o.qua = kk.den < now.ngay;
       return o;
     });
   };
-  const tuan = [], thang = [], nam = [];
+  const tuan = [], thang = [], dot = [];
   for (let i = KIEM_KE.TUAN_TOI; i >= -KIEM_KE.TUAN_TRUOC; i--) tuan.push('Tuần ' + themNgay_(t2, 7 * i));
   for (let i = KIEM_KE.THANG_TOI; i >= -KIEM_KE.THANG_TRUOC; i--) thang.push(themThang_(t0, i));
-  for (let i = 1; i >= -1; i--) nam.push('Năm học ' + (n0 + i) + '-' + (n0 + i + 1));
+  [y + 1, y, y - 1].forEach(function (n) { dot.push('Cuối năm ' + n, 'Giữa năm ' + n); });
+  const dotGan = dot.filter(function (k) { const kk = kyKk_(k); return kk.den >= themNgay_(now.ngay, -400) && kk.tu <= themNgay_(now.ngay, 400); });
+  const bieuDo = ds.filter(function (x) { return x.trangThai === TT_KK.BAO_CAO && x.so.tong !== null; }).map(function (x) {
+    const kk = kyKk_(x.ky); return { ky: x.ky, loai: kk.loai, nhan: kk.nhan, ngay: x.ngay || kk.tu, so: x.so };
+  }).sort(function (a, b) { return a.ngay < b.ngay ? -1 : 1; });
   return {
-    homNay: now.ngay, toi: nd.ten, laPhuTrach: laPhuTrach_(nd, ctx), mang: ctx.mang ? ctx.mang.ten : '', phuTrach: ctx.phuTrach, thanhVien: ctx.d.thanhVien,
-    hanNgay: KIEM_KE.HAN_NGAY,
-    loai: [{ ma: 'tuan', ten: 'Theo tuần', ky: tao(tuan) }, { ma: 'thang', ten: 'Theo tháng', ky: tao(thang) }, { ma: 'nam', ten: 'Theo năm học', ky: tao(nam) }]
+    homNay: now.ngay, toi: nd.ten, laPhuTrach: laPhuTrach_(nd, ctx), laTN: v.tn, laQL: v.ql, coTN: v.coTN, truongNhom: v.dsTN,
+    mang: ctx.mang ? ctx.mang.ten : '', phuTrach: ctx.phuTrach, thanhVien: ctx.d.thanhVien, lienKet: (function () { const l = lienKet_(); return { bbTuanThang: l.bbTuanThang, bbNam: l.bbNam }; })(),
+    loai: [{ ma: 'tuan', ten: 'Hằng tuần', ky: tao(tuan) }, { ma: 'thang', ten: 'Hằng tháng', ky: tao(thang) }, { ma: 'nam', ten: 'Giữa năm / cuối năm', ky: tao(dotGan) }],
+    bieuDo: bieuDo
   };
 }
 function luuKiemKe_(nd, req) {
   canNhom_(nd, KIEM_KE.NHOM);
   return voiKhoa_(function () {
-    const ctx = mangNhom_(KIEM_KE.NHOM, KIEM_KE.KHOA), laPT = laPhuTrach_(nd, ctx), ss = sheetTruc_();
+    const ctx = mangNhom_(KIEM_KE.NHOM, KIEM_KE.KHOA), v = vaiDuyet_(nd, KIEM_KE.NHOM), ss = sheetTruc_(), now = bayGio_();
+    const laPT = laPhuTrach_(nd, ctx) || v.tn;
     const kk = kyKk_(req.ky || req.thang);
     if (!kk) throw new Error('Kỳ kiểm kê không hợp lệ.');
-    const s = tabHd_(ss, 'Kiểm kê', COT_KK, [150, 110, 180, 300, 110, 320, 160, 130], [1, 2]);
+    const s = tabHd_(ss, 'Kiểm kê', COT_KK2, [150, 110, 180, 300, 150, 320, 160, 130, 170, 230, 230, 240, 260, 80, 70, 70, 70, 80, 80, 300, 260, 160, 130], [1, 2, 13]);
     const cu = docKk_(ss).filter(function (y) { return y.ky === kk.ky; }).slice(-1)[0];
     const ghiChu = chuoi_(req.ghiChu).slice(0, 500);
+    const ghi = function (cot, gt) { s.getRange(cu.dong, cot, 1, gt.length).setValues([gt]); };
     if (req.viec === 'dangKy') {
-      if (!laPT) throw loiQuyen_('Chỉ phụ trách chính mảng Quản lý CSVC (hoặc quản lý) mới đăng ký lịch kiểm kê.');
+      if (!laPT) throw loiQuyen_('Chỉ phụ trách chính mảng CSVC, trưởng nhóm (hoặc quản lý) mới đăng ký lịch kiểm kê.');
+      if (cu && cu.trangThai === TT_KK.BAO_CAO) throw new Error('Kỳ này đã có báo cáo. Mở lại trước khi sửa lịch.');
       const ngay = String(req.ngay || '');
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay) || ngay < kk.tu || ngay > kk.den) throw new Error('Chọn ngày kiểm kê trong kỳ này: từ ' + dmy_(kk.tu) + ' đến ' + dmy_(kk.den) + '.');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay) || ngay < kk.chonTu || ngay > kk.chonDen) throw new Error('Kiểm kê ' + kk.nhan.toLowerCase() + ' làm vào ' + kk.luu + ': chọn ngày từ ' + dmy_(kk.chonTu) + ' đến ' + dmy_(kk.chonDen) + '.');
       const th = (req.thucHien || []).map(chuoi_).filter(function (t, i, a) { return t && a.indexOf(t) === i; });
       if (!th.length) throw new Error('Phân công ít nhất 1 thành viên thực hiện.');
       th.forEach(function (t) { if (ctx.d.thanhVien.indexOf(t) === -1) throw new Error(t + ' không có trong danh sách thành viên nhóm.'); });
-      const dong = [kk.ky, dmy_(ngay), cu && cu.phuTrach ? cu.phuTrach : nd.ten, th.join(', '), cu && cu.trangThai === 'Đã kiểm kê' ? 'Đã kiểm kê' : 'Đã lên lịch', ghiChu || (cu ? cu.ghiChu : ''), nd.ten, new Date()];
-      if (cu) s.getRange(cu.dong, 1, 1, COT_KK.length).setValues([dong]); else s.appendRow(dong);
-    } else if (req.viec === 'xong' || req.viec === 'moLai') {
-      if (!cu || !cu.ngay) throw new Error('Kỳ này chưa có lịch kiểm kê.');
-      if (req.viec === 'moLai' && !laPT) throw loiQuyen_('Chỉ phụ trách chính mới mở lại được.');
-      if (req.viec === 'xong' && !laPT && cu.thucHien.indexOf(nd.ten) === -1) throw loiQuyen_('Chỉ người được phân công hoặc phụ trách chính mới đánh dấu được.');
-      s.getRange(cu.dong, 5, 1, 4).setValues([[req.viec === 'xong' ? 'Đã kiểm kê' : 'Đã lên lịch', req.viec === 'xong' ? (ghiChu || cu.ghiChu) : cu.ghiChu, nd.ten, new Date()]]);
+      const tt = trangThaiGui_(nd, KIEM_KE.NHOM);
+      const dong = [kk.ky, dmy_(ngay), ctx.phuTrach.join(', ') || nd.ten, th.join(', '), tt, ghiChu || (cu ? cu.ghiChu : ''), nd.ten, new Date(),
+        nd.ten, tt === TT2.CHO_QL && v.tn ? nd.ten + ' · gửi (trưởng nhóm)' : '', tt === TT2.DUYET ? nd.ten + ' · quản lý đăng ký' : '', ''];
+      if (cu) s.getRange(cu.dong, 1, 1, dong.length).setValues([dong]); else s.appendRow(dong);
+    } else if (req.viec === 'duyet') {
+      if (!cu) throw new Error('Kỳ này chưa có lịch kiểm kê.');
+      const b = buocDuyet_(nd, KIEM_KE.NHOM, cu.trangThai, req.dongY === true, chuoi_(req.ghiChu).slice(0, 300));
+      ghi(5, [b.tt]); ghi(b.cap === 'tn' ? 10 : 11, [b.ghi]); if (!req.dongY) ghi(12, [b.ghi]);
+      ghi(7, [nd.ten, new Date()]);
+    } else if (req.viec === 'baoCao') {
+      if (!cu || cu.trangThai !== TT2.DUYET) throw new Error('Lịch kiểm kê chưa được duyệt đủ 2 cấp nên chưa nộp báo cáo được.');
+      if (!laPT && cu.thucHien.indexOf(nd.ten) === -1) throw loiQuyen_('Chỉ người được phân công, phụ trách chính hoặc trưởng nhóm mới nộp báo cáo.');
+      if (cu.ngay > now.ngay) throw new Error('Chưa đến ngày kiểm kê (' + dmy_(cu.ngay) + ').');
+      const bb = linkHopLe_(req.bienBan, 'biên bản kiểm kê trên sheet', true);
+      const so = SO_KK.map(function (k) {
+        const x = req.so ? req.so[k] : '';
+        if (x === '' || x === null || x === undefined) { if (k === 'tong') throw new Error('Nhập tổng số tài sản kiểm kê.'); return 0; }
+        const n = Number(x); if (!(n >= 0 && n <= 100000 && Math.floor(n) === n)) throw new Error('Số liệu phải là số nguyên ≥ 0.'); return n;
+      });
+      ghi(5, [TT_KK.BAO_CAO]); ghi(7, [nd.ten, new Date()]);
+      ghi(13, [bb].concat(so, [chuoi_(req.bienDong).slice(0, 1000), chuoi_(req.deXuat).slice(0, 500), nd.ten, new Date()]));
+    } else if (req.viec === 'moLai') {
+      if (!cu || cu.trangThai !== TT_KK.BAO_CAO) throw new Error('Kỳ này chưa có báo cáo.');
+      if (!laPT && !v.ql) throw loiQuyen_('Chỉ phụ trách chính / trưởng nhóm mới mở lại được.');
+      ghi(5, [TT2.DUYET]); ghi(7, [nd.ten, new Date()]);
     } else throw new Error('Yêu cầu không hợp lệ.');
     SpreadsheetApp.flush();
     return kiemKe_(nd);

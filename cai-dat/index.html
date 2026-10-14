@@ -51,6 +51,14 @@
       '<div class="nhap" style="margin-top:10px"><input type="date" id="ngay" aria-label="Chọn ngày nghỉ"><button type="button" class="ghost sm" id="themNgay">+ Thêm ngày</button></div>' +
       '<div class="chips" id="dsNghi"></div>' +
       '<div class="acts"><button class="btn" type="submit">Lưu ngày nghỉ</button></div></form>' +
+      '<form class="panel form" id="f4"><h2>Liên kết nhóm CSDL - CSVC</h2><div class="sub">Dashboard chỉ đọc sheet công văn và biên bản; riêng sheet mượn trả tài sản thì dashboard ghi. Mỗi sheet cần chia sẻ quyền cho tài khoản chạy dashboard (vanborapper@gmail.com).</div>' +
+      (D.dsLienKet || []).map(function (k) { var v = (D.lienKet || {})[k[0]] || '';
+        return '<label for="lk_' + k[0] + '">' + esc(k[1].replace(/^Link /, '').replace(/^./, function (c) { return c.toUpperCase(); })) + '</label>' +
+          '<div class="nhap"><input id="lk_' + k[0] + '" data-lk="' + k[0] + '" type="url" style="flex:1 1 320px" placeholder="https://docs.google.com/… hoặc https://drive.google.com/…" value="' + esc(v) + '">' +
+          (v ? '<a class="note" href="' + esc(v) + '" target="_blank" rel="noopener">Mở</a>' : '') + '</div>' +
+          (v && /rtpof=true/.test(v) ? '<div class="hint">File Excel (.xlsx): dashboard chỉ hiện nút mở file, không đọc nội dung.</div>' : '');
+      }).join('') +
+      '<div class="acts"><button class="btn" type="submit">Lưu liên kết</button></div></form>' +
       '<div class="note">Muốn thêm thành viên hoặc đổi quyền: sửa sheet "Tài khoản dashboard - Ban Đoàn vụ" (cột Vai trò, Chức vụ).</div>';
     veNghi();
   }
@@ -67,6 +75,11 @@
     }
     if (f.id === 'f2') luu({ soBuoi: +String(T.$('sb').value).replace(',', '.') }, f, 'Đã lưu số buổi tối thiểu');
     if (f.id === 'f3') luu({ ngayNghi: nghi }, f, 'Đã lưu ngày nghỉ');
+    if (f.id === 'f4') {
+      var lk = {}; [].forEach.call(f.querySelectorAll('[data-lk]'), function (x) { lk[x.dataset.lk] = x.value.trim(); });
+      var b = f.querySelector('button[type=submit]'); b.disabled = true;
+      BDV.goi('luuLienKet', { lienKet: lk }).then(function (d) { nhan(d); T.toast('Đã lưu liên kết'); }).catch(function (er) { b.disabled = false; T.toast(er.message || String(er), true); });
+    }
   });
   app.addEventListener('input', function (e) { if (e.target.id === 'sb') T.$('sbGio').textContent = '= ' + String((+e.target.value || 0) * 3).replace('.', ',') + ' giờ mỗi tuần'; });
   app.addEventListener('click', function (e) {

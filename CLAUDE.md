@@ -60,9 +60,17 @@ Server `7-hoat-dong-nhom.gs` + giao diện `/hoat-dong.js` (BDVHD.cnXanh / kiemK
 CN xanh: 2 người/CN, đăng ký cùng khung lịch trực, sau khoá thì xin vắng + chọn người thay → phụ trách chính/quản lý duyệt (cũng hiện ở Phê duyệt).
 Mỗi CN có 4 đầu việc chuẩn bị (`VIEC_CNX`: Viết thông báo, Liên hệ khu vực trực, Tạo sheet điểm danh — bắt buộc link, Giám sát thực hiện), tab "CN xanh - chuẩn bị",
 action `luuViecCnXanh` (nhận / giao (phụ trách) / bỏ nhận / xong / mở lại).
-Kiểm kê: theo tuần / tháng / năm học; cột Kỳ = "Tuần YYYY-MM-DD" (thứ 2) · "YYYY-MM" · "Năm học YYYY-YYYY"; phụ trách mảng CSVC đăng ký ngày trong kỳ + phân công. Họp tháng: mục riêng `/hop-nhom/` trên menu (tab theo nhóm; quản lý có tab Tổng hợp; thành viên nhóm đăng ký, quản lý xem;
-bảng tổng hợp ở tab Chung của Tổng quan). Quản lý công văn: chờ link sheet công văn có sẵn của nhóm.
-Năm học: ô chọn trên thanh header, bên trái — đối diện tài khoản (`menu.js`: NAM_HOC, HIEN_TAI, CO_DU_LIEU; nhớ ở localStorage `bdv.namHoc`, `window.BDV_NAM_HOC`).
+Tab Cơ sở vật chất (`BDVHD.csvc`) có 3 tab con: Kiểm kê · Mượn về · Cho mượn.
+Kiểm kê: cột Kỳ = "Tuần YYYY-MM-DD" (thứ 2; chỉ chọn T5/T6) · "YYYY-MM" (7 ngày cuối tháng) · "Giữa năm YYYY" (15–31/5) / "Cuối năm YYYY" (15–31/12).
+Phụ trách CSVC / trưởng nhóm đăng ký → duyệt 2 cấp → đến ngày nộp báo cáo (link biên bản bắt buộc + tổng/tốt/hỏng/mất/mới thêm/thanh lý + tóm tắt) → biểu đồ biến động.
+**Duyệt 2 cấp** (`10-csvc-cong-van.gs`: `trangThaiGui_`, `buocDuyet_`, TT2): Chờ trưởng nhóm duyệt → Chờ quản lý duyệt → Đã duyệt; trưởng nhóm từ chối = "Trả lại" (về thành viên),
+quản lý từ chối = "Quản lý trả lại" (về nhóm). Trưởng nhóm = cột "Chức vụ" sheet tài khoản ghi "Trưởng nhóm"; nhóm chưa có thì gửi thẳng quản lý. Mục chờ quản lý hiện ở Phê duyệt (`choDuyetCsvc_`).
+Mượn trả: sheet "[BĐV 2026 - 2027] CSVC - Mượn trả tài sản" (tab đầu = danh mục tài sản chép từ 2 biên bản xlsx; tab "Mượn về", "Cho mượn" tự tạo).
+Mượn về: nguồn Phòng TCHC (bắt buộc link giấy đề nghị) / KTX (bắt buộc người liên hệ + SĐT) / Khác → Đang mượn → Đã trả. Cho mượn: bắt buộc giấy đề nghị, duyệt 2 cấp → giao → nhận lại.
+Công văn (`BDVHD.congVan`, action `congVan`): CHỈ ĐỌC sheet công văn đi (tab nhiệm kỳ mới nhất, số tiếp theo = số lớn nhất + 1, dòng đã lấy số chưa có tên, chưa PDF)
+và công văn đến (3 tab Trong trường / Ngoài trường / CLB Đội Nhóm). Không ghi gì vào 2 sheet này (của vanphongdoan).
+Liên kết (link sheet / folder công văn, biên bản, sheet mượn trả) lưu ở tab "Cài đặt" của sheet lịch trực; quản lý dán ở trang Cài đặt (action `luuLienKet`) — không ghi ID vào repo. Họp tháng: mục riêng `/hop-nhom/` trên menu (tab theo nhóm; quản lý có tab Tổng hợp; thành viên nhóm đăng ký, quản lý xem;
+bảng tổng hợp ở tab Chung của Tổng quan). Năm học: ô chọn trên thanh header, bên trái — đối diện tài khoản (`menu.js`: NAM_HOC, HIEN_TAI, CO_DU_LIEU; nhớ ở localStorage `bdv.namHoc`, `window.BDV_NAM_HOC`).
 Hiện chỉ 2026 - 2027 có dữ liệu; năm khác thì trang theo năm hiện "chưa có dữ liệu" (trừ hồ sơ/cẩm nang/cài đặt/tài liệu/bảo mật).
 Khi bổ sung năm cũ: cần nguồn sheet theo năm ở máy chủ + thêm năm vào CO_DU_LIEU + truyền năm học trong các BDV.goi.
 Tất cả file .gs chung một không gian tên — build script / workflow dừng nếu trùng tên hàm.

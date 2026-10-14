@@ -76,7 +76,8 @@
 (function () {
   var THU = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
   // Mỗi loại việc cần duyệt: [mã, tên hiển thị, mảng]. Sau này thêm loại mới (vd. xin nghỉ, đề xuất…) thì thêm dòng ở đây.
-  var LOAI = [['Đổi ca', 'Đổi ca trực', 'Lịch trực'], ['Huỷ ca', 'Huỷ ca trực', 'Lịch trực'], ['Thêm ca', 'Xin thêm ca trực', 'Lịch trực'], ['Xin vắng', 'Xin vắng ca trực', 'Lịch trực'], ['Trực đột xuất', 'Trực đột xuất', 'Lịch trực'], ['Xin vắng Chủ nhật xanh', 'Xin vắng Chủ nhật xanh', 'CSDL - CSVC']];
+  var LOAI = [['Đổi ca', 'Đổi ca trực', 'Lịch trực'], ['Huỷ ca', 'Huỷ ca trực', 'Lịch trực'], ['Thêm ca', 'Xin thêm ca trực', 'Lịch trực'], ['Xin vắng', 'Xin vắng ca trực', 'Lịch trực'], ['Trực đột xuất', 'Trực đột xuất', 'Lịch trực'], ['Xin vắng Chủ nhật xanh', 'Xin vắng Chủ nhật xanh', 'CSDL - CSVC'],
+    ['Lịch kiểm kê CSVC', 'Lịch kiểm kê', 'CSDL - CSVC'], ['Cho mượn tài sản', 'Cho mượn tài sản', 'CSDL - CSVC']];
   var D = null, busy = false, loc = '', tab = 'cho';
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -102,6 +103,12 @@
   function chiTiet(y) {
     var moi = y.ngay ? ngayCa(y.ngay, y.tu, y.den) : '';
     if (y.kieu === 'cnXanh') { var p = y.ngay.split('-'); return 'Chủ nhật <b>' + p[2] + '/' + p[1] + '</b> · người trực thay: <b>' + esc(y.thay) + '</b><br>Lý do: ' + esc(y.lyDo || '—') + ' · gửi ' + esc(y.guiLuc); }
+    if (y.kieu === 'kiemKe') { var q = (y.ngay || '').split('-'); return '<b>' + esc(y.nhan) + '</b> · ngày <b>' + (q.length === 3 ? q[2] + '/' + q[1] : '—') + '</b> · thực hiện: ' + esc((y.thucHien || []).join(', ') || '—') +
+      (y.ghiChu ? '<br>Ghi chú: ' + esc(y.ghiChu) : '') + (y.tnDuyet ? '<br>Trưởng nhóm: ' + esc(y.tnDuyet) : ''); }
+    if (y.kieu === 'choMuon') { var g = (y.ngay || '').split('-'), h = (y.hanTra || '').split('-');
+      return 'Cho <b>' + esc(y.donVi) + '</b> (' + esc(y.daiDien) + ') mượn: ' + esc((y.do || []).map(function (x) { return x.ten + ' × ' + x.sl; }).join('; ')) +
+        '<br>Giao ' + (g.length === 3 ? g[2] + '/' + g[1] : '—') + ' → trả ' + (h.length === 3 ? h[2] + '/' + h[1] : '—') + ' · ' + esc(y.mucDich) +
+        (y.gdn ? ' · <a href="' + esc(y.gdn) + '" target="_blank" rel="noopener">giấy đề nghị</a>' : '') + (y.tnDuyet ? '<br>Trưởng nhóm: ' + esc(y.tnDuyet) : ''); }
     if (y.kieu === 'dotXuat') return 'Đã điểm danh <b>' + esc(moi) + '</b>' + (y.diemDanh ? ' lúc ' + esc(y.diemDanh) : '') + (y.cach != null ? ' · cách văn phòng ' + y.cach + ' m' : '');
     var s = '';
     if (y.goc) s += (y.loai === 'Huỷ ca' ? 'Huỷ <b>' : y.loai === 'Xin vắng' ? 'Vắng ca <b>' : 'Ca hiện tại <b>') + esc(y.goc) + '</b>';
@@ -112,7 +119,7 @@
     var key = y.kieu === 'dotXuat' ? 'data-kieu="dotXuat" data-d="' + y.dong + '"' : 'data-kieu="' + y.kieu + '" data-id="' + esc(y.id) + '"';
     return '<div class="req"><div><span class="mang">' + esc(mangLoai(y.loai)) + '</span> · <span class="pill loai">' + esc(tenLoai(y.loai)) + '</span> · <b>' + esc(y.ten) + '</b><div class="s">' + chiTiet(y) + '</div></div>' +
       '<div class="b"><input type="text" placeholder="Ghi chú (không bắt buộc)"><button type="button" class="btn" data-ok="1" ' + key + '>Duyệt</button>' +
-      '<button type="button" class="ghost sm bad" data-ok="0" ' + key + '>Từ chối</button></div></div>';
+      '<button type="button" class="ghost sm bad" data-ok="0" ' + key + '>' + (y.kieu === 'kiemKe' || y.kieu === 'choMuon' ? 'Trả lại nhóm' : 'Từ chối') + '</button></div></div>';
   }
   function dongXong(y) {
     var duyet = y.trangThai === 'Đã duyệt';
@@ -151,8 +158,13 @@
     if (b.dataset.ok === undefined || busy) return;
     var r = b.closest('.req'), ok = b.dataset.ok === '1', gc = r.querySelector('input');
     busy = true; r.classList.add('busy');
-    BDV.goi(b.dataset.kieu === 'cnXanh' ? 'duyetCnXanh' : 'duyetTruc', { kieu: b.dataset.kieu, id: b.dataset.id, dong: +b.dataset.d, dongY: ok, ghiChu: gc ? gc.value : '', ve: 'pheDuyet' })
-      .then(function (d) { busy = false; D = d; ve(); baoMenu(); toast(ok ? 'Đã duyệt' : 'Đã từ chối'); })
+    var k = b.dataset.kieu, csvc = k === 'kiemKe' || k === 'choMuon';
+    if (csvc && !ok && !(gc && gc.value.trim())) { busy = false; r.classList.remove('busy'); toast('Ghi lý do / việc cần sửa khi trả lại cho nhóm.', true); if (gc) gc.focus(); return; }
+    var p = k === 'cnXanh' ? BDV.goi('duyetCnXanh', { id: b.dataset.id, dongY: ok, ghiChu: gc ? gc.value : '', ve: 'pheDuyet' })
+      : k === 'kiemKe' ? BDV.goi('luuKiemKe', { viec: 'duyet', ky: b.dataset.id, dongY: ok, ghiChu: gc ? gc.value : '' }).then(function () { return BDV.goi('pheDuyet', {}); })
+      : k === 'choMuon' ? BDV.goi('luuChoMuon', { viec: 'duyet', id: b.dataset.id, dongY: ok, ghiChu: gc ? gc.value : '' }).then(function () { return BDV.goi('pheDuyet', {}); })
+      : BDV.goi('duyetTruc', { kieu: k, id: b.dataset.id, dong: +b.dataset.d, dongY: ok, ghiChu: gc ? gc.value : '', ve: 'pheDuyet' });
+    p.then(function (d) { busy = false; D = d; ve(); baoMenu(); toast(ok ? 'Đã duyệt' : csvc ? 'Đã trả lại cho nhóm' : 'Đã từ chối'); })
       .catch(function (er) { busy = false; r.classList.remove('busy'); loi(er); });
   });
   $('reload').addEventListener('click', tai);

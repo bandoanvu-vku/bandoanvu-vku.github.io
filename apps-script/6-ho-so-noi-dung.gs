@@ -181,7 +181,7 @@ function luuCamNang_(nd, req) {
 function caiDat_(nd) {
   canQuanLy_(nd, 'xem được cài đặt');
   const cd = caiDatTruc_(sheetTruc_());
-  return { lat: cd.lat, lng: cd.lng, banKinh: cd.banKinh, soBuoi: cd.toiThieuGio / 3, ngayNghi: cd.ngayNghi.slice().sort(), homNay: bayGio_().ngay };
+  return { lat: cd.lat, lng: cd.lng, banKinh: cd.banKinh, soBuoi: cd.toiThieuGio / 3, ngayNghi: cd.ngayNghi.slice().sort(), homNay: bayGio_().ngay, lienKet: lienKet_(), dsLienKet: LIEN_KET };
 }
 function luuCaiDat_(nd, req) {
   canQuanLy_(nd, 'sửa được cài đặt');

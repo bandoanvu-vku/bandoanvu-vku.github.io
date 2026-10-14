@@ -9,7 +9,7 @@
       // 5 tab theo đầu việc nhóm tự chia (14/10/2026); tab Mảng công việc trong sheet vẫn giữ 7 dòng, khớp theo từ khoá
       // [mã tab, tên tab, từ khoá tên mảng, khối hoạt động, đầu việc]
       ['cong-van', 'Công văn', ['công văn'], 'congVan', ['Lưu công văn đi', 'Lưu công văn đến']],
-      ['csvc', 'Cơ sở vật chất', ['csvc', 'cơ sở vật chất'], 'kiemKe', ['Kiểm kê theo tuần / tháng / năm']],
+      ['csvc', 'Cơ sở vật chất', ['csvc', 'cơ sở vật chất'], 'csvc', ['Kiểm kê hằng tuần / hằng tháng / giữa năm - cuối năm', 'Mượn về', 'Cho mượn']],
       ['giay-to', 'Giấy tờ / Biểu mẫu', ['giấy đề nghị', 'biểu mẫu', 'giấy tờ'], '', ['Soạn Giấy đề nghị']],
       ['doan-vu', 'Thông tin Đoàn vụ', ['đoàn vụ'], '', ['Cập nhật thông tin trên sheet, track-log', 'Quản lý thông tin', 'Hồ sơ của Đoàn vụ']],
       ['chu-nhat-xanh', 'Chủ nhật xanh', ['chủ nhật xanh', 'cn xanh'], 'cnXanh', ['Viết thông báo', 'Liên hệ khu vực trực', 'Tạo sheet điểm danh', 'Giám sát thực hiện']]
@@ -190,11 +190,10 @@
     var dv = m[4] && m[4].length ? '<div class="people" style="margin:0 0 6px"><b>Đầu việc:</b> ' + m[4].map(esc).join(' · ') + '</div>' : '';
     var info = rows.length ? '<div style="margin:0 0 12px">' + dv + rows.map(dong).join('') + '</div>'
       : '<div class="people" style="margin:0 0 12px;color:var(--muted)">Chưa có mảng "' + esc(m[1]) + '" trong tab Mảng công việc của sheet nhóm — thêm vào để ghi phụ trách chính.</div>';
-    var mod = m[3] === 'congVan' ? '<div class="empty-box" style="margin-bottom:12px">Phần theo dõi tình trạng lưu công văn đang chờ kết nối với sheet công văn của nhóm.</div>'
-      : m[3] ? '<div id="modHd"></div>' : '';
+    var mod = m[3] ? '<div id="modHd"></div>' : '';
     $('view').innerHTML = info + mod + '<h2>Nhiệm vụ của mảng ' + esc(m[1]) + ' (' + ds.length + ')</h2>' +
       (ds.length ? ds.map(the).join('') : '<div class="empty-box">Chưa có nhiệm vụ nào thuộc mảng này. Ghi đúng tên mảng ở cột "Mảng công việc" trong tab Nhiệm vụ để hiện ở đây.</div>');
-    if (m[3] && m[3] !== 'congVan') { if (window.BDVHD) BDVHD[m[3]]($('modHd')); else $('modHd').innerHTML = '<div class="empty-box">Đang tải…</div>'; }
+    if (m[3]) { if (window.BDVHD) BDVHD[m[3]]($('modHd')); else $('modHd').innerHTML = '<div class="empty-box">Đang tải…</div>'; }
   }
   function veKpi() {
     var tong = D.nhiemVu.length, x = 0, q = 0, cn = 0;
