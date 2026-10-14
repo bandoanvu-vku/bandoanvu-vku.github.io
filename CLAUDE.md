@@ -64,7 +64,10 @@ Năm học: ô chọn trên thanh header, bên trái — đối diện tài kho�
 Hiện chỉ 2026 - 2027 có dữ liệu; năm khác thì trang theo năm hiện "chưa có dữ liệu" (trừ hồ sơ/cẩm nang/cài đặt/tài liệu/bảo mật).
 Khi bổ sung năm cũ: cần nguồn sheet theo năm ở máy chủ + thêm năm vào CO_DU_LIEU + truyền năm học trong các BDV.goi.
 Tất cả file .gs chung một không gian tên — build script / workflow dừng nếu trùng tên hàm.
-Lộ trình đã thống nhất: (2) Đơn từ & xin nghỉ → duyệt ở Phê duyệt; (3) Giao việc trên dashboard + Nhắc việc tự động (email, cần cấp quyền).
+Quản lý không có "Việc của tôi"; thay bằng **Giao việc** (`/giao-viec/`, `8-giao-viec.gs`: tạo/sửa nhiệm vụ ghi vào tab Nhiệm vụ của 3 sheet nhóm,
+4T không giao được vì Timeline chỉ được ghi ô nhận/tick) và **Duyệt việc** (`/duyet-viec/`: việc "Chờ duyệt" → Duyệt = Hoàn thành, Trả lại = Đang làm + ghi chú;
+menu hiện số chờ qua `pheDuyet {dem}` → soViec).
+Lộ trình còn lại: Đơn từ & xin nghỉ → duyệt ở Phê duyệt; Nhắc việc tự động (email, cần cấp quyền).
 
 ## Cách làm việc (để tiết kiệm thời gian/token)
 

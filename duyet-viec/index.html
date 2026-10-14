@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Duyệt việc · Ban Đoàn vụ</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/chung.css">
+<style>
+  .vi { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; padding: 14px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .vi:first-of-type { border-top: 0; }
+  .vi .t { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+  .vi .s { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; margin-top: 2px; }
+  .vi .s b { color: var(--text); font-weight: 600; }
+  .vi .b { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .vi input { border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; background: var(--card); width: 210px; font-size: 13.5px; }
+  .tag { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .btn.sm { min-height: 34px; padding: 5px 14px; font-size: 13.5px; }
+  @media (max-width: 640px) { .vi { grid-template-columns: 1fr; } .vi .b { justify-content: flex-start; } .vi input { flex: 1 1 100%; width: auto; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div><h1>Duyệt việc</h1><div class="sub">Nhiệm vụ thành viên đã làm xong và chuyển sang "Chờ duyệt" · Duyệt = Hoàn thành, Trả lại = về Đang làm kèm ghi chú</div></div>
+    <button class="ghost" id="reload" type="button">Tải lại</button></div>
+  <div id="app"><div class="panel empty">Đang tải…</div></div>
+</div>
+<script src="/dangnhap.js"></script>
+<script src="/chung.js"></script>
+<script>
+(function () {
+  var app = T.$('app'), esc = T.esc, D = null, busy = false;
+  function tai() { BDV.goi('duyetViecDs', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function nhan(d) { D = d; ve(); try { document.dispatchEvent(new CustomEvent('bdv-duyetviec', { detail: d.ds.length })); } catch (e) {} }
+  function dm(iso) { var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+  function ve() {
+    app.innerHTML = '<div class="panel">' + (D.ds.length ? D.ds.map(function (v, i) {
+      return '<div class="vi" data-i="' + i + '"><div><span class="tag">' + esc(v.tenNhom) + (v.mang ? ' · ' + esc(v.mang) : '') + '</span><div class="t">' + esc(v.ten) + '</div>' +
+        '<div class="s"><b>Phụ trách:</b> ' + esc(v.chinh || '—') + (v.hoTro ? ' · <b>Hỗ trợ:</b> ' + esc(v.hoTro) : '') + (v.han ? ' · Hạn ' + dm(v.han) : '') +
+        (v.link && /^https?:\/\//i.test(v.link) ? ' · <a href="' + esc(v.link) + '" target="_blank" rel="noopener">Xem sản phẩm ↗</a>' : ' · <i>chưa có link sản phẩm</i>') +
+        (v.moTa ? '<br>' + esc(v.moTa) : '') + (v.ghiChu ? '<br>Ghi chú: ' + esc(v.ghiChu) : '') + '</div></div>' +
+        '<div class="b"><input type="text" placeholder="Nhận xét (bắt buộc khi trả lại)" maxlength="300"><button type="button" class="btn sm" data-ok="1">Duyệt</button><button type="button" class="ghost sm bad" data-ok="0">Trả lại</button></div></div>';
+    }).join('') : '<div class="empty">Không có việc nào chờ duyệt. 🎉</div>') + '</div>' +
+      '<div class="foot">Nhiệm vụ của 3 nhóm Nghiệp vụ, CSDL - CSVC, Nội vụ. Thành viên chuyển trạng thái sang "Chờ duyệt" ở trang nhóm khi làm xong.</div>';
+  }
+  app.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-ok]'); if (!b || busy) return;
+    var r = b.closest('.vi'), v = D.ds[+r.dataset.i], ok = b.dataset.ok === '1', gc = r.querySelector('input').value.trim();
+    if (!ok && !gc) { T.toast('Ghi lý do / việc cần sửa khi trả lại.', true); r.querySelector('input').focus(); return; }
+    busy = true; r.classList.add('busy');
+    BDV.goi('duyetViec', { nhom: v.nhom, dong: v.dong, ten: v.ten, dongY: ok, ghiChu: gc }).then(function (d) { busy = false; nhan(d); T.toast(ok ? 'Đã duyệt: hoàn thành' : 'Đã trả lại cho thành viên'); })
+      .catch(function (er) { busy = false; r.classList.remove('busy'); T.toast(er.message || String(er), true); });
+  });
+  T.$('reload').addEventListener('click', tai);
+  T.khoi(app, tai);
+})();
+</script>
+<script src="/menu.js"></script>
+</body>
+</html>

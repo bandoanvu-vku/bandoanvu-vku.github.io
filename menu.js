@@ -16,7 +16,8 @@
     book: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19M9 7h6"/>',
     gear: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
     bars: '<path d="M4 6h16M4 12h16M4 18h16"/>',
-    chev: '<path d="m6 9 6 6 6-6"/>'
+    chev: '<path d="m6 9 6 6 6-6"/>',
+    send: '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/>'
   };
   function icon(k) { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[k] + '</svg>'; }
 
@@ -30,9 +31,10 @@
     if (ql) {
       return [
         { muc: null, ds: [{ href: '/', ten: 'Tổng quan', icon: 'home' }] },
-        { muc: 'Điều hành', ds: [{ href: '/phe-duyet/', ten: 'Phê duyệt', icon: 'inbox', dem: true }, { href: '/lich-truc/', ten: 'Lịch trực', icon: 'cal' }, muc] },
+        { muc: 'Điều hành', ds: [{ href: '/giao-viec/', ten: 'Giao việc', icon: 'send' }, { href: '/duyet-viec/', ten: 'Duyệt việc', icon: 'check', demViec: true },
+          { href: '/phe-duyet/', ten: 'Phê duyệt', icon: 'inbox', dem: true }, { href: '/lich-truc/', ten: 'Lịch trực', icon: 'cal' }, muc] },
         { muc: 'Theo dõi', ds: [{ href: '/thong-ke/', ten: 'Thống kê', icon: 'chart' }] },
-        { muc: 'Cá nhân', ds: [{ href: '/cua-toi/', ten: 'Việc của tôi', icon: 'check' }, { href: '/ho-so/', ten: 'Hồ sơ của tôi', icon: 'user' }] },
+        { muc: 'Cá nhân', ds: [{ href: '/ho-so/', ten: 'Hồ sơ của tôi', icon: 'user' }] },
         { muc: 'Quản trị', ds: [{ href: '/tai-lieu/', ten: 'Tài liệu & biểu mẫu', icon: 'file' }, { href: '/cam-nang/', ten: 'Cẩm nang', icon: 'book' }, { href: '/cai-dat/', ten: 'Cài đặt', icon: 'gear' }] }
       ];
     }
@@ -113,7 +115,7 @@
   function doc(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
   function ghi(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   var dongPhan = doc('bdv.menu.dong') || {}, moNho = doc('bdv.menu.mo') || {};
-  var soCho = null; // số mục chờ duyệt, hiện cạnh "Phê duyệt"
+  var soCho = null, soViec = 0; // số mục chờ duyệt, hiện cạnh "Phê duyệt"
 
   function mucHtml(m) {
     var k = key();
@@ -123,7 +125,8 @@
         '<svg class="mui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' + ICON.chev + '</svg></button>' +
         '<div class="con">' + m.con.map(function (c) { return '<a href="' + c.href + '"' + (c.href === k ? ' aria-current="page"' : '') + '>' + c.ten + '</a>'; }).join('') + '</div></div>';
     }
-    var so = m.dem && soCho ? '<span class="so" aria-label="' + soCho + ' mục chờ duyệt">' + soCho + '</span>' : '';
+    var sl = m.dem ? soCho : m.demViec ? soViec : 0;
+    var so = sl ? '<span class="so" aria-label="' + sl + ' mục chờ duyệt">' + sl + '</span>' : '';
     return '<a class="m" href="' + m.href + '"' + (m.href === k ? ' aria-current="page"' : '') + '>' + icon(m.icon) + '<span>' + m.ten + '</span>' + so + '</a>';
   }
   function ve() {
@@ -159,12 +162,12 @@
   document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-ve-nam]')) doiNam(HIEN_TAI); });
   h.addEventListener('change', function (e) { if (e.target.id === 'bdvNam') doiNam(e.target.value); });
   function demCho(n) {
-    if (!n || n.vaiTro !== 'quanLy' || !window.BDV || o === '/phe-duyet/') return;
-    try { var c = JSON.parse(sessionStorage.getItem('bdv.pd') || 'null'); if (c && Date.now() - c.t < 60000) { soCho = c.so; return; } } catch (e) {}
+    if (!n || n.vaiTro !== 'quanLy' || !window.BDV) return;
+    try { var c = JSON.parse(sessionStorage.getItem('bdv.pd') || 'null'); if (c && Date.now() - c.t < 60000 && c.soViec !== undefined) { soCho = c.so; soViec = c.soViec; return; } } catch (e) {}
     if (demCho.dang) return; demCho.dang = true;
     BDV.goi('pheDuyet', { dem: true }).then(function (d) {
-      demCho.dang = false; soCho = d.so;
-      try { sessionStorage.setItem('bdv.pd', JSON.stringify({ so: d.so, t: Date.now() })); } catch (e) {}
+      demCho.dang = false; soCho = d.so; soViec = d.soViec || 0;
+      try { sessionStorage.setItem('bdv.pd', JSON.stringify({ so: d.so, soViec: soViec, t: Date.now() })); } catch (e) {}
       ve();
     }).catch(function () { demCho.dang = false; });
   }
@@ -182,6 +185,7 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') dongSide(); });
   window.addEventListener('hashchange', ve);
   document.addEventListener('bdv-pheduyet', function (e) { soCho = e.detail; ve(); });
+  document.addEventListener('bdv-duyetviec', function (e) { soViec = e.detail; try { sessionStorage.removeItem('bdv.pd'); } catch (er) {} ve(); });
   ve();
   document.addEventListener('bdv-nguoi', function () { soCho = null; ve(); });
   if (!window.BDV && !document.querySelector('script[src="/dangnhap.js"]')) {

@@ -84,6 +84,10 @@ function doPost(e) {
       hopNhom: function () { return hopNhom_(nd, req); },
       luuHopNhom: function () { return luuHopNhom_(nd, req); },
       hopThang: function () { return hopThang_(nd); },
+      giaoViecDs: function () { return giaoViecDs_(nd); },
+      giaoViec: function () { return giaoViec_(nd, req); },
+      duyetViecDs: function () { return duyetViecDs_(nd); },
+      duyetViec: function () { return duyetViec_(nd, req); },
       quanLySuaTruc: function () { return quanLySuaTruc_(nd, req); },
       congBoTruc: function () { return congBoTruc_(nd, req); }
     };
