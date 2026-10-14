@@ -49,7 +49,14 @@ function doPost(e) {
     const req = body.req || {};
     if (body.action === 'dangNhap') return json_({ ok: true, data: dangNhap_(body.idToken) });
 
-    const nd = nguoiDung_(body.token);
+    let nd = nguoiDung_(body.token);
+    // Quản lý xem thử bằng giao diện thành viên của một nhóm: chỉ các thao tác đọc, dữ liệu lọc như thành viên nhóm đó
+    if (req.xemNhu) {
+      if (nd.vaiTro !== 'quanLy' || !Object.prototype.hasOwnProperty.call(TEN_NHOM, req.xemNhu)) throw loiQuyen_('Không dùng được chế độ xem như thành viên.');
+      const chiXem = ['data', 'nhom', 'tongquan', 'cuaToi', 'lichTruc', 'thongKe', 'hoSo', 'taiLieu', 'camNang', 'cnXanh', 'kiemKe', 'hopNhom'];
+      if (chiXem.indexOf(body.action) === -1) throw new Error('Đang xem bằng giao diện thành viên (chỉ xem). Chuyển về "Giao diện quản lý" ở thanh trên cùng để thao tác.');
+      nd = Object.assign({}, nd, { vaiTro: 'thanhVien', nhom: [req.xemNhu], xemThu: true });
+    }
     const doc = {
       toi: function () { return nd; },
       data: function () { canNhom_(nd, '4t'); return layDuLieu(req.moi === true); },

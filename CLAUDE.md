@@ -67,6 +67,9 @@ Tất cả file .gs chung một không gian tên — build script / workflow d�
 Quản lý không có "Việc của tôi"; thay bằng **Giao việc** (`/giao-viec/`, `8-giao-viec.gs`: tạo/sửa nhiệm vụ ghi vào tab Nhiệm vụ của 3 sheet nhóm,
 4T không giao được vì Timeline chỉ được ghi ô nhận/tick) và **Duyệt việc** (`/duyet-viec/`: việc "Chờ duyệt" → Duyệt = Hoàn thành, Trả lại = Đang làm + ghi chú;
 menu hiện số chờ qua `pheDuyet {dem}` → soViec).
+Xem như thành viên: quản lý chọn "Giao diện" trên header (Quản lý / Thành viên · nhóm X), nhớ ở localStorage `bdv.xemNhu`.
+`BDV.nguoi()` trả người "hiệu lực" (vai trò thành viên, nhom=[X]), `BDV.nguoiThat()` trả tài khoản thật; `BDV.goi` tự gửi `req.xemNhu`
+→ máy chủ (doPost) chỉ cho các action đọc và lọc như thành viên nhóm X; thao tác ghi bị chặn.
 Lộ trình còn lại: Đơn từ & xin nghỉ → duyệt ở Phê duyệt; Nhắc việc tự động (email, cần cấp quyền).
 
 ## Cách làm việc (để tiết kiệm thời gian/token)

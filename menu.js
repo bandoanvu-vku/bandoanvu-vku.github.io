@@ -66,6 +66,14 @@
     'body.bdv-co-side .bdv-side{display:block}' +
     '.bdv-side .logo{display:block;padding:6px 10px 14px;text-decoration:none;color:var(--text,#17202e)}' +
     '.bdv-side .logo b{display:block;font-size:16px}.bdv-side .logo span{font-size:12px;color:var(--muted,#5d6b80)}' +
+    '.bdv-menu .gd{display:none;align-items:center;gap:8px;font-size:13px;color:var(--muted,#5d6b80);white-space:nowrap}body.bdv-ql-that .bdv-menu .gd{display:flex}' +
+    '.bdv-menu .gd select{font:inherit;font-size:13.5px;font-weight:600;color:var(--text,#17202e);background:var(--card,#fff);border:1px solid var(--line,#dfe4ec);border-radius:8px;padding:5px 8px;min-height:34px;cursor:pointer;max-width:230px}' +
+    '.bdv-menu .gd.xem select{border-color:#7a4fd6;color:#5b34b5;background:#efe8fd}' +
+    '@media (prefers-color-scheme:dark){.bdv-menu .gd.xem select{color:#c9b5ff;background:#2a2142}}' +
+    '.bdv-xemthu{background:#efe8fd;color:#4a2a99;font-size:13.5px;padding:8px 16px;display:flex;gap:8px 14px;align-items:center;justify-content:center;flex-wrap:wrap;border-bottom:1px solid #d9cbfa}' +
+    '.bdv-xemthu button{font:inherit;font-size:13px;font-weight:600;border:1px solid #7a4fd6;background:#7a4fd6;color:#fff;border-radius:8px;padding:4px 12px;cursor:pointer}' +
+    '@media (prefers-color-scheme:dark){.bdv-xemthu{background:#2a2142;color:#d9cbff;border-bottom-color:#3d3160}}' +
+    '@media (max-width:640px){.bdv-menu .gd span{display:none}.bdv-menu .gd select{max-width:90px;font-size:13px;padding:4px 4px}body.bdv-ql-that .bdv-menu>div{gap:6px}body.bdv-ql-that .bdv-tk b{display:none}body.bdv-ql-that .bdv-menu .nam select{max-width:none;padding:4px 4px}}' +
     '.bdv-menu .nam{display:none;align-items:center;gap:8px;font-size:13px;color:var(--muted,#5d6b80);white-space:nowrap}body.bdv-co-side .bdv-menu .nam{display:flex}' +
     '.bdv-menu .nam select{font:inherit;font-size:13.5px;font-weight:600;color:var(--text,#17202e);background:var(--card,#fff);border:1px solid var(--line,#dfe4ec);border-radius:8px;padding:5px 8px;min-height:34px;cursor:pointer}' +
     '.bdv-menu .nam select:hover{border-color:var(--accent,#1a56c4)}' +
@@ -100,7 +108,9 @@
 
   var h = document.createElement('header');
   h.className = 'bdv-menu';
-  h.innerHTML = '<div><button type="button" class="mo-menu" aria-label="Mở menu">' + icon('bars') + '</button><a class="brand" href="/">Ban Đoàn vụ</a><label class="nam"><span>Năm học</span><select id="bdvNam" aria-label="Chọn năm học"></select></label></div>';
+  h.innerHTML = '<div><button type="button" class="mo-menu" aria-label="Mở menu">' + icon('bars') + '</button><a class="brand" href="/">Ban Đoàn vụ</a><label class="nam"><span>Năm học</span><select id="bdvNam" aria-label="Chọn năm học"></select></label>' +
+    '<label class="gd"><span>Giao diện</span><select id="bdvGd" aria-label="Xem bằng giao diện">' +
+    '<option value="">Quản lý</option>' + THU_TU.map(function (m) { return '<option value="' + m + '">Thành viên · ' + TEN_NHOM[m] + '</option>'; }).join('') + '</select></label></div>';
   var side = document.createElement('aside');
   side.className = 'bdv-side'; side.setAttribute('aria-label', 'Menu');
   var phu = document.createElement('div'); phu.className = 'bdv-phu';
@@ -133,8 +143,9 @@
     var n = nguoi(), ql = !!n && n.vaiTro === 'quanLy';
     document.body.classList.toggle('bdv-co-side', !!n);
     h.querySelector('.brand').setAttribute('href', n && !ql ? '/cua-toi/' : '/');
-    if (!n) { side.innerHTML = ''; soCho = null; document.body.classList.remove('bdv-mo-side'); veNam(null); if (window.BDV) BDV.veNut(); return; }
+    if (!n) { side.innerHTML = ''; soCho = null; document.body.classList.remove('bdv-mo-side'); veNam(null); veGiaoDien(); if (window.BDV) BDV.veNut(); return; }
     if (ql && soCho === null) demCho(n);
+    veGiaoDien();
     var cu = namHoc !== HIEN_TAI, nam = h.querySelector('.nam');
     nam.className = 'nam' + (cu ? ' cu' : ''); nam.title = cu ? 'Đang xem năm học cũ' : '';
     nam.querySelector('select').innerHTML = NAM_HOC.map(function (y) { return '<option' + (y === namHoc ? ' selected' : '') + '>' + y + '</option>'; }).join('');
@@ -148,6 +159,18 @@
     veNam(n);
     if (window.BDV) BDV.veNut();
   }
+  // Quản lý: chọn xem bằng giao diện quản lý hoặc giao diện thành viên của một nhóm (chỉ xem)
+  function veGiaoDien() {
+    var that = window.BDV && BDV.nguoiThat ? BDV.nguoiThat() : null, laQl = !!that && that.vaiTro === 'quanLy', xn = laQl ? BDV.xemNhu() : '';
+    document.body.classList.toggle('bdv-ql-that', laQl);
+    var gd = h.querySelector('.gd'); gd.className = 'gd' + (xn ? ' xem' : ''); gd.querySelector('select').value = xn;
+    var bn = document.querySelector('.bdv-xemthu');
+    if (!xn) { if (bn) bn.remove(); return; }
+    if (!bn) { bn = document.createElement('div'); bn.className = 'bdv-xemthu'; h.appendChild(bn); }
+    bn.innerHTML = '<span>Bạn đang xem bằng <b>giao diện thành viên nhóm ' + TEN_NHOM[xn] + '</b> (chỉ xem, không thao tác được).</span><button type="button" data-ve-ql="1">Về giao diện quản lý</button>';
+  }
+  h.addEventListener('change', function (e) { if (e.target.id === 'bdvGd' && window.BDV && BDV.datXemNhu) BDV.datXemNhu(e.target.value); });
+  h.addEventListener('click', function (e) { if (e.target.closest('[data-ve-ql]') && window.BDV && BDV.datXemNhu) BDV.datXemNhu(''); });
   // Năm học chưa có dữ liệu: ẩn nội dung trang theo năm, hiện thông báo
   function veNam(n) {
     var an = !!n && CO_DU_LIEU.indexOf(namHoc) === -1 && KHONG_THEO_NAM.indexOf(o) === -1;

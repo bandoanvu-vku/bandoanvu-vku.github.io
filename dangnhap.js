@@ -26,6 +26,12 @@
   }
 
   var nguoi = doc(K_NG), phien = doc(K_PH);
+  // Quản lý xem thử giao diện thành viên của một nhóm (chỉ xem): nhớ trong trình duyệt
+  var K_XN = 'bdv.xemNhu', xemNhu = doc(K_XN) || '';
+  function hieuLuc() {
+    if (nguoi && nguoi.vaiTro === 'quanLy' && xemNhu) return Object.assign({}, nguoi, { vaiTro: 'thanhVien', nhom: [xemNhu], xemNhu: xemNhu });
+    return nguoi;
+  }
   if (!phien || !phien.t || !(phien.het * 1000 > Date.now() + 60000) || !nguoi || !nguoi.ten) { nguoi = null; phien = null; }
   var choDangNhap = false;
 
@@ -108,7 +114,7 @@
   });
   function bao() {
     veNut();
-    try { document.dispatchEvent(new CustomEvent('bdv-nguoi', { detail: nguoi })); } catch (e) {}
+    try { document.dispatchEvent(new CustomEvent('bdv-nguoi', { detail: hieuLuc() })); } catch (e) {}
   }
 
   /* ---------- Google Identity Services ---------- */
@@ -174,7 +180,9 @@
       if (nguoi) { nguoi = null; phien = null; ghi(K_NG, null); ghi(K_PH, null); bao(); }
       return Promise.reject(e0);
     }
-    return guiLen({ action: action, req: req || {}, token: phien.t }).then(function (o) {
+    req = req || {};
+    if (action !== 'toi' && nguoi && nguoi.vaiTro === 'quanLy' && xemNhu) req = Object.assign({}, req, { xemNhu: xemNhu });
+    return guiLen({ action: action, req: req, token: phien.t }).then(function (o) {
       if (o.ok) return o.data;
       var e = new Error(o.error || 'Có lỗi xảy ra.');
       e.canDangNhap = !!o.canDangNhap; e.khongQuyen = !!o.khongQuyen;
@@ -185,9 +193,17 @@
 
   window.BDV = {
     API: API,
-    nguoi: function () { return nguoi; },
-    laQuanLy: function () { return !!nguoi && nguoi.vaiTro === 'quanLy'; },
-    duocXem: function (ma) { return !!nguoi && (nguoi.vaiTro === 'quanLy' || (nguoi.nhom || []).indexOf(ma) > -1); },
+    nguoi: hieuLuc,
+    nguoiThat: function () { return nguoi; },
+    xemNhu: function () { return nguoi && nguoi.vaiTro === 'quanLy' ? xemNhu : ''; },
+    // ma = mã nhóm để xem như thành viên nhóm đó, '' = về giao diện quản lý. Tải lại trang để mọi phần dùng đúng chế độ.
+    datXemNhu: function (ma) {
+      xemNhu = ma || ''; ghi(K_XN, xemNhu || null);
+      var chiQl = /^\/(phe-duyet|thong-ke|cai-dat|giao-viec|duyet-viec)\/$/.test(location.pathname) || location.pathname === '/';
+      if (xemNhu && chiQl) location.href = '/cua-toi/'; else if (!xemNhu && location.pathname === '/cua-toi/') location.href = '/'; else location.reload();
+    },
+    laQuanLy: function () { var n = hieuLuc(); return !!n && n.vaiTro === 'quanLy'; },
+    duocXem: function (ma) { var n = hieuLuc(); return !!n && (n.vaiTro === 'quanLy' || (n.nhom || []).indexOf(ma) > -1); },
     goi: goi,
     veCong: veCong,
     moDangNhap: moHop,
