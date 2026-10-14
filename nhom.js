@@ -6,13 +6,13 @@
   // Mảng công việc thường nhật có tab riêng (khớp tên mảng trong tab "Mảng công việc" của sheet nhóm theo các từ khoá)
   var MANG_RIENG = {
     'csdl-csvc': [
-      // theo Bảng phân công nhiệm vụ BĐV (cập nhật 14/10/2026)
-      ['chu-nhat-xanh', 'Chủ nhật xanh', ['chủ nhật xanh', 'cn xanh'], 'cnXanh'],
-      ['cong-van', 'Công văn đi / đến', ['công văn'], 'congVan'],
-      ['giay-de-nghi', 'Giấy đề nghị', ['giấy đề nghị'], ''],
-      ['bieu-mau', 'Biểu mẫu', ['biểu mẫu'], ''],
-      ['doan-vu', 'Thông tin Đoàn vụ', ['đoàn vụ'], ''],
-      ['csvc', 'Cơ sở vật chất', ['csvc', 'cơ sở vật chất'], 'kiemKe']
+      // 5 tab theo đầu việc nhóm tự chia (14/10/2026); tab Mảng công việc trong sheet vẫn giữ 7 dòng, khớp theo từ khoá
+      // [mã tab, tên tab, từ khoá tên mảng, khối hoạt động, đầu việc]
+      ['cong-van', 'Công văn', ['công văn'], 'congVan', ['Lưu công văn đi', 'Lưu công văn đến']],
+      ['csvc', 'Cơ sở vật chất', ['csvc', 'cơ sở vật chất'], 'kiemKe', ['Kiểm kê theo tuần / tháng / năm']],
+      ['giay-to', 'Giấy tờ / Biểu mẫu', ['giấy đề nghị', 'biểu mẫu', 'giấy tờ'], '', ['Soạn Giấy đề nghị']],
+      ['doan-vu', 'Thông tin Đoàn vụ', ['đoàn vụ'], '', ['Cập nhật thông tin trên sheet, track-log', 'Quản lý thông tin', 'Hồ sơ của Đoàn vụ']],
+      ['chu-nhat-xanh', 'Chủ nhật xanh', ['chủ nhật xanh', 'cn xanh'], 'cnXanh', ['Viết thông báo', 'Liên hệ khu vực trực', 'Tạo sheet điểm danh', 'Giám sát thực hiện']]
     ]
   };
   var DS_MANG = MANG_RIENG[NHOM] || [];
@@ -89,7 +89,7 @@
 
   var D = null, view = 'nv', loc = 'all', locMang = '', busy = false;
   // Tab đang xem ghi trên địa chỉ (#chu-nhat-xanh…) để tải lại vẫn giữ
-  function docView() { var h = location.hash.slice(1); view = TABS.some(function (t) { return t[0] === h; }) ? h : 'nv'; }
+  function docView() { var h = location.hash.slice(1); h = { 'giay-de-nghi': 'giay-to', 'bieu-mau': 'giay-to', 'doan-vien': 'nv' }[h] || h; view = TABS.some(function (t) { return t[0] === h; }) ? h : 'nv'; }
   docView();
   window.addEventListener('hashchange', function () { docView(); ve(); });
   var $ = function (id) { return document.getElementById(id); };
@@ -187,7 +187,8 @@
       return '<div class="people" style="margin:0 0 6px">' + (rows.length > 1 ? '<b>' + esc(row.ten) + ':</b> ' : '') + '<b>Phụ trách chính:</b> ' + (esc(row.chinh) || 'chưa có') +
         (row.hoTroChinh ? ' · <b>Hỗ trợ chính:</b> ' + esc(row.hoTroChinh) : '') + (row.thamGia ? ' · <b>Tham gia:</b> ' + esc(row.thamGia) : '') + '</div>';
     };
-    var info = rows.length ? '<div style="margin:0 0 12px">' + rows.map(dong).join('') + '</div>'
+    var dv = m[4] && m[4].length ? '<div class="people" style="margin:0 0 6px"><b>Đầu việc:</b> ' + m[4].map(esc).join(' · ') + '</div>' : '';
+    var info = rows.length ? '<div style="margin:0 0 12px">' + dv + rows.map(dong).join('') + '</div>'
       : '<div class="people" style="margin:0 0 12px;color:var(--muted)">Chưa có mảng "' + esc(m[1]) + '" trong tab Mảng công việc của sheet nhóm — thêm vào để ghi phụ trách chính.</div>';
     var mod = m[3] === 'congVan' ? '<div class="empty-box" style="margin-bottom:12px">Phần theo dõi tình trạng lưu công văn đang chờ kết nối với sheet công văn của nhóm.</div>'
       : m[3] ? '<div id="modHd"></div>' : '';

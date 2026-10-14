@@ -55,10 +55,12 @@ Thêm trang: thêm một mục vào `cauHinh()` trong `menu.js`. Trang mới dù
 Server `6-ho-so-noi-dung.gs`: hồ sơ (cột Chức vụ/MSSV/Lớp/Số điện thoại tự thêm vào sheet tài khoản; thành viên sửa MSSV/Lớp/SĐT,
 chức vụ do quản lý), tab "Tài liệu" (cột Nhóm: chung/4t/…; trang chia tab Chung + 4 nhóm, thành viên thấy Chung + nhóm mình) + "Cẩm nang" trong sheet tài khoản (quản lý sửa), cài đặt lịch trực (`caiDat`/`luuCaiDat`).
 Server `7-hoat-dong-nhom.gs` + giao diện `/hoat-dong.js` (BDVHD.cnXanh / kiemKe / hopNhom), lưu ở các tab "CN xanh", "CN xanh - xin vắng",
-"Kiểm kê", "Họp nhóm" của sheet lịch trực. Trang CSDL - CSVC có tab riêng theo Bảng phân công nhiệm vụ BĐV (Chủ nhật xanh, Công văn đi/đến, Giấy đề nghị, Biểu mẫu,
-Thông tin Đoàn vụ, Cơ sở vật chất — Hệ thống QL Đoàn viên đã chuyển sang Nghiệp vụ (Tân); khớp tên mảng theo từ khoá trong `MANG_RIENG` ở nhom.js). Phụ trách chính của mảng = cột "Phụ trách chính" tab Mảng công việc.
+"Kiểm kê", "Họp nhóm" của sheet lịch trực. Trang CSDL - CSVC có 5 tab theo đầu việc nhóm tự chia: Công văn · Cơ sở vật chất · Giấy tờ / Biểu mẫu · Thông tin Đoàn vụ · Chủ nhật xanh
+(mỗi tab hiện dòng "Đầu việc"; tab Mảng công việc trong sheet giữ 7 dòng, khớp theo từ khoá trong `MANG_RIENG` ở nhom.js; Hệ thống QL Đoàn viên đã chuyển sang Nghiệp vụ (Tân)). Phụ trách chính của mảng = cột "Phụ trách chính" tab Mảng công việc.
 CN xanh: 2 người/CN, đăng ký cùng khung lịch trực, sau khoá thì xin vắng + chọn người thay → phụ trách chính/quản lý duyệt (cũng hiện ở Phê duyệt).
-Kiểm kê: phụ trách mảng Quản lý CSVC đăng ký ngày + phân công mỗi tháng. Họp tháng: mục riêng `/hop-nhom/` trên menu (tab theo nhóm; quản lý có tab Tổng hợp; thành viên nhóm đăng ký, quản lý xem;
+Mỗi CN có 4 đầu việc chuẩn bị (`VIEC_CNX`: Viết thông báo, Liên hệ khu vực trực, Tạo sheet điểm danh — bắt buộc link, Giám sát thực hiện), tab "CN xanh - chuẩn bị",
+action `luuViecCnXanh` (nhận / giao (phụ trách) / bỏ nhận / xong / mở lại).
+Kiểm kê: theo tuần / tháng / năm học; cột Kỳ = "Tuần YYYY-MM-DD" (thứ 2) · "YYYY-MM" · "Năm học YYYY-YYYY"; phụ trách mảng CSVC đăng ký ngày trong kỳ + phân công. Họp tháng: mục riêng `/hop-nhom/` trên menu (tab theo nhóm; quản lý có tab Tổng hợp; thành viên nhóm đăng ký, quản lý xem;
 bảng tổng hợp ở tab Chung của Tổng quan). Quản lý công văn: chờ link sheet công văn có sẵn của nhóm.
 Năm học: ô chọn trên thanh header, bên trái — đối diện tài khoản (`menu.js`: NAM_HOC, HIEN_TAI, CO_DU_LIEU; nhớ ở localStorage `bdv.namHoc`, `window.BDV_NAM_HOC`).
 Hiện chỉ 2026 - 2027 có dữ liệu; năm khác thì trang theo năm hiện "chưa có dữ liệu" (trừ hồ sơ/cẩm nang/cài đặt/tài liệu/bảo mật).

@@ -7,17 +7,20 @@
  *   - Thành viên tự đăng ký / huỷ trong khung đăng ký lịch trực của tuần đó (00:00 thứ 6 → 17:00 CN tuần trước).
  *   - Phụ trách chính (và quản lý) xếp / bỏ người bất kỳ lúc nào trước ngày đó.
  *   - Đã khoá mà muốn vắng: gửi "xin vắng", bắt buộc chọn người trực thay → phụ trách chính (hoặc quản lý) duyệt là đổi người.
- * Kiểm kê CSVC: mỗi tháng một lần; phụ trách chính mảng Quản lý CSVC đăng ký ngày + phân công người thực hiện;
+ * Kiểm kê CSVC: theo tuần / tháng / năm học; phụ trách chính mảng Quản lý CSVC đăng ký ngày + phân công người thực hiện;
  *   người được phân công (hoặc phụ trách) đánh dấu đã kiểm kê, kèm ghi chú / link biên bản.
  * Họp tháng (cả 4 nhóm): trưởng nhóm / thành viên đại diện đăng ký ngày, giờ, địa điểm, nội dung; quản lý xem.
  */
 const CN_XANH = { NHOM: 'csdl-csvc', KHOA: ['chủ nhật xanh', 'cn xanh'], SO_NGUOI: 2, TUAN_TRUOC: 4, TUAN_TOI: 6 };
-const KIEM_KE = { NHOM: 'csdl-csvc', KHOA: ['csvc', 'cơ sở vật chất'], THANG_TRUOC: 3, THANG_TOI: 2, HAN_NGAY: 5 };
+const KIEM_KE = { NHOM: 'csdl-csvc', KHOA: ['csvc', 'cơ sở vật chất'], TUAN_TRUOC: 4, TUAN_TOI: 4, THANG_TRUOC: 3, THANG_TOI: 2, HAN_NGAY: 5 };
 const COT_CNX = ['Ngày', 'Họ và tên', 'Email', 'Vai trò', 'Trạng thái', 'Ghi lúc', 'Ghi bởi', 'Ghi chú'];
 const COT_CNX_YC = ['Mã', 'Gửi lúc', 'Ngày', 'Người xin vắng', 'Email', 'Người trực thay', 'Lý do', 'Trạng thái', 'Người duyệt', 'Duyệt lúc', 'Ghi chú duyệt'];
-const COT_KK = ['Tháng', 'Ngày kiểm kê', 'Phụ trách', 'Thành viên thực hiện', 'Trạng thái', 'Ghi chú / biên bản', 'Cập nhật bởi', 'Cập nhật lúc'];
+const COT_KK = ['Kỳ', 'Ngày kiểm kê', 'Phụ trách', 'Thành viên thực hiện', 'Trạng thái', 'Ghi chú / biên bản', 'Cập nhật bởi', 'Cập nhật lúc'];
 const COT_HOP = ['Nhóm', 'Tháng', 'Ngày', 'Giờ', 'Địa điểm', 'Nội dung', 'Người đăng ký', 'Đăng ký lúc'];
 const TT_CNX = { XEP: 'Đã xếp', HUY: 'Đã huỷ', THAY: 'Đã thay' };
+// Đầu việc chuẩn bị cho mỗi Chủ nhật xanh (tab "CN xanh - chuẩn bị": mỗi dòng = 1 đầu việc của 1 CN)
+const VIEC_CNX = ['Viết thông báo', 'Liên hệ khu vực trực', 'Tạo sheet điểm danh', 'Giám sát thực hiện'];
+const COT_CNX_VIEC = ['Ngày', 'Đầu việc', 'Người làm', 'Trạng thái', 'Link / ghi chú', 'Cập nhật bởi', 'Cập nhật lúc'];
 
 /* ---------------- tiện ích */
 
@@ -71,19 +74,69 @@ function cnXanh_(nd) {
   const ds = docCnx_(ss).filter(function (x) { return x.trangThai === TT_CNX.XEP; });
   const cn0 = themNgay_(dauTuan_(now.ngay), 6), cacCn = [];
   for (let i = -CN_XANH.TUAN_TRUOC; i <= CN_XANH.TUAN_TOI; i++) cacCn.push(themNgay_(cn0, 7 * i));
-  const yc = docCnxYc_(ss);
+  const yc = docCnxYc_(ss), viec = docCnxViec_(ss);
   return {
     soNguoi: CN_XANH.SO_NGUOI, homNay: now.ngay, toi: nd.ten, laPhuTrach: laPT, laThanhVien: ctx.d.thanhVien.indexOf(nd.ten) > -1,
     mang: ctx.mang ? ctx.mang.ten : '', phuTrach: ctx.phuTrach, thanhVien: ctx.d.thanhVien,
     chuNhat: cacCn.map(function (n) {
       const st = trangThaiCnx_(n, now);
       return { ngay: n, trangThai: st.ma, mo: st.mo, dong: st.dong, qua: n < now.ngay,
-        nguoi: ds.filter(function (x) { return x.ngay === n; }).map(function (x) { return { ten: x.ten, vaiTro: x.vaiTro, ghiChu: x.ghiChu }; }) };
+        nguoi: ds.filter(function (x) { return x.ngay === n; }).map(function (x) { return { ten: x.ten, vaiTro: x.vaiTro, ghiChu: x.ghiChu }; }),
+        viec: VIEC_CNX.map(function (t, i) {
+          const v = viec.filter(function (y) { return y.ngay === n && y.viec === t; }).slice(-1)[0];
+          return v ? { i: i, ten: t, nguoi: v.nguoi, xong: v.trangThai === 'Xong', ghiChu: v.ghiChu, boi: v.boi, luc: v.luc } : { i: i, ten: t, nguoi: '', xong: false, ghiChu: '' };
+        }) };
     }),
     yeuCau: yc.filter(function (y) { return laPT || y.ten === nd.ten || y.thay === nd.ten; })
       .sort(function (a, b) { return (a.trangThai === TT.CHO ? 0 : 1) - (b.trangThai === TT.CHO ? 0 : 1) || b.dong - a.dong; }).slice(0, 30)
       .map(function (y) { const o = Object.assign({}, y); delete o.dong; delete o.email; return o; })
   };
+}
+function docCnxViec_(ss) {
+  return docTabHd_(ss, 'CN xanh - chuẩn bị', COT_CNX_VIEC.length).map(function (r) {
+    return { dong: r.dong, ngay: ngayISO_(r[0], MUI_GIO), viec: chuoi_(r[1]), nguoi: chuoi_(r[2]), trangThai: chuoi_(r[3]), ghiChu: chuoi_(r[4]), boi: chuoi_(r[5]), luc: lucChu2_(r[6]) };
+  }).filter(function (x) { return x.ngay && x.viec; });
+}
+/** Đầu việc chuẩn bị CN xanh: nhận / giao / bỏ nhận / xong / mở lại. */
+function luuViecCnXanh_(nd, req) {
+  canNhom_(nd, CN_XANH.NHOM);
+  return voiKhoa_(function () {
+    const ctx = mangNhom_(CN_XANH.NHOM, CN_XANH.KHOA), laPT = laPhuTrach_(nd, ctx);
+    const ss = sheetTruc_(), now = bayGio_(), ngay = String(req.ngay || ''), ten = VIEC_CNX[Number(req.i)];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay) || thuCua_(ngay) !== 7) throw new Error('Ngày không phải Chủ nhật.');
+    if (!ten) throw new Error('Đầu việc không hợp lệ.');
+    if (ngay < themNgay_(now.ngay, -14)) throw new Error('Chủ nhật này đã qua quá 2 tuần, không sửa được nữa.');
+    const s = tabHd_(ss, 'CN xanh - chuẩn bị', COT_CNX_VIEC, [100, 170, 180, 90, 320, 160, 130], [1]);
+    const cu = docCnxViec_(ss).filter(function (y) { return y.ngay === ngay && y.viec === ten; }).slice(-1)[0];
+    const v = cu ? { nguoi: cu.nguoi, tt: cu.trangThai, gc: cu.ghiChu } : { nguoi: '', tt: '', gc: '' };
+    const laTV = ctx.d.thanhVien.indexOf(nd.ten) > -1, gc = chuoi_(req.ghiChu).slice(0, 500);
+    if (req.viec === 'nhan') {
+      if (!laTV) throw loiQuyen_('Chỉ thành viên nhóm mới nhận việc được.');
+      if (v.nguoi && v.nguoi !== nd.ten) throw new Error('Việc này ' + v.nguoi + ' đã nhận.');
+      v.nguoi = nd.ten;
+    } else if (req.viec === 'giao') {
+      if (!laPT) throw loiQuyen_('Chỉ phụ trách chính mảng Chủ nhật xanh (hoặc quản lý) mới giao việc.');
+      const t = chuoi_(req.ten);
+      if (t && ctx.d.thanhVien.indexOf(t) === -1) throw new Error(t + ' không có trong danh sách thành viên nhóm.');
+      v.nguoi = t;
+    } else if (req.viec === 'boNhan') {
+      if (v.nguoi !== nd.ten && !laPT) throw loiQuyen_('Bạn không phải người làm việc này.');
+      if (v.tt === 'Xong') throw new Error('Việc đã xong, mở lại trước khi bỏ nhận.');
+      v.nguoi = '';
+    } else if (req.viec === 'xong') {
+      if (v.nguoi !== nd.ten && !laPT) throw loiQuyen_('Chỉ người làm việc này hoặc phụ trách chính mới đánh dấu xong.');
+      if (!v.nguoi) v.nguoi = nd.ten;
+      if (Number(req.i) === 2 && !/https?:\/\//.test(gc || v.gc)) throw new Error('Dán link sheet điểm danh trước khi đánh dấu xong.');
+      v.tt = 'Xong'; if (gc) v.gc = gc;
+    } else if (req.viec === 'moLai') {
+      if (v.nguoi !== nd.ten && !laPT) throw loiQuyen_('Chỉ người làm việc này hoặc phụ trách chính mới mở lại.');
+      v.tt = '';
+    } else throw new Error('Yêu cầu không hợp lệ.');
+    const dong = [dmy_(ngay), ten, v.nguoi, v.tt, v.gc, nd.ten, new Date()];
+    if (cu) s.getRange(cu.dong, 1, 1, dong.length).setValues([dong]); else s.appendRow(dong);
+    SpreadsheetApp.flush();
+    return cnXanh_(nd);
+  });
 }
 function kiemNgayCn_(ngay, now) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ngay || '')) || thuCua_(ngay) !== 7) throw new Error('Ngày không phải Chủ nhật.');
@@ -199,50 +252,75 @@ function daXuLyCnXanh_() {
   } catch (e) { return []; }
 }
 
-/* ---------------- Kiểm kê CSVC */
-
+/* ---------------- Kiểm kê CSVC: theo tuần / tháng / năm học */
+/*
+ * Cột "Kỳ" (A) lưu chữ: "Tuần 2026-10-12" (thứ 2 đầu tuần) · "2026-10" (tháng — giữ như dữ liệu cũ) · "Năm học 2026-2027".
+ * Mỗi kỳ: phụ trách chính đăng ký ngày (trong kỳ) + phân công người thực hiện; người được phân công / phụ trách đánh dấu đã kiểm kê.
+ */
 function themThang_(ym, n) { const p = ym.split('-').map(Number); const d = new Date(Date.UTC(p[0], p[1] - 1 + n, 1)); return d.toISOString().slice(0, 7); }
+function cuoiThang_(ym) { const p = ym.split('-').map(Number); return ym + '-' + ('0' + new Date(Date.UTC(p[0], p[1], 0)).getUTCDate()).slice(-2); }
+function namHocCua_(iso) { const y = +iso.slice(0, 4), m = +iso.slice(5, 7); return m >= 8 ? y : y - 1; }
+/** Mã kỳ → { loai, ky, nhan, tu, den } hoặc null. */
+function kyKk_(ky) {
+  ky = chuoi_(ky);
+  let m = /^Tuần (\d{4}-\d{2}-\d{2})$/.exec(ky);
+  if (m && thuCua_(m[1]) === 1) { const den = themNgay_(m[1], 6); return { loai: 'tuan', ky: ky, tu: m[1], den: den, nhan: 'Tuần ' + dmy_(m[1]).slice(0, 5) + ' – ' + dmy_(den) }; }
+  m = /^(\d{4})-(\d{2})$/.exec(ky);
+  if (m && +m[2] >= 1 && +m[2] <= 12) return { loai: 'thang', ky: ky, tu: ky + '-01', den: cuoiThang_(ky), nhan: 'Tháng ' + (+m[2]) + '/' + m[1] };
+  m = /^Năm học (\d{4})-(\d{4})$/.exec(ky);
+  if (m && +m[2] === +m[1] + 1) return { loai: 'nam', ky: ky, tu: m[1] + '-08-01', den: m[2] + '-07-31', nhan: 'Năm học ' + m[1] + ' - ' + m[2] };
+  return null;
+}
 function docKk_(ss) {
   return docTabHd_(ss, 'Kiểm kê', COT_KK.length).map(function (r) {
-    return { dong: r.dong, thang: chuoi_(r[0]).slice(0, 7), ngay: ngayISO_(r[1], MUI_GIO) || '', phuTrach: chuoi_(r[2]), thucHien: tachTen_(r[3]),
+    const raw = Object.prototype.toString.call(r[0]) === '[object Date]' ? ngayISO_(r[0], MUI_GIO).slice(0, 7) : chuoi_(r[0]);
+    return { dong: r.dong, ky: raw, ngay: ngayISO_(r[1], MUI_GIO) || '', phuTrach: chuoi_(r[2]), thucHien: tachTen_(r[3]),
       trangThai: chuoi_(r[4]), ghiChu: chuoi_(r[5]), boi: chuoi_(r[6]), luc: lucChu2_(r[7]) };
-  }).filter(function (x) { return /^\d{4}-\d{2}$/.test(x.thang); });
+  }).filter(function (x) { return kyKk_(x.ky); });
 }
 function kiemKe_(nd) {
   canNhom_(nd, KIEM_KE.NHOM);
   const ctx = mangNhom_(KIEM_KE.NHOM, KIEM_KE.KHOA), ss = sheetTruc_(), now = bayGio_(), ds = docKk_(ss);
-  const t0 = now.ngay.slice(0, 7), thang = [];
+  const t2 = dauTuan_(now.ngay), t0 = now.ngay.slice(0, 7), n0 = namHocCua_(now.ngay);
+  const tao = function (dsKy) {
+    return dsKy.map(function (k) {
+      const kk = kyKk_(k), x = ds.filter(function (y) { return y.ky === k; }).slice(-1)[0];
+      const o = x ? Object.assign({}, x) : { ky: k, trangThai: 'Chưa đăng ký', thucHien: [], ngay: '' };
+      delete o.dong;
+      o.nhan = kk.nhan; o.tu = kk.tu; o.den = kk.den; o.nay = kk.tu <= now.ngay && now.ngay <= kk.den; o.qua = kk.den < now.ngay;
+      return o;
+    });
+  };
+  const tuan = [], thang = [], nam = [];
+  for (let i = KIEM_KE.TUAN_TOI; i >= -KIEM_KE.TUAN_TRUOC; i--) tuan.push('Tuần ' + themNgay_(t2, 7 * i));
   for (let i = KIEM_KE.THANG_TOI; i >= -KIEM_KE.THANG_TRUOC; i--) thang.push(themThang_(t0, i));
+  for (let i = 1; i >= -1; i--) nam.push('Năm học ' + (n0 + i) + '-' + (n0 + i + 1));
   return {
-    homNay: now.ngay, thangNay: t0, toi: nd.ten, laPhuTrach: laPhuTrach_(nd, ctx), mang: ctx.mang ? ctx.mang.ten : '', phuTrach: ctx.phuTrach, thanhVien: ctx.d.thanhVien,
+    homNay: now.ngay, toi: nd.ten, laPhuTrach: laPhuTrach_(nd, ctx), mang: ctx.mang ? ctx.mang.ten : '', phuTrach: ctx.phuTrach, thanhVien: ctx.d.thanhVien,
     hanNgay: KIEM_KE.HAN_NGAY,
-    thang: thang.map(function (t) {
-      const x = ds.filter(function (y) { return y.thang === t; }).slice(-1)[0];
-      if (!x) return { thang: t, trangThai: 'Chưa đăng ký', thucHien: [] };
-      const o = Object.assign({}, x); delete o.dong; return o;
-    })
+    loai: [{ ma: 'tuan', ten: 'Theo tuần', ky: tao(tuan) }, { ma: 'thang', ten: 'Theo tháng', ky: tao(thang) }, { ma: 'nam', ten: 'Theo năm học', ky: tao(nam) }]
   };
 }
 function luuKiemKe_(nd, req) {
   canNhom_(nd, KIEM_KE.NHOM);
   return voiKhoa_(function () {
     const ctx = mangNhom_(KIEM_KE.NHOM, KIEM_KE.KHOA), laPT = laPhuTrach_(nd, ctx), ss = sheetTruc_();
-    const thang = String(req.thang || '');
-    if (!/^\d{4}-\d{2}$/.test(thang)) throw new Error('Tháng không hợp lệ.');
-    const s = tabHd_(ss, 'Kiểm kê', COT_KK, [90, 110, 180, 300, 110, 320, 160, 130], [1, 2]);
-    const cu = docKk_(ss).filter(function (y) { return y.thang === thang; }).slice(-1)[0];
+    const kk = kyKk_(req.ky || req.thang);
+    if (!kk) throw new Error('Kỳ kiểm kê không hợp lệ.');
+    const s = tabHd_(ss, 'Kiểm kê', COT_KK, [150, 110, 180, 300, 110, 320, 160, 130], [1, 2]);
+    const cu = docKk_(ss).filter(function (y) { return y.ky === kk.ky; }).slice(-1)[0];
     const ghiChu = chuoi_(req.ghiChu).slice(0, 500);
     if (req.viec === 'dangKy') {
       if (!laPT) throw loiQuyen_('Chỉ phụ trách chính mảng Quản lý CSVC (hoặc quản lý) mới đăng ký lịch kiểm kê.');
       const ngay = String(req.ngay || '');
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay) || ngay.slice(0, 7) !== thang) throw new Error('Chọn ngày kiểm kê trong tháng ' + thang.slice(5) + '/' + thang.slice(0, 4) + '.');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay) || ngay < kk.tu || ngay > kk.den) throw new Error('Chọn ngày kiểm kê trong kỳ này: từ ' + dmy_(kk.tu) + ' đến ' + dmy_(kk.den) + '.');
       const th = (req.thucHien || []).map(chuoi_).filter(function (t, i, a) { return t && a.indexOf(t) === i; });
       if (!th.length) throw new Error('Phân công ít nhất 1 thành viên thực hiện.');
       th.forEach(function (t) { if (ctx.d.thanhVien.indexOf(t) === -1) throw new Error(t + ' không có trong danh sách thành viên nhóm.'); });
-      const dong = [thang, dmy_(ngay), cu && cu.phuTrach ? cu.phuTrach : nd.ten, th.join(', '), cu && cu.trangThai === 'Đã kiểm kê' ? 'Đã kiểm kê' : 'Đã lên lịch', ghiChu || (cu ? cu.ghiChu : ''), nd.ten, new Date()];
+      const dong = [kk.ky, dmy_(ngay), cu && cu.phuTrach ? cu.phuTrach : nd.ten, th.join(', '), cu && cu.trangThai === 'Đã kiểm kê' ? 'Đã kiểm kê' : 'Đã lên lịch', ghiChu || (cu ? cu.ghiChu : ''), nd.ten, new Date()];
       if (cu) s.getRange(cu.dong, 1, 1, COT_KK.length).setValues([dong]); else s.appendRow(dong);
     } else if (req.viec === 'xong' || req.viec === 'moLai') {
-      if (!cu || !cu.ngay) throw new Error('Tháng này chưa có lịch kiểm kê.');
+      if (!cu || !cu.ngay) throw new Error('Kỳ này chưa có lịch kiểm kê.');
       if (req.viec === 'moLai' && !laPT) throw loiQuyen_('Chỉ phụ trách chính mới mở lại được.');
       if (req.viec === 'xong' && !laPT && cu.thucHien.indexOf(nd.ten) === -1) throw loiQuyen_('Chỉ người được phân công hoặc phụ trách chính mới đánh dấu được.');
       s.getRange(cu.dong, 5, 1, 4).setValues([[req.viec === 'xong' ? 'Đã kiểm kê' : 'Đã lên lịch', req.viec === 'xong' ? (ghiChu || cu.ghiChu) : cu.ghiChu, nd.ten, new Date()]]);

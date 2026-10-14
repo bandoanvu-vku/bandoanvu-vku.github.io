@@ -84,6 +84,7 @@ function doPost(e) {
       caiDat: function () { return caiDat_(nd); },
       luuCaiDat: function () { return luuCaiDat_(nd, req); },
       cnXanh: function () { return cnXanh_(nd); },
+      luuViecCnXanh: function () { return luuViecCnXanh_(nd, req); },
       luuCnXanh: function () { return luuCnXanh_(nd, req); },
       xinVangCnXanh: function () { return xinVangCnXanh_(nd, req); },
       rutXinVangCnXanh: function () { return rutXinVangCnXanh_(nd, req); },
