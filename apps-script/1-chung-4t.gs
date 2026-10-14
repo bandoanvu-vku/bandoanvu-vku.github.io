@@ -36,6 +36,7 @@ const DONG_DU_LIEU_DAU = 3; // dòng 1-2 là tiêu đề
 
 /** Không còn phục vụ trang HTML cũ hay dữ liệu công khai: mọi thứ đi qua doPost và phải đăng nhập. */
 function doGet() {
+  try { chayCapNhat_(); } catch (err) {}
   return ContentService.createTextOutput(JSON.stringify({
     ok: false, canDangNhap: true,
     error: 'Dashboard Ban Đoàn vụ ở https://bandoanvu-vku.github.io/ và cần đăng nhập bằng tài khoản Google đã đăng ký.'
@@ -44,6 +45,7 @@ function doGet() {
 
 /** Trang GitHub Pages gửi mọi yêu cầu qua đây (text/plain JSON). Trừ bước đăng nhập, mọi yêu cầu phải kèm phiên đăng nhập. */
 function doPost(e) {
+  try { chayCapNhat_(); } catch (err) {}
   try {
     const body = JSON.parse(e.postData.contents);
     const req = body.req || {};

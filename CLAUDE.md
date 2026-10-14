@@ -55,8 +55,8 @@ Thêm trang: thêm một mục vào `cauHinh()` trong `menu.js`. Trang mới dù
 Server `6-ho-so-noi-dung.gs`: hồ sơ (cột Chức vụ/MSSV/Lớp/Số điện thoại tự thêm vào sheet tài khoản; thành viên sửa MSSV/Lớp/SĐT,
 chức vụ do quản lý), tab "Tài liệu" (cột Nhóm: chung/4t/…; trang chia tab Chung + 4 nhóm, thành viên thấy Chung + nhóm mình) + "Cẩm nang" trong sheet tài khoản (quản lý sửa), cài đặt lịch trực (`caiDat`/`luuCaiDat`).
 Server `7-hoat-dong-nhom.gs` + giao diện `/hoat-dong.js` (BDVHD.cnXanh / kiemKe / hopNhom), lưu ở các tab "CN xanh", "CN xanh - xin vắng",
-"Kiểm kê", "Họp nhóm" của sheet lịch trực. Trang CSDL - CSVC có tab riêng cho 5 mảng (Chủ nhật xanh, Hệ thống quản lý Đoàn viên, Quản lý công văn,
-Quản lý CSVC, Quản lý Đoàn vụ; khớp tên mảng theo từ khoá trong `MANG_RIENG` ở nhom.js). Phụ trách chính của mảng = cột "Phụ trách chính" tab Mảng công việc.
+"Kiểm kê", "Họp nhóm" của sheet lịch trực. Trang CSDL - CSVC có tab riêng theo Bảng phân công nhiệm vụ BĐV (Chủ nhật xanh, Công văn đi/đến, Giấy đề nghị, Biểu mẫu,
+Thông tin Đoàn vụ, Cơ sở vật chất, Hệ thống QL Đoàn viên; khớp tên mảng theo từ khoá trong `MANG_RIENG` ở nhom.js). Phụ trách chính của mảng = cột "Phụ trách chính" tab Mảng công việc.
 CN xanh: 2 người/CN, đăng ký cùng khung lịch trực, sau khoá thì xin vắng + chọn người thay → phụ trách chính/quản lý duyệt (cũng hiện ở Phê duyệt).
 Kiểm kê: phụ trách mảng Quản lý CSVC đăng ký ngày + phân công mỗi tháng. Họp tháng: mục riêng `/hop-nhom/` trên menu (tab theo nhóm; quản lý có tab Tổng hợp; thành viên nhóm đăng ký, quản lý xem;
 bảng tổng hợp ở tab Chung của Tổng quan). Quản lý công văn: chờ link sheet công văn có sẵn của nhóm.
@@ -70,6 +70,9 @@ menu hiện số chờ qua `pheDuyet {dem}` → soViec).
 Xem như thành viên: quản lý chọn "Giao diện" trên header (Quản lý / Thành viên · nhóm X), nhớ ở localStorage `bdv.xemNhu`.
 `BDV.nguoi()` trả người "hiệu lực" (vai trò thành viên, nhom=[X]), `BDV.nguoiThat()` trả tài khoản thật; `BDV.goi` tự gửi `req.xemNhu`
 → máy chủ (doPost) chỉ cho các action đọc và lọc như thành viên nhóm X; thao tác ghi bị chặn.
+Nguồn phân công: Google Sheet "BẢNG PHÂN CÔNG NHIỆM VỤ BĐV" (tab theo nhóm: Họ tên | Chi tiết công việc, ghi "(Phụ trách chính)/(Hỗ trợ chính)").
+Dashboard không đọc trực tiếp; nội dung được chép vào tab Thành viên + Mảng công việc của sheet nhóm. Tab "Mảng và thành viên" hiện phân công từng người.
+Sửa dữ liệu sheet một lần: thêm mục vào `CAP_NHAT` trong `9-cap-nhat-du-lieu.gs` (tự chạy ở lần gọi web app đầu tiên sau triển khai, đánh dấu Script Property).
 Lộ trình còn lại: Đơn từ & xin nghỉ → duyệt ở Phê duyệt; Nhắc việc tự động (email, cần cấp quyền).
 
 ## Cách làm việc (để tiết kiệm thời gian/token)

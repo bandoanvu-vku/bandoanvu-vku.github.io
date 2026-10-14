@@ -6,11 +6,14 @@
   // Mảng công việc thường nhật có tab riêng (khớp tên mảng trong tab "Mảng công việc" của sheet nhóm theo các từ khoá)
   var MANG_RIENG = {
     'csdl-csvc': [
+      // theo Bảng phân công nhiệm vụ BĐV (cập nhật 14/10/2026)
       ['chu-nhat-xanh', 'Chủ nhật xanh', ['chủ nhật xanh', 'cn xanh'], 'cnXanh'],
-      ['doan-vien', 'Hệ thống quản lý Đoàn viên', ['đoàn viên'], ''],
-      ['cong-van', 'Quản lý công văn', ['công văn'], 'congVan'],
-      ['csvc', 'Quản lý CSVC', ['csvc', 'cơ sở vật chất'], 'kiemKe'],
-      ['doan-vu', 'Quản lý Đoàn vụ', ['đoàn vụ'], '']
+      ['cong-van', 'Công văn đi / đến', ['công văn'], 'congVan'],
+      ['giay-de-nghi', 'Giấy đề nghị', ['giấy đề nghị'], ''],
+      ['bieu-mau', 'Biểu mẫu', ['biểu mẫu'], ''],
+      ['doan-vu', 'Thông tin Đoàn vụ', ['đoàn vụ'], ''],
+      ['csvc', 'Cơ sở vật chất', ['csvc', 'cơ sở vật chất'], 'kiemKe'],
+      ['doan-vien', 'Hệ thống QL Đoàn viên', ['đoàn viên'], '']
     ]
   };
   var DS_MANG = MANG_RIENG[NHOM] || [];
@@ -176,13 +179,16 @@
   }
   function veMangRieng(m) {
     if (!m) { view = 'nv'; ve(); return; }
-    var row = D.mang.filter(function (x) { return khopMang(x.ten, m[2]); })[0];
+    var rows = D.mang.filter(function (x) { return khopMang(x.ten, m[2]); });
     var ds = D.nhiemVu.filter(function (v) { return khopMang(v.mang, m[2]); }).sort(function (a, b) {
       if (xong(a) !== xong(b)) return xong(a) ? 1 : -1;
       var x = a.han || '9999', y = b.han || '9999'; return x < y ? -1 : x > y ? 1 : a.dong - b.dong;
     });
-    var info = row ? '<div class="people" style="margin:0 0 12px"><b>Phụ trách chính:</b> ' + (esc(row.chinh) || 'chưa có') + (row.hoTroChinh ? ' · <b>Hỗ trợ chính:</b> ' + esc(row.hoTroChinh) : '') +
-      (row.thamGia ? ' · <b>Tham gia:</b> ' + esc(row.thamGia) : '') + '</div>'
+    var dong = function (row) {
+      return '<div class="people" style="margin:0 0 6px">' + (rows.length > 1 ? '<b>' + esc(row.ten) + ':</b> ' : '') + '<b>Phụ trách chính:</b> ' + (esc(row.chinh) || 'chưa có') +
+        (row.hoTroChinh ? ' · <b>Hỗ trợ chính:</b> ' + esc(row.hoTroChinh) : '') + (row.thamGia ? ' · <b>Tham gia:</b> ' + esc(row.thamGia) : '') + '</div>';
+    };
+    var info = rows.length ? '<div style="margin:0 0 12px">' + rows.map(dong).join('') + '</div>'
       : '<div class="people" style="margin:0 0 12px;color:var(--muted)">Chưa có mảng "' + esc(m[1]) + '" trong tab Mảng công việc của sheet nhóm — thêm vào để ghi phụ trách chính.</div>';
     var mod = m[3] === 'congVan' ? '<div class="empty-box" style="margin-bottom:12px">Phần theo dõi tình trạng lưu công văn đang chờ kết nối với sheet công văn của nhóm.</div>'
       : m[3] ? '<div id="modHd"></div>' : '';
@@ -267,10 +273,26 @@
       dsHoTro(v).forEach(function (n) { if (tv[n]) tv[n].ht++; });
     });
     var max = 1; D.thanhVien.forEach(function (n) { max = Math.max(max, tv[n].giao); });
-    $('view').innerHTML = '<h2>Thành viên</h2><table><thead><tr><th>Thành viên</th><th>Phụ trách: xong / tổng</th><th>Đang hỗ trợ</th></tr></thead><tbody>' +
+    // Phân công theo tab Mảng công việc: mỗi người phụ trách chính / hỗ trợ chính / tham gia mảng nào
+    var pc = {}; D.thanhVien.forEach(function (n) { pc[n] = { chinh: [], hoTro: [], thamGia: [] }; });
+    var ten = function (s) { return String(s || '').split(/[,;]/).map(function (x) { return x.replace(/\s+/g, ' ').trim(); }).filter(Boolean); };
+    D.mang.forEach(function (m) {
+      ten(m.chinh).forEach(function (n) { if (pc[n]) pc[n].chinh.push(m.ten); });
+      ten(m.hoTroChinh).forEach(function (n) { if (pc[n]) pc[n].hoTro.push(m.ten); });
+      var tg = /cả nhóm/i.test(m.thamGia || '') ? D.thanhVien : ten(m.thamGia);
+      tg.forEach(function (n) { if (pc[n] && pc[n].chinh.indexOf(m.ten) < 0 && pc[n].hoTro.indexOf(m.ten) < 0) pc[n].thamGia.push(m.ten); });
+    });
+    var vaiTro = function (n) {
+      var p = pc[n], o = [];
+      if (p.chinh.length) o.push('<b>Phụ trách chính:</b> ' + p.chinh.map(esc).join('; '));
+      if (p.hoTro.length) o.push('<b>Hỗ trợ chính:</b> ' + p.hoTro.map(esc).join('; '));
+      if (p.thamGia.length) o.push('<span style="color:var(--muted)">Tham gia: ' + p.thamGia.map(esc).join('; ') + '</span>');
+      return o.join('<br>') || '<span style="color:var(--muted)">—</span>';
+    };
+    $('view').innerHTML = '<h2>Thành viên</h2><table><thead><tr><th>Thành viên</th><th>Phân công</th><th>Phụ trách: xong / tổng</th><th>Đang hỗ trợ</th></tr></thead><tbody>' +
       D.thanhVien.map(function (n) {
         var a = tv[n];
-        return '<tr><td><b>' + esc(n) + '</b></td><td class="num">' + a.xong + ' / ' + a.giao + '<div class="bar"><i style="width:' + (a.xong / max * 100) + '%"></i><i class="doing" style="width:' + ((a.giao - a.xong) / max * 100) + '%"></i></div></td><td class="num">' + a.ht + ' việc</td></tr>';
+        return '<tr><td><b>' + esc(n) + '</b></td><td style="font-size:13px;line-height:1.5">' + vaiTro(n) + '</td><td class="num">' + a.xong + ' / ' + a.giao + '<div class="bar"><i style="width:' + (a.xong / max * 100) + '%"></i><i class="doing" style="width:' + ((a.giao - a.xong) / max * 100) + '%"></i></div></td><td class="num">' + a.ht + ' việc</td></tr>';
       }).join('') + '</tbody></table>' +
       '<h2>Mảng công việc</h2><table><thead><tr><th>Mảng</th><th>Phụ trách chính</th><th class="hide-s">Hỗ trợ chính</th><th class="hide-s">Tham gia</th><th>Việc đang mở</th></tr></thead><tbody>' +
       D.mang.map(function (m) {
