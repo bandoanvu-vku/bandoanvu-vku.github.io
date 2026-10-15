@@ -57,7 +57,8 @@
     '.hd .bd-pt:hover circle.bd-c1{r:6}.hd .bd-pt:hover path{opacity:.8}.hd .bd-lg{display:flex;gap:14px;font-size:12.5px;color:var(--muted);margin-bottom:4px}.hd .bd-lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}' +
     '.hd .bd-lg i.bd-c1{background:var(--c1)}.hd .bd-lg i.bd-c2{background:var(--c2)}.hd .bd-lg i.bd-c3{background:var(--c3)}' +
     '.hd .bd-bang{overflow-x:auto}.hd .bd-bang table{border-collapse:collapse;font-size:12.5px;width:100%;margin-top:6px}.hd .bd-bang th,.hd .bd-bang td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:right;white-space:nowrap}.hd .bd-bang th:first-child,.hd .bd-bang td:first-child{text-align:left}' +
-    '@media (max-width:640px){.hd .cv-r{grid-template-columns:1fr}}' +
+    '.hd .cv-r.nay-r{background:var(--accent-soft);margin:0 -16px;padding:8px 16px;border-radius:8px}.hd .cv-r .cho{justify-content:flex-end}' +
+    '@media (max-width:640px){.hd .cv-r{grid-template-columns:1fr}.hd .cv-r .cho{justify-content:flex-start}}' +
     '@media (max-width:640px){.hd .vc-i{grid-template-columns:22px 1fr}.hd .vc-i .nut{grid-column:2}.hd .dong{grid-template-columns:64px 1fr}.hd .nut{grid-column:1/-1;justify-content:flex-start}.hd .yc{grid-template-columns:1fr}}';
   var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
@@ -539,7 +540,36 @@
     ganSuKien(el, function (b) {
       if (b.dataset.hd === 'cvLoai') { o.loai = b.dataset.t; o.ve(); }
       if (b.dataset.hd === 'cvLoc') { o.loc = b.dataset.t; o.ve(); }
+      if (b.dataset.hd === 'cvPdf') { o.hetPdf = !o.hetPdf; o.ve(); }
+      if (b.dataset.hd === 'vcv') {
+        var ok = b.dataset.x !== '1';
+        gui(o, 'luuViecCongVan', { ngay: b.dataset.n, ten: b.dataset.ten, loai: b.dataset.l, xong: ok, ve: 'congVan' }, b.closest('.cv-r'), ok ? 'Đã đánh dấu đã lưu' : 'Đã bỏ đánh dấu').catch(function () {});
+      }
     });
+  }
+  function soCv(n) { return n < 10 ? '0' + n : String(n); }
+  // Việc lưu công văn theo ca trực: mỗi ngày trực của người có tên trong mảng lưu công văn đi / đến
+  function veCaTruc(o) {
+    var d = o.d, ds = d.caTruc || [];
+    if (d.loiCaTruc) return '<div class="khung"><h3>Lưu công văn theo ca trực</h3><div class="canh">' + esc(d.loiCaTruc) + '</div></div>';
+    var nut = function (v, l) {
+      var can = l === 'di' ? v.canDi : v.canDen, xong = l === 'di' ? v.xongDi : v.xongDen, ten = l === 'di' ? 'đi' : 'đến';
+      if (!can) return '';
+      var duoc = !(v.ngay > d.homNay) && (v.ten === d.toi || d.laQLCv);
+      return duoc ? '<button type="button" class="' + (xong ? 'b3' : 'b2') + '" data-hd="vcv" data-n="' + v.ngay + '" data-ten="' + esc(v.ten) + '" data-l="' + l + '" data-x="' + (xong ? 1 : 0) + '">' + (xong ? '✓ Đã lưu CV ' + ten : 'Lưu CV ' + ten) + '</button>'
+        : '<span class="pill ' + (xong ? 'p-mo' : v.qua ? 'p-bad' : 'p-khoa') + '">' + (xong ? '✓ ' : '') + 'CV ' + ten + '</span>';
+    };
+    var sap = ds.filter(function (v) { return !v.qua; }), qua = ds.filter(function (v) { return v.qua; }).reverse();
+    var dong = function (v) {
+      return '<div class="cv-r' + (v.homNay ? ' nay-r' : '') + '"><b>' + THU[thu(v.ngay)] + ' ' + dm(v.ngay) + (v.homNay ? ' · hôm nay' : '') + '</b><span>' + esc(v.ten) +
+        '<small>ca ' + esc(v.ca.join(', ')) + (v.boi && (v.xongDi || v.xongDen) ? ' · ' + esc(v.boi) + ' ' + esc(v.luc) : '') + (v.qua && !v.xong ? ' · <em>chưa xong</em>' : '') + '</small></span>' +
+        '<span class="cho">' + nut(v, 'di') + nut(v, 'den') + '</span></div>';
+    };
+    var tre = qua.filter(function (v) { return !v.xong; }).length;
+    return '<div class="khung"><h3>Lưu công văn theo ca trực' + (tre ? ' <span class="pill p-bad">' + tre + ' ca chưa xong</span>' : '') + '</h3>' +
+      '<div class="mo-ta">Ai có tên trong mảng "Lưu công văn đi" / "Lưu công văn đến" thì mỗi ngày trực tự có việc cập nhật công văn mới vào sheet. Làm xong bấm nút để đánh dấu.</div>' +
+      (sap.length ? sap.map(dong).join('') : '<div class="trong-k">Chưa có ca trực nào sắp tới của người lưu công văn.</div>') +
+      (qua.length ? '<details' + (tre ? ' open' : '') + '><summary>14 ngày qua (' + qua.length + ' ca)</summary>' + qua.map(dong).join('') + '</details>' : '') + '</div>';
   }
   function veCv(o) {
     var d = o.d, lk = d.lienKet || {}; o.loai = o.loai || 'di';
@@ -552,7 +582,7 @@
     if (o.loai === 'di') {
       var di = d.di || {};
       body = di.loi ? loi(di) :
-        '<div class="tiles"><div class="tile chinh"><span>Số công văn tiếp theo</span><b>' + ('0' + di.soTiep).slice(-2) + '</b><small>Ví dụ: ' + ('0' + di.soTiep).slice(-2) + '-KH/ĐTN · tab ' + esc(di.tab) + '</small></div>' +
+        '<div class="tiles"><div class="tile chinh"><span>Số công văn tiếp theo</span><b>' + soCv(di.soTiep) + '</b><small>Ví dụ: ' + soCv(di.soTiep) + '-KH/ĐTN · số gần nhất ' + soCv(di.soTiep - 1) + ' · tab ' + esc(di.tab) + '</small></div>' +
         '<div class="tile"><span>Đã lưu tháng này</span><b>' + di.thangNay + '</b><small>' + di.tong + ' công văn trong nhiệm kỳ</small></div>' +
         '<div class="tile' + (di.chuaTen.length ? ' xau' : '') + '"><span>Đã lấy số, chưa có tên</span><b>' + di.chuaTen.length + '</b><small>người nhận thông tin điền tên</small></div>' +
         '<div class="tile' + (di.soChuaPdf ? ' xau' : '') + '"><span>Chưa có file PDF</span><b>' + di.soChuaPdf + '</b><small>bản mềm cần lưu vào folder</small></div></div>' +
@@ -560,7 +590,9 @@
         '<li>Thành viên nhận thông tin điền <b>tên (trích yếu)</b> công văn vào đúng dòng số.</li><li>Lưu <b>bản cứng</b> (bản in) vào tập và <b>bản mềm</b> (PDF) vào folder công văn đi, ghi tên file ở cột PDF.</li>' +
         '<li>Công văn có <b>chữ ký thầy Hiệu trưởng</b>: bản gốc lưu tập riêng, in 1 bản scan lưu vào tập chung.</li></ol></div>' +
         (di.chuaTen.length ? '<div class="khung"><h3>Đã lấy số nhưng chưa có tên</h3><div class="cho" style="margin-top:6px">' + di.chuaTen.map(function (x) { return '<span class="ten">Số ' + esc(x.so) + '</span>'; }).join('') + '</div></div>' : '') +
-        (di.chuaPdf.length ? '<div class="khung"><h3>Chưa có file PDF (gần nhất)</h3>' + di.chuaPdf.map(function (x) { return '<div class="cv-r"><b>' + esc(x.so) + '</b><span>' + esc(x.trichYeu) + '</span><small>' + (x.ngay ? dmy(x.ngay) : '') + '</small></div>'; }).join('') + '</div>' : '') +
+        (di.chuaPdf.length ? '<div class="khung"><h3>Chưa có file PDF (' + di.chuaPdf.length + ')</h3><div class="mo-ta">Công văn đã có tên nhưng cột PDF còn trống (trừ dòng ghi "không lưu"). Lưu bản mềm vào folder rồi ghi tên file ở cột PDF.</div>' +
+          di.chuaPdf.slice(0, o.hetPdf ? 999 : 10).map(function (x) { return '<div class="cv-r"><b>' + esc(x.so) + '</b><span>' + esc(x.trichYeu) + '<small>' + [x.ngay && dmy(x.ngay), x.soan && 'soạn: ' + esc(x.soan), x.ky && 'ký: ' + esc(x.ky), 'dòng ' + x.dong].filter(Boolean).join(' · ') + '</small></span><small><em>chưa PDF</em></small></div>'; }).join('') +
+          (di.chuaPdf.length > 10 ? '<button type="button" class="b3" data-hd="cvPdf" style="margin-top:8px">' + (o.hetPdf ? 'Thu gọn' : 'Xem tất cả ' + di.chuaPdf.length + ' công văn') + '</button>' : '') + '</div>' : '') +
         '<div class="khung"><h3>Công văn đi gần đây</h3>' + di.ganDay.map(function (x) {
           return '<div class="cv-r"><b>' + esc(x.so) + '</b><span>' + esc(x.trichYeu) + '<small>' + [x.ngay && dmy(x.ngay), x.soan && 'soạn: ' + esc(x.soan), x.ky && 'ký: ' + esc(x.ky), x.trang && x.trang + ' trang'].filter(Boolean).join(' · ') + '</small></span>' +
             '<small>' + (x.pdf ? 'PDF ✓' : '<em>chưa PDF</em>') + '</small></div>'; }).join('') + '</div>';
@@ -577,7 +609,7 @@
         (ds.length ? ds.map(function (x) { return '<div class="cv-r"><b>' + esc(x.so || '—') + '</b><span>' + esc(x.trichYeu) + '<small>' + esc(x.donVi) + ' · ' + esc(x.loai) + (x.trang ? ' · ' + esc(x.trang) + ' trang' : '') + '</small></span><small>' + (x.ngay ? dmy(x.ngay) : '') + '</small></div>'; }).join('') : '<div class="trong-k">Chưa có công văn.</div>') + '</div>';
     }
     o.el.innerHTML = '<div class="hd"><div class="khung"><h3>Công văn</h3><div class="mo-ta">Việc lưu công văn vẫn làm trên Google Sheet — dashboard chỉ đọc để xem nhanh và nhắc những dòng còn thiếu (cập nhật mỗi 5 phút).</div>' +
-      (nutLk ? '<div class="cho" style="margin-top:8px">' + nutLk + '</div>' : '<div class="canh">Chưa có link sheet / folder công văn. Quản lý dán ở trang Cài đặt → Liên kết nhóm CSDL - CSVC.</div>') + seg + '</div>' + body + '</div>';
+      (nutLk ? '<div class="cho" style="margin-top:8px">' + nutLk + '</div>' : '<div class="canh">Chưa có link sheet / folder công văn. Quản lý dán ở trang Cài đặt → Liên kết nhóm CSDL - CSVC.</div>') + seg + '</div>' + body + veCaTruc(o) + '</div>';
   }
 
   /* ================= Họp tháng ================= */

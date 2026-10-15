@@ -68,7 +68,10 @@ quản lý từ chối = "Quản lý trả lại" (về nhóm). Trưởng nhóm 
 Mượn trả: sheet "[BĐV 2026 - 2027] CSVC - Mượn trả tài sản" (tab đầu = danh mục tài sản chép từ 2 biên bản xlsx; tab "Mượn về", "Cho mượn" tự tạo).
 Mượn về: nguồn Phòng TCHC (bắt buộc link giấy đề nghị) / KTX (bắt buộc người liên hệ + SĐT) / Khác → Đang mượn → Đã trả. Cho mượn: bắt buộc giấy đề nghị, duyệt 2 cấp → giao → nhận lại.
 Công văn (`BDVHD.congVan`, action `congVan`): CHỈ ĐỌC sheet công văn đi (tab nhiệm kỳ mới nhất, số tiếp theo = số lớn nhất + 1, dòng đã lấy số chưa có tên, chưa PDF)
-và công văn đến (3 tab Trong trường / Ngoài trường / CLB Đội Nhóm). Không ghi gì vào 2 sheet này (của vanphongdoan).
+và công văn đến (3 tab Trong trường / Ngoài trường / CLB Đội Nhóm). Không ghi gì vào 2 sheet này (của vanphongdoan). Danh sách "Chưa có file PDF" hiện đủ (xem tất cả).
+Việc lưu công văn tự động theo ca trực: ai có tên trong mảng "Lưu Công văn đi/đến" (phụ trách / hỗ trợ / tham gia, "Cả nhóm" = mọi người) thì mỗi ngày có ca trực
+(còn hiệu lực) tự có việc "Lưu CV đi / đến" — hiện ở Trang chủ (`cuaToi.viecCongVan`) và tab Công văn (`congVan.caTruc`); đánh dấu qua `luuViecCongVan`,
+lưu ở tab "Lưu công văn - ca trực" của sheet lịch trực (không thêm dòng vào sheet nhiệm vụ). Phụ trách mảng công văn / quản lý đánh dấu hộ được.
 Liên kết (link sheet / folder công văn, biên bản, sheet mượn trả) lưu ở tab "Cài đặt" của sheet lịch trực; quản lý dán ở trang Cài đặt (action `luuLienKet`) — không ghi ID vào repo. Họp tháng: mục riêng `/hop-nhom/` trên menu (tab theo nhóm; quản lý có tab Tổng hợp; thành viên nhóm đăng ký, quản lý xem;
 bảng tổng hợp ở tab Chung của Tổng quan). Năm học: ô chọn trên thanh header, bên trái — đối diện tài khoản (`menu.js`: NAM_HOC, HIEN_TAI, CO_DU_LIEU; nhớ ở localStorage `bdv.namHoc`, `window.BDV_NAM_HOC`).
 Hiện chỉ 2026 - 2027 có dữ liệu; năm khác thì trang theo năm hiện "chưa có dữ liệu" (trừ hồ sơ/cẩm nang/cài đặt/tài liệu/bảo mật).

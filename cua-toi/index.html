@@ -86,6 +86,12 @@
   .kpis.k4 { grid-template-columns: repeat(4, 1fr); }
   @media (max-width: 820px) { .kpis.k4 { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 560px) { .due { grid-template-columns: 44px 1fr; } .due .r { grid-column: 2; justify-content: flex-start; } }
+  .cvv { display: flex; justify-content: space-between; align-items: center; gap: 8px 14px; flex-wrap: wrap; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .cvv:first-child { border-top: 0; } .cvv.tre b { color: var(--bad); } .cvb { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; }
+  .btn.sm, .ghost.sm { padding: 4px 10px; min-height: 32px; font-size: 13px; } .btn:disabled, .ghost:disabled { opacity: .55; }
+  #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); max-width: calc(100vw - 32px); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; display: none; z-index: 10; }
+  #toast.err { background: var(--bad); color: #fff; }
 </style>
 </head>
 <body>
@@ -201,12 +207,33 @@
     var dx = xong.length ? '<div class="panel"><h2>Đã hoàn thành (' + xong.length + ')</h2><div style="margin-top:8px">' +
       (hetXong ? xong : xong.slice(0, 5)).map(function (v) { return dong(v, hn); }).join('') +
       (xong.length > 5 ? '<button type="button" class="ghost" id="more" style="margin-top:8px">' + (hetXong ? 'Thu gọn' : 'Xem cả ' + xong.length + ' việc') + '</button>' : '') + '</div></div>' : '';
-    $('app').innerHTML = ho + tr + kpi + ds + veTQ(hn) + dx;
+    // Việc lưu công văn tự động theo ngày trực (nhóm CSDL - CSVC)
+    var THU2 = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    var cvNut = function (v, l) {
+      var can = l === 'di' ? v.canDi : v.canDen, x = l === 'di' ? v.xongDi : v.xongDen, ten = l === 'di' ? 'công văn đi' : 'công văn đến';
+      if (!can) return '';
+      if (v.ngay > D.homNay) return '<span class="tag">Lưu ' + ten + '</span>';
+      return '<button type="button" class="' + (x ? 'ghost' : 'btn') + ' sm" data-cv="' + v.ngay + '" data-l="' + l + '" data-x="' + (x ? 1 : 0) + '">' + (x ? '✓ Đã lưu ' + ten : 'Đánh dấu đã lưu ' + ten) + '</button>';
+    };
+    var cv = (D.viecCongVan || []).length ? '<div class="panel"><h2>Lưu công văn theo ngày trực</h2><div class="sub">Bạn có tên trong mảng lưu công văn của nhóm CSDL - CSVC: mỗi ngày trực hãy cập nhật công văn mới vào sheet, xong thì đánh dấu.' +
+      ' <a href="/csdl-csvc/#cong-van">Mở trang Công văn →</a></div><div style="margin-top:8px">' + D.viecCongVan.map(function (v) {
+        var p = v.ngay.split('-'), d0 = new Date(+p[0], +p[1] - 1, +p[2]);
+        return '<div class="cvv' + (v.qua && !v.xong ? ' tre' : '') + '"><div><b>' + THU2[d0.getDay()] + ' ' + p[2] + '/' + p[1] + (v.ngay === D.homNay ? ' · hôm nay' : v.qua ? ' · đã qua' : '') + '</b>' +
+          '<span class="note"> · ca ' + esc(v.ca.join(', ')) + (v.qua && !v.xong ? ' · <span class="late">chưa xong</span>' : '') + '</span></div><div class="cvb">' + cvNut(v, 'di') + cvNut(v, 'den') + '</div></div>';
+      }).join('') + '</div></div>' : '';
+    $('app').innerHTML = ho + tr + cv + kpi + ds + veTQ(hn) + dx;
     var t = new Date();
     $('foot').textContent = 'Cập nhật lúc ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '. Nhóm Truyền thông tính theo từng việc con (viết bài, thiết kế, chụp hình).';
   }
 
-  $('app').addEventListener('click', function (e) { if (e.target.id === 'more') { hetXong = !hetXong; ve(); } });
+  $('app').addEventListener('click', function (e) {
+    if (e.target.id === 'more') { hetXong = !hetXong; ve(); return; }
+    var b = e.target.closest('button[data-cv]'); if (!b || b.disabled) return;
+    var ok = b.dataset.x !== '1'; b.disabled = true;
+    BDV.goi('luuViecCongVan', { ngay: b.dataset.cv, loai: b.dataset.l, xong: ok }).then(function (ds) { D.viecCongVan = ds; ve(); T0(ok ? 'Đã đánh dấu đã lưu công văn' : 'Đã bỏ đánh dấu'); })
+      .catch(function (er) { b.disabled = false; T0(er && er.message ? er.message : String(er), true); });
+  });
+  function T0(m, err) { var t = document.getElementById('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); } t.textContent = m; t.className = err ? 'err' : ''; t.style.display = 'block'; clearTimeout(T0.t); T0.t = setTimeout(function () { t.style.display = 'none'; }, err ? 6000 : 2600); }
   $('reload').addEventListener('click', function () { $('foot').textContent = 'Đang đọc lại các sheet…'; tai(true); taiTQ(true); });
   document.addEventListener('bdv-nguoi', function (e) {
     if (!e.detail) { chan(); return; }

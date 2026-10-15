@@ -142,7 +142,7 @@ function docCvDi_() {
     thangNay: daLuu.filter(function (x) { return x.ngay.slice(0, 7) === thang; }).length,
     ganDay: daLuu.slice(-10).reverse(),
     chuaTen: ds.filter(function (x) { return x.so && !x.trichYeu; }).map(function (x) { return { so: x.so, dong: x.dong }; }).slice(-15).reverse(),
-    chuaPdf: daLuu.filter(function (x) { return !x.pdf && !/không lưu/i.test(x.ghiChu); }).map(function (x) { return { so: x.so, ngay: x.ngay, trichYeu: x.trichYeu }; }).slice(-15).reverse(),
+    chuaPdf: daLuu.filter(function (x) { return !x.pdf && !/không lưu/i.test(x.ghiChu); }).map(function (x) { return { so: x.so, ngay: x.ngay, trichYeu: x.trichYeu, soan: x.soan, ky: x.ky, dong: x.dong }; }).reverse(),
     soChuaPdf: daLuu.filter(function (x) { return !x.pdf && !/không lưu/i.test(x.ghiChu); }).length
   };
 }
@@ -189,6 +189,8 @@ function congVan_(nd) {
     try { c.put('congvan', JSON.stringify(d), 300); } catch (e) {}
   }
   d.lienKet = { cvDi: lk.cvDi, cvDiFolder: lk.cvDiFolder, cvDen: lk.cvDen, cvDenFolder: lk.cvDenFolder };
+  try { const now = bayGio_(); d.caTruc = viecCongVan_(themNgay_(now.ngay, -14), themNgay_(now.ngay, 7)); d.toi = nd.ten; d.laQLCv = nd.vaiTro === 'quanLy' || nguoiCongVan_().phuTrach.indexOf(nd.ten) > -1; }
+  catch (e) { d.caTruc = []; d.loiCaTruc = String(e.message || e); }
   d.homNay = bayGio_().ngay;
   return d;
 }
@@ -375,4 +377,74 @@ function choDuyetCsvc_() {
     });
   } catch (e) {}
   return kq;
+}
+
+/* ---------------- việc lưu công văn theo ca trực (tự động) */
+/*
+ * Thành viên có tên trong mảng "Lưu công văn đi" / "Lưu công văn đến" (tab Mảng công việc của nhóm CSDL - CSVC: phụ trách chính,
+ * hỗ trợ chính, tham gia — "Cả nhóm" = mọi thành viên) → mỗi ngày có ca trực (lịch trực, ca còn hiệu lực) tự có việc "Lưu công văn đi / đến".
+ * Không ghi dòng vào sheet nhiệm vụ; chỉ lưu dấu hoàn thành ở tab "Lưu công văn - ca trực" của sheet lịch trực.
+ */
+const COT_VLCV = ['Ngày', 'Họ và tên', 'Công văn đi', 'Công văn đến', 'Ghi chú', 'Cập nhật bởi', 'Cập nhật lúc'];
+function nguoiCongVan_() {
+  const d = layNhom(NHOM_CSVC, false), tach = function (x) { return /cả nhóm/i.test(x || '') ? d.thanhVien.slice() : tachTen_(x); };
+  const kq = { di: [], den: [], phuTrach: [] };
+  d.mang.forEach(function (m) {
+    const t = chuanHoa_(m.ten), loai = t.indexOf('công văn đi') > -1 ? 'di' : t.indexOf('công văn đến') > -1 ? 'den' : '';
+    if (!loai) return;
+    tachTen_(m.chinh).forEach(function (n) { if (kq.phuTrach.indexOf(n) === -1) kq.phuTrach.push(n); });
+    tachTen_(m.chinh).concat(tachTen_(m.hoTroChinh), tach(m.thamGia)).forEach(function (n) { if (n && kq[loai].indexOf(n) === -1) kq[loai].push(n); });
+  });
+  return kq;
+}
+function docVlcv_(ss) {
+  return docTabHd_(ss, 'Lưu công văn - ca trực', COT_VLCV.length).map(function (r) {
+    return { dong: r.dong, ngay: ngayISO_(r[0], MUI_GIO), ten: chuoi_(r[1]), di: laTrue_(r[2]) || chuoi_(r[2]) === '✓', den: laTrue_(r[3]) || chuoi_(r[3]) === '✓', ghiChu: chuoi_(r[4]), boi: chuoi_(r[5]), luc: lucChu2_(r[6]) };
+  }).filter(function (x) { return x.ngay && x.ten; });
+}
+/** Việc lưu công văn từ ngày tu đến ngày den (gồm cả 2), lọc theo tên nếu có. */
+function viecCongVan_(tu, den, ten) {
+  const ng = nguoiCongVan_(), ss = sheetTruc_(), daLam = docVlcv_(ss), now = bayGio_(), gom = {};
+  docTruc_(ss).forEach(function (x) {
+    if (x.ngay < tu || x.ngay > den || !conHieuLuc_(x) || x.trangThai === TT.CHO) return;
+    if (ten && x.ten !== ten) return;
+    const canDi = ng.di.indexOf(x.ten) > -1, canDen = ng.den.indexOf(x.ten) > -1;
+    if (!canDi && !canDen) return;
+    const k = x.ngay + '|' + x.ten;
+    if (!gom[k]) gom[k] = { ngay: x.ngay, ten: x.ten, canDi: canDi, canDen: canDen, ca: [] };
+    gom[k].ca.push(x.tu + '–' + x.den);
+  });
+  return Object.keys(gom).map(function (k) {
+    const v = gom[k], r = daLam.filter(function (y) { return y.ngay === v.ngay && y.ten === v.ten; }).slice(-1)[0] || {};
+    v.xongDi = !!r.di; v.xongDen = !!r.den; v.ghiChu = r.ghiChu || ''; v.boi = r.boi || ''; v.luc = r.luc || '';
+    v.xong = (!v.canDi || v.xongDi) && (!v.canDen || v.xongDen); v.qua = v.ngay < now.ngay; v.homNay = v.ngay === now.ngay;
+    return v;
+  }).sort(function (a, b) { return a.ngay < b.ngay ? -1 : a.ngay > b.ngay ? 1 : a.ten < b.ten ? -1 : 1; });
+}
+/** Cho trang Của tôi: việc lưu công văn của mình (7 ngày trước chưa xong + hôm nay + 7 ngày tới). */
+function viecCongVanCuaToi_(nd) {
+  try {
+    const now = bayGio_();
+    return viecCongVan_(themNgay_(now.ngay, -7), themNgay_(now.ngay, 7), nd.ten).filter(function (v) { return !v.qua || !v.xong; });
+  } catch (e) { return []; }
+}
+function luuViecCongVan_(nd, req) {
+  return voiKhoa_(function () {
+    const now = bayGio_(), ngay = String(req.ngay || ''), ten = chuoi_(req.ten) || nd.ten;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay)) throw new Error('Ngày không hợp lệ.');
+    if (ngay > now.ngay) throw new Error('Chưa đến ngày trực này.');
+    if (ten !== nd.ten && nd.vaiTro !== 'quanLy' && nguoiCongVan_().phuTrach.indexOf(nd.ten) === -1) throw loiQuyen_('Bạn chỉ đánh dấu được việc của mình.');
+    const v = viecCongVan_(ngay, ngay, ten)[0];
+    if (!v) throw new Error('Không có việc lưu công văn cho ngày trực này.');
+    const loai = req.loai === 'den' ? 'den' : 'di';
+    if (loai === 'di' ? !v.canDi : !v.canDen) throw new Error('Bạn không có tên trong mảng lưu công văn ' + (loai === 'di' ? 'đi' : 'đến') + '.');
+    const ss = sheetTruc_(), s = tabHd_(ss, 'Lưu công văn - ca trực', COT_VLCV, [100, 200, 110, 110, 300, 170, 130], [1]);
+    const cu = docVlcv_(ss).filter(function (y) { return y.ngay === ngay && y.ten === ten; }).slice(-1)[0];
+    const di = loai === 'di' ? req.xong === true : !!(cu && cu.di), den = loai === 'den' ? req.xong === true : !!(cu && cu.den);
+    const gc = req.ghiChu !== undefined ? chuoi_(req.ghiChu).slice(0, 300) : (cu ? cu.ghiChu : '');
+    const dong = [dmy_(ngay), ten, di ? '✓' : '', den ? '✓' : '', gc, nd.ten, new Date()];
+    if (cu) s.getRange(cu.dong, 1, 1, dong.length).setValues([dong]); else s.appendRow(dong);
+    SpreadsheetApp.flush();
+    return req.ve === 'congVan' ? congVan_(nd) : viecCongVanCuaToi_(nd);
+  });
 }
