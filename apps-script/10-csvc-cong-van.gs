@@ -11,7 +11,9 @@ const LIEN_KET = [
   ['cvDi', 'Link sheet công văn đi'], ['cvDiFolder', 'Link folder công văn đi'],
   ['cvDen', 'Link sheet công văn đến'], ['cvDenFolder', 'Link folder công văn đến'],
   ['bbTuanThang', 'Link biên bản kiểm kê tuần/tháng'], ['bbNam', 'Link biên bản kiểm kê năm'],
-  ['muonTra', 'Link sheet mượn trả tài sản'], ['hienTrang', 'Link sheet hiện trạng tài sản']
+  ['muonTra', 'Link sheet mượn trả tài sản'], ['hienTrang', 'Link sheet hiện trạng tài sản'],
+  ['qldv', 'Link sheet Quản lý Đoàn vụ'], ['xeMay', 'Link sheet xe máy Ban Đoàn vụ'], ['formTT', 'Link form thu thập thông tin cá nhân BĐV'],
+  ['formXe', 'Link form thông tin xe máy BĐV'], ['folderHoSo', 'Link folder hồ sơ / thông tin Đoàn vụ']
 ];
 const TT2 = { CHO_TN: 'Chờ phụ trách duyệt', CU_CHO_TN: 'Chờ trưởng nhóm duyệt', CHO_QL: 'Chờ quản lý duyệt', DUYET: 'Đã duyệt', TRA_TN: 'Trả lại', TRA_QL: 'Quản lý trả lại', HUY: 'Đã huỷ' };
 const NHOM_CSVC = 'csdl-csvc';
@@ -54,7 +56,7 @@ function luuLienKet_(nd, req) {
       if (!d) { s.appendRow([k[1], '', '']); d = s.getLastRow(); nhan.push(chuanHoa_(k[1])); }
       s.getRange(d, 2).setNumberFormat('@').setValue(url);
     });
-    try { CacheService.getScriptCache().removeAll(['congvan', 'danhmuc']); } catch (e) {}
+    try { CacheService.getScriptCache().removeAll(['congvan', 'danhmuc', 'doanvu2']); } catch (e) {}
     return caiDat_(nd);
   });
 }

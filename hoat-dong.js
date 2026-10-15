@@ -88,6 +88,10 @@
     '.hd .ht-c small{font-size:11.5px;color:var(--muted);margin-top:4px;white-space:nowrap}.hd .ht-nhac{font-size:12.5px;color:var(--warn);background:var(--warn-soft);border-radius:8px;padding:4px 10px;margin-bottom:8px;display:inline-block}' +
     '.hd .ht-tip{position:absolute;z-index:3;pointer-events:none;background:var(--text);color:var(--card);font-size:12.5px;padding:5px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
     '@media (max-width:760px){.hd .ht-luoi{grid-template-columns:1fr}}' +
+    '.hd .dv-ok{color:var(--ok,#17794a);font-weight:700}.hd .dv-no{color:var(--bad);opacity:.75}.hd .ht-bang th.dv-c,.hd .ht-bang td.dv-c{text-align:center;white-space:nowrap}' +
+    '.hd .dv-ray{width:100%;background:var(--track);border-radius:0 4px 4px 0}.hd .dv-ray i{border-radius:0 4px 4px 0}.hd{--dv-roi:#eda100}.hd .dv-roi{background:var(--dv-roi)}' +
+    '.hd .dv-st{display:flex;flex-direction:column;width:100%;max-width:40px;gap:2px}.hd .dv-st i{display:block;min-height:2px;flex-basis:0}.hd .dv-st i:first-child{border-radius:4px 4px 0 0}' +
+    '.hd details+details{margin-top:6px}.hd .khung details summary{margin-top:0}' +
     '.hd .cv-r.nay-r{background:var(--accent-soft);margin:0 -16px;padding:8px 16px;border-radius:8px}.hd .cv-r .cho{justify-content:flex-end}' +
     '@media (max-width:640px){.hd .cv-r{grid-template-columns:1fr}.hd .cv-r .cho{justify-content:flex-start}}' +
     '@media (max-width:640px){.hd .vc-i{grid-template-columns:22px 1fr}.hd .vc-i .nut{grid-column:2}.hd .dong{grid-template-columns:64px 1fr}.hd .nut{grid-column:1/-1;justify-content:flex-start}.hd .yc{grid-template-columns:1fr}}';
@@ -602,6 +606,143 @@
     }
   }
 
+
+  /* ================= Thông tin Đoàn vụ (chỉ đọc sheet Quản lý Đoàn vụ + Xe máy) ================= */
+  var DV_TAB = [['hs', 'Hồ sơ thành viên'], ['tl', 'Track-log'], ['xe', 'Xe máy'], ['lk', 'Biểu mẫu & liên kết']];
+  function doanVu(el) {
+    var o = khoi(el, 'dv', 'doanVu', {}, veDv);
+    o.tab = o.tab || (function () { try { return sessionStorage.getItem('bdv.dvTab') || 'hs'; } catch (e) { return 'hs'; } })();
+    o.loc = o.loc || { nhom: '', thieu: false, q: '' };
+    ganSuKien(el, function (b) { suKienDv(o, b); });
+    if (el.dataset.dvGan !== '1') {
+      el.dataset.dvGan = '1';
+      el.addEventListener('change', function (e) { var k = e.target.dataset.dvl; if (!k) return; o.loc[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; veDv(o); });
+      el.addEventListener('input', function (e) { if (e.target.dataset.dvl !== 'q') return; o.loc.q = e.target.value; var b = o.el.querySelector('.dv-xe'); if (b) b.innerHTML = bangXe(o); });
+      el.addEventListener('mousemove', function (e) {
+        var t = e.target.closest('[data-tip]'), tip = el.querySelector('.ht-tip'), box = el.querySelector('.dv-goc'); if (!tip || !box) return;
+        if (!t) { tip.hidden = true; return; }
+        var r = box.getBoundingClientRect(); tip.textContent = t.dataset.tip; tip.hidden = false;
+        tip.style.left = Math.min(e.clientX - r.left + 12, r.width - tip.offsetWidth - 4) + 'px'; tip.style.top = (e.clientY - r.top + 14) + 'px';
+      });
+    }
+  }
+  function okX(v) { return v ? '<span class="dv-ok" title="Đã có">✓</span>' : '<span class="dv-no" title="Chưa có">✗</span>'; }
+  function veDv(o) {
+    var d = o.d;
+    var h = '<div class="hd dv-goc" style="position:relative"><div class="seg seg-to" role="tablist" aria-label="Thông tin Đoàn vụ">' + DV_TAB.map(function (t) {
+      return '<button type="button" role="tab" data-hd="dvTab" data-t="' + t[0] + '" aria-pressed="' + (o.tab === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>';
+    var loi = Object.keys(d.loi || {}).map(function (k) { return d.loi[k]; });
+    if (loi.length) h += '<div class="canh" style="margin:0 0 10px">' + loi.map(esc).join('<br>') + '</div>';
+    if (!d.lienKet.qldv && o.tab !== 'lk') h += '<div class="canh" style="margin:0 0 10px">Chưa có link sheet Quản lý Đoàn vụ. Quản lý dán link ở trang Cài đặt → Liên kết nhóm CSDL - CSVC.</div>';
+    h += o.tab === 'tl' ? veTrackLog(o) : o.tab === 'xe' ? veXeMay(o) : o.tab === 'lk' ? veLienKetDv(o) : veHoSoDv(o);
+    o.el.innerHTML = h + '<div class="ht-tip" hidden></div></div>';
+  }
+  function thieuGiay(d, x) { return d.giay.filter(function (g) { return !x.giay[g[0]]; }).map(function (g) { return g[1]; }); }
+  function duHoSo(d, x) { return x.coTrongSheet && !x.thieuTT.length && !thieuGiay(d, x).length && !!x.xe; }
+  function veHoSoDv(o) {
+    var d = o.d, l = o.loc, tv = d.thanhVien, n = tv.length || 1;
+    var nhoms = []; tv.forEach(function (x) { x.nhom.split(', ').forEach(function (m) { if (m && nhoms.indexOf(m) === -1) nhoms.push(m); }); });
+    var du = tv.filter(function (x) { return duHoSo(d, x); }).length, coSheet = tv.filter(function (x) { return x.coTrongSheet; }).length;
+    var muc = [['tt', 'Thông tin cá nhân', function (x) { return x.coTrongSheet && !x.thieuTT.length; }]].concat(d.giay.map(function (g) { return [g[0], g[1], function (x) { return x.giay[g[0]]; }]; }))
+      .concat([['xe', 'Thông tin xe', function (x) { return !!x.xe; }]]);
+    var h = '<div class="khung ht-so"><div><b>' + tv.length + '</b><span>thành viên hiện tại<small>theo tài khoản dashboard</small></span></div>' +
+      '<div><b>' + coSheet + '</b><span>có trong sheet Quản lý Đoàn vụ<small>' + (tv.length - coSheet) + ' người chưa có dòng thông tin</small></span></div>' +
+      '<div><b>' + Math.round(du * 100 / n) + '%</b><span>hồ sơ đầy đủ<small>' + du + ' / ' + tv.length + ' người</small></span></div></div>';
+    h += '<div class="khung"><div class="ht-t">Mức độ hoàn thiện từng mục hồ sơ<span>số người đã có / ' + tv.length + '</span></div><div class="ht-khu">' + muc.map(function (m) {
+      var c = tv.filter(m[2]).length, p = c * 100 / n;
+      return '<div class="ht-kr" data-tip="' + esc(m[1] + ': ' + c + ' / ' + tv.length + ' người (' + Math.round(p) + '%)') + '"><span class="ht-kt">' + esc(m[1]) + '</span><span class="ht-kb"><span class="ht-kv dv-ray"><i class="ht-co" style="flex:0 0 ' + p + '%"></i></span><em>' + c + '/' + tv.length + '</em></span></div>'; }).join('') + '</div></div>';
+    var ds = tv.filter(function (x) { return (!l.nhom || x.nhom.split(', ').indexOf(l.nhom) > -1) && (!l.thieu || !duHoSo(d, x)); });
+    h += '<div class="khung"><div class="ht-loc"><select data-dvl="nhom" aria-label="Lọc nhóm"><option value="">Tất cả nhóm</option>' + nhoms.map(function (m) { return '<option' + (l.nhom === m ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</select>' +
+      '<label><input type="checkbox" data-dvl="thieu"' + (l.thieu ? ' checked' : '') + '> Chỉ hiện người còn thiếu</label>' +
+      (d.lienKet.qldv ? '<a class="lk" href="' + esc(d.lienKet.qldv) + '" target="_blank" rel="noopener">Mở sheet Quản lý Đoàn vụ</a>' : '') + '</div>' +
+      '<div class="ht-bang"><table><thead><tr><th>Thành viên</th><th>Liên hệ</th><th>Thông tin cá nhân</th>' + d.giay.map(function (g) { return '<th class="dv-c">' + esc(g[1]) + '</th>'; }).join('') + '<th class="dv-c">Xe</th><th></th></tr></thead><tbody>' +
+      (ds.length ? ds.map(function (x, i) {
+        var tg = thieuGiay(d, x), thieu = (x.coTrongSheet ? x.thieuTT : ['Chưa có dòng trong sheet']).concat(tg).concat(x.xe ? [] : ['Thông tin xe']);
+        return '<tr><td><b>' + esc(x.ten) + '</b><span class="vt">' + esc([x.nhom, x.chucVu, x.lop, x.mssv].filter(String).join(' · ')) + '</span></td>' +
+          '<td>' + (x.sdt ? '<a href="tel:' + esc(x.sdt.replace(/\s/g, '')) + '">' + esc(x.sdt) + '</a>' : '<span class="vt">—</span>') + (x.email ? '<span class="vt">' + esc(x.email) + '</span>' : '') + '</td>' +
+          '<td>' + (!x.coTrongSheet ? '<span class="pill p-bad">Chưa có trong sheet</span>' : x.thieuTT.length ? '<span class="pill p-cho">Thiếu ' + x.thieuTT.length + ' mục</span><span class="gc">' + esc(x.thieuTT.join(', ')) + '</span>' : '<span class="pill p-mo">Đầy đủ</span>') + '</td>' +
+          d.giay.map(function (g) { return '<td class="dv-c">' + okX(x.giay[g[0]]) + '</td>'; }).join('') +
+          '<td class="dv-c">' + (x.xe ? '<span class="dv-ok" title="' + esc(x.xe.bien + ' · ' + x.xe.loai) + '">✓</span>' : okX(false)) + '</td>' +
+          '<td style="white-space:nowrap">' + (x.thuMuc ? '<a class="lk" href="' + esc(x.thuMuc) + '" target="_blank" rel="noopener">Thư mục</a> ' : '') +
+          (thieu.length ? '<button type="button" class="b3" data-hd="dvNhac" data-t="' + tv.indexOf(x) + '">Chép lời nhắc</button>' : '') + '</td></tr>';
+      }).join('') : '<tr><td colspan="' + (5 + d.giay.length) + '" class="trong-k">Không có ai khớp bộ lọc.</td></tr>') + '</tbody></table></div>' +
+      '<div class="mo-ta" style="margin-top:8px">Chỉ hiện đã có / chưa có. CCCD, số tài khoản, thông tin gia đình, địa chỉ… xem trực tiếp trên sheet gốc.</div></div>';
+    if (d.ngoaiTaiKhoan.length) h += '<div class="khung"><details><summary>' + d.ngoaiTaiKhoan.length + ' người có trong sheet nhưng không có tài khoản dashboard (đã rời / cố vấn / chưa tạo tài khoản)</summary><div class="cho" style="margin-top:8px">' +
+      d.ngoaiTaiKhoan.map(function (x) { return '<span class="ten">' + esc(x.ten) + (x.nhom ? ' <small>' + esc(x.nhom) + '</small>' : '') + '</span>'; }).join('') + '</div></details></div>';
+    return h;
+  }
+  function veTrackLog(o) {
+    var tr = o.d.track;
+    if (!tr.length) return '<div class="khung trong-k">Chưa đọc được Track-log.</div>';
+    var dots = [], m = {};
+    tr.forEach(function (t) { if (!m[t.dot]) { m[t.dot] = { dang: 0, roi: 0, khong: 0, ds: [] }; dots.push(t.dot); } m[t.dot][t.trangThai === 'Đang hoạt động' ? 'dang' : t.trangThai === 'Đã rời' ? 'roi' : 'khong']++; m[t.dot].ds.push(t); });
+    var tong = { dang: 0, roi: 0, khong: 0 }; dots.forEach(function (k) { tong.dang += m[k].dang; tong.roi += m[k].roi; tong.khong += m[k].khong; });
+    var vao = tong.dang + tong.roi;
+    var h = '<div class="khung ht-so"><div><b>' + tong.dang + '</b><span>đang hoạt động<small>theo Track-log</small></span></div>' +
+      '<div><b>' + vao + '</b><span>từng là thành viên<small>' + tong.roi + ' đã rời</small></span></div>' +
+      '<div><b>' + (vao ? Math.round(tong.dang * 100 / vao) : 0) + '%</b><span>tỉ lệ còn hoạt động<small>trên số người đã vào</small></span></div>' +
+      '<div><b>' + tr.length + '</b><span>lượt đăng ký / tuyển<small>' + dots.length + ' đợt · ' + tong.khong + ' không vào</small></span></div></div>';
+    var mx = Math.max.apply(null, dots.map(function (k) { return m[k].dang + m[k].roi + m[k].khong; }).concat([1]));
+    h += '<div class="khung"><div class="ht-t">Theo đợt tuyển<span>số người mỗi đợt</span></div><div class="ht-lg"><span><i class="ht-co"></i>Đang hoạt động</span><span><i class="dv-roi"></i>Đã rời</span><span><i class="ht-cu"></i>Không vào</span></div>' +
+      '<div class="ht-cot dv-cot">' + dots.map(function (k) {
+        var x = m[k], t = x.dang + x.roi + x.khong;
+        return '<div class="ht-c" data-tip="' + esc(k + ': ' + x.dang + ' đang hoạt động, ' + x.roi + ' đã rời, ' + x.khong + ' không vào') + '"><em>' + t + '</em><span class="dv-st" style="height:' + Math.max(4, t * 100 / mx) + '%">' +
+          (x.khong ? '<i class="ht-cu" style="flex-grow:' + x.khong + '"></i>' : '') + (x.roi ? '<i class="dv-roi" style="flex-grow:' + x.roi + '"></i>' : '') + (x.dang ? '<i class="ht-co" style="flex-grow:' + x.dang + '"></i>' : '') +
+          '</span><small>' + esc(k.replace('Đợt ', 'Đ')) + '</small></div>'; }).join('') + '</div></div>';
+    h += '<div class="khung"><div class="ht-t">Chi tiết từng đợt</div>' + dots.slice().reverse().map(function (k, i) {
+      var x = m[k];
+      return '<details' + (i === 0 ? ' open' : '') + '><summary>' + esc(k) + ' · ' + x.ds.length + ' người (' + x.dang + ' đang hoạt động)</summary><div class="ht-bang"><table><thead><tr><th>Họ tên</th><th>Đăng ký</th><th>Ngày vào</th><th>Ngày rời</th><th>Trạng thái</th></tr></thead><tbody>' +
+        x.ds.map(function (t) {
+          return '<tr><td>' + esc(t.ten) + '</td><td>' + (t.dangKy ? dmy(t.dangKy) : esc(t.cachVao)) + '</td><td>' + (t.vao ? dmy(t.vao) : '—') + '</td><td>' + (t.ra ? dmy(t.ra) : t.trangThai === 'Đã rời' ? 'Đã rời' : '—') + '</td>' +
+            '<td><span class="pill ' + (t.trangThai === 'Đang hoạt động' ? 'p-mo' : t.trangThai === 'Đã rời' ? 'p-cho' : 'p-khoa') + '">' + esc(t.trangThai) + '</span></td></tr>'; }).join('') + '</tbody></table></div></details>';
+    }).join('') + '<div class="mo-ta" style="margin-top:8px">Cập nhật Track-log trực tiếp trên sheet Quản lý Đoàn vụ (dashboard chỉ đọc).</div></div>';
+    return h;
+  }
+  function bangXe(o) {
+    var q = (o.loc.q || '').trim().toLowerCase(), ds = o.d.xe.ds.filter(function (x) { return !q || (x.ten + ' ' + x.bien + ' ' + x.loai + ' ' + x.chiDoan).toLowerCase().indexOf(q) > -1; });
+    return '<table><thead><tr><th>Họ tên</th><th>Chi đoàn</th><th>Biển số</th><th>Loại xe</th><th>Màu</th></tr></thead><tbody>' + (ds.length ? ds.map(function (x) {
+      return '<tr><td><b>' + esc(x.ten) + '</b>' + (x.mssv ? '<span class="vt">' + esc(x.mssv) + '</span>' : '') + '</td><td>' + esc(x.chiDoan) + '</td><td><b>' + esc(x.bien) + '</b></td><td>' + esc(x.loai) + '</td><td>' + esc(x.mau) + '</td></tr>'; }).join('')
+      : '<tr><td colspan="5" class="trong-k">Không có xe nào khớp.</td></tr>') + '</tbody></table>';
+  }
+  function veXeMay(o) {
+    var d = o.d, chua = d.thanhVien.filter(function (x) { return !x.xe; });
+    if (!d.lienKet.xeMay) return '<div class="khung trong-k">Chưa có link sheet xe máy. Quản lý dán ở trang Cài đặt → Liên kết nhóm CSDL - CSVC.</div>';
+    var loai = {}; d.xe.ds.forEach(function (x) { var k = (x.loai || 'Khác').trim().split(/\s+/)[0]; k = k.charAt(0).toUpperCase() + k.slice(1).toLowerCase(); loai[k] = (loai[k] || 0) + 1; });
+    var lk = Object.keys(loai).sort(function (a, b) { return loai[b] - loai[a]; }).slice(0, 8), mx = Math.max.apply(null, lk.map(function (k) { return loai[k]; }).concat([1]));
+    return '<div class="khung ht-so"><div><b>' + d.xe.ds.length + '</b><span>xe đã đăng ký<small>tab "' + esc(d.xe.tab) + '"</small></span></div>' +
+      '<div><b>' + chua.length + '</b><span>thành viên chưa có thông tin xe<small>có thể không đi xe máy</small></span></div></div>' +
+      '<div class="ht-luoi"><div class="khung"><div class="ht-t">Loại xe phổ biến</div><div class="ht-khu">' + lk.map(function (k) {
+        return '<div class="ht-kr" data-tip="' + esc(k + ': ' + loai[k] + ' xe') + '"><span class="ht-kt">' + esc(k) + '</span><span class="ht-kb"><span class="ht-kv" style="width:' + (loai[k] * 100 / mx) + '%"><i class="ht-co" style="flex-grow:1"></i></span><em>' + loai[k] + '</em></span></div>'; }).join('') + '</div></div>' +
+      '<div class="khung"><div class="ht-t">Chưa có thông tin xe</div>' + (chua.length ? '<div class="cho">' + chua.map(function (x) { return '<span class="ten">' + esc(x.ten) + '</span>'; }).join('') + '</div>' : '<div class="trong-k">Ai cũng đã có.</div>') +
+      (d.lienKet.formXe ? '<div style="margin-top:10px"><a class="lk" href="' + esc(d.lienKet.formXe) + '" target="_blank" rel="noopener">Mở form thông tin xe máy</a></div>' : '') + '</div></div>' +
+      '<div class="khung"><div class="ht-loc"><input type="search" data-dvl="q" placeholder="Tìm tên, biển số, loại xe…" value="' + esc(o.loc.q) + '" aria-label="Tìm xe">' +
+      '<a class="lk" href="' + esc(d.lienKet.xeMay) + '" target="_blank" rel="noopener">Mở sheet xe máy</a></div><div class="ht-bang dv-xe">' + bangXe(o) + '</div></div>';
+  }
+  function veLienKetDv(o) {
+    var lk = o.d.lienKet, ds = [['qldv', 'Sheet Quản lý Đoàn vụ', 'Danh sách, Track-log, hồ sơ cá nhân'], ['formTT', 'Form thu thập thông tin cá nhân', 'Gửi cho thành viên mới hoặc người còn thiếu thông tin'],
+      ['formXe', 'Form thông tin xe máy', 'Gửi khi cần cập nhật danh sách gửi xe'], ['xeMay', 'Sheet xe máy Ban Đoàn vụ', 'Câu trả lời form xe + danh sách mới'], ['folderHoSo', 'Folder hồ sơ / thông tin Đoàn vụ', 'Ảnh thẻ, CCCD, thẻ SV, sơ yếu lý lịch']];
+    return '<div class="khung">' + ds.map(function (x) {
+      return '<div class="cv-r"><b>' + esc(x[1]) + '</b><div><small>' + esc(x[2]) + '</small></div><div class="cho">' + (lk[x[0]] ? '<a class="lk" href="' + esc(lk[x[0]]) + '" target="_blank" rel="noopener">Mở</a>' +
+        (/forms/.test(lk[x[0]]) ? ' <button type="button" class="b3" data-hd="dvChep" data-t="' + esc(lk[x[0]]) + '">Chép link</button>' : '') : '<span class="vt">Chưa có link (Cài đặt)</span>') + '</div></div>'; }).join('') + '</div>';
+  }
+  function chep(txt, tb) {
+    var xong = function () { bao(tb); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(xong, function () { bao('Không chép được, hãy chép tay.', true); });
+    else { var t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); xong(); } catch (e) {} t.remove(); }
+  }
+  function suKienDv(o, b) {
+    var k = b.dataset.hd;
+    if (k === 'dvTab') { o.tab = b.dataset.t; try { sessionStorage.setItem('bdv.dvTab', o.tab); } catch (e) {} veDv(o); return; }
+    if (k === 'dvChep') { chep(b.dataset.t, 'Đã chép link'); return; }
+    if (k === 'dvNhac') {
+      var d = o.d, x = d.thanhVien[+b.dataset.t]; if (!x) return;
+      var thieu = (x.coTrongSheet ? x.thieuTT : ['thông tin cá nhân']).concat(thieuGiay(d, x)).concat(x.xe ? [] : ['thông tin xe máy']);
+      var msg = 'Chào ' + x.ten.split(' ').pop() + ', hồ sơ Ban Đoàn vụ của bạn còn thiếu: ' + thieu.join(', ') + '.' +
+        (d.lienKet.formTT ? ' Bạn bổ sung giúp qua form: ' + d.lienKet.formTT : '') + (!x.xe && d.lienKet.formXe ? ' · Thông tin xe: ' + d.lienKet.formXe : '') + ' Cảm ơn bạn!';
+      chep(msg, 'Đã chép lời nhắc cho ' + x.ten);
+    }
+  }
+
   /* ================= Cơ sở vật chất: Hiện trạng · Kiểm kê · Mượn về · Cho mượn ================= */
   var CSVC_TAB = [['ht', 'Hiện trạng tài sản'], ['kk', 'Kiểm kê tài sản'], ['ve', 'Mượn về'], ['cho', 'Cho mượn']];
   function csvc(el) {
@@ -879,5 +1020,5 @@
     }
   }
 
-  window.BDVHD = { cnXanh: cnXanh, kiemKe: kiemKe, csvc: csvc, congVan: congVan, hopNhom: hopNhom };
+  window.BDVHD = { cnXanh: cnXanh, kiemKe: kiemKe, csvc: csvc, congVan: congVan, hopNhom: hopNhom, doanVu: doanVu };
 })();

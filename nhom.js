@@ -11,7 +11,7 @@
       ['cong-van', 'Công văn', ['công văn'], 'congVan', ['Lưu công văn đi', 'Lưu công văn đến']],
       ['csvc', 'Cơ sở vật chất', ['csvc', 'cơ sở vật chất'], 'csvc', ['Hiện trạng tài sản', 'Kiểm kê hằng tuần / hằng tháng / giữa năm - cuối năm', 'Mượn về', 'Cho mượn']],
       ['giay-to', 'Giấy tờ / Biểu mẫu', ['giấy đề nghị', 'biểu mẫu', 'giấy tờ'], '', ['Soạn Giấy đề nghị']],
-      ['doan-vu', 'Thông tin Đoàn vụ', ['đoàn vụ'], '', ['Cập nhật thông tin trên sheet, track-log', 'Quản lý thông tin', 'Hồ sơ của Đoàn vụ']],
+      ['doan-vu', 'Thông tin Đoàn vụ', ['đoàn vụ'], 'doanVu', ['Cập nhật thông tin trên sheet, track-log', 'Quản lý thông tin', 'Hồ sơ của Đoàn vụ']],
       ['chu-nhat-xanh', 'Chủ nhật xanh', ['chủ nhật xanh', 'cn xanh'], 'cnXanh', ['Viết thông báo', 'Liên hệ khu vực trực', 'Tạo sheet điểm danh', 'Giám sát thực hiện']]
     ]
   };

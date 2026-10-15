@@ -72,6 +72,11 @@ Phụ trách chính mảng CSVC / quản lý đăng ký → duyệt 2 cấp → 
 quản lý từ chối = "Quản lý trả lại" (về nhóm). Người duyệt cấp 1 = **phụ trách chính của mảng công việc đó** (cột "Phụ trách chính" tab Mảng công việc, `phuTrachMang_`;
 kiểm kê / cho mượn dùng mảng CSVC: `duyetCap1Csvc_`) — KHÔNG dùng chức vụ trưởng nhóm; mảng chưa có phụ trách hoặc chính phụ trách gửi thì đi thẳng quản lý.
 Trạng thái cũ "Chờ trưởng nhóm duyệt" được đọc như "Chờ phụ trách duyệt". Mục chờ quản lý hiện ở Phê duyệt (`choDuyetCsvc_`).
+Tab **Thông tin Đoàn vụ** (`BDVHD.doanVu`, `13-doan-vu.gs`, action `doanVu`): CHỈ ĐỌC sheet "Quản lý Đoàn vụ" (link khoá `qldv`; tab "Danh sách ban đoàn vụ" + "Track-Log" chia "ĐỢT n")
+và sheet "Xe máy Ban Đoàn vụ" (khoá `xeMay`, tab "Mới") — cả hai của vanphongdoan, không ghi. Link form `formTT`, `formXe`, folder `folderHoSo` cũng dán ở Cài đặt.
+4 tab con: Hồ sơ thành viên (thành viên = sheet tài khoản, ghép theo MSSV/tên; chỉ trả ✓/✗ cho thông tin cá nhân + SYLL/đơn/thẻ SV/CCCD/ảnh thẻ/xe, nút "Chép lời nhắc")
+· Track-log (cột chồng theo đợt: đang hoạt động / đã rời / không vào) · Xe máy · Biểu mẫu & liên kết. Chỉ CSDL + quản lý xem.
+**Không gửi về trình duyệt** CCCD, STK, tôn giáo, dân tộc, cha mẹ, hoàn cảnh gia đình, địa chỉ — xem trên sheet gốc. Cache 'doanvu2' 300s (xoá khi lưu liên kết).
 Mượn trả: sheet "[BĐV 2026 - 2027] CSVC - Mượn trả tài sản" (tab đầu = danh mục tài sản chép từ 2 biên bản xlsx; tab "Mượn về", "Cho mượn" tự tạo).
 Mượn về: nguồn Phòng TCHC (bắt buộc link giấy đề nghị) / KTX (bắt buộc người liên hệ + SĐT) / Khác → Đang mượn → Đã trả. Cho mượn: bắt buộc giấy đề nghị, duyệt 2 cấp → giao → nhận lại.
 Công văn (`BDVHD.congVan`, action `congVan`): CHỈ ĐỌC sheet công văn đi (tab nhiệm kỳ mới nhất, số tiếp theo = số lớn nhất + 1, dòng đã lấy số chưa có tên, chưa PDF)
