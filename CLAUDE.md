@@ -49,7 +49,7 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 ## Trang
 
 `/` tổng quan (quản lý; 5 tab Chung + từng nhóm, tab ghi trên địa chỉ #4t…) · `/cua-toi/` (Trang chủ của thành viên / Việc của tôi của quản lý) · `/lich-truc/` (`#diem-danh` = chế độ Điểm danh) ·
-`/phe-duyet/` `/thong-ke/` `/cai-dat/` (quản lý) · `/ho-so/` `/tai-lieu/` `/cam-nang/` · `/4t/` · `/nghiep-vu/` `/csdl-csvc/` `/noi-vu/` (dùng chung `nhom.js`) · `/bao-mat/`.
+`/phe-duyet/` `/thong-ke/` `/cai-dat/` (quản lý) · `/ho-so/` `/tai-lieu/` `/cam-nang/` `/phan-hoi/` · `/4t/` · `/nghiep-vu/` `/csdl-csvc/` `/noi-vu/` (dùng chung `nhom.js`) · `/bao-mat/`.
 `menu.js` vẽ thanh menu bên trái chia nhóm mục theo vai trò (hàm `cauHinh`; trên điện thoại mở bằng nút ☰) và tự nạp `dangnhap.js`.
 Thêm trang: thêm một mục vào `cauHinh()` trong `menu.js`. Trang mới dùng chung `/chung.css` + `/chung.js` (T.$, T.esc, T.toast, T.khoi).
 Server `6-ho-so-noi-dung.gs`: hồ sơ (cột Chức vụ/MSSV/Lớp/Số điện thoại tự thêm vào sheet tài khoản; thành viên sửa MSSV/Lớp/SĐT,
@@ -91,6 +91,9 @@ Xem như thành viên: quản lý chọn "Giao diện" trên header (Quản lý 
 Nguồn phân công: Google Sheet "BẢNG PHÂN CÔNG NHIỆM VỤ BĐV" (tab theo nhóm: Họ tên | Chi tiết công việc, ghi "(Phụ trách chính)/(Hỗ trợ chính)").
 Dashboard không đọc trực tiếp; nội dung được chép vào tab Thành viên + Mảng công việc của sheet nhóm. Tab "Mảng và thành viên" hiện phân công từng người.
 Sửa dữ liệu sheet một lần: thêm mục vào `CAP_NHAT` trong `9-cap-nhat-du-lieu.gs` (tự chạy ở lần gọi web app đầu tiên sau triển khai, đánh dấu Script Property).
+**Phản hồi hệ thống** (`/phan-hoi/`, `11-phan-hoi.gs`, actions `phanHoi` / `guiPhanHoi` / `xuLyPhanHoi`): mọi vai trò gửi góp ý (loại, trang, mức hài lòng 1–5, nội dung; tối đa 10/ngày),
+lưu tab "Phản hồi hệ thống" của sheet tài khoản KÈM họ tên/email/nhóm người gửi. Ghi chú trên trang (giữ đúng sự thật): ẩn danh với thành viên khác,
+Ban quản lý chỉ xem người gửi khi có lời lẽ thiếu chuẩn mực. Thành viên thấy góp ý của mình + trả lời của Ban; quản lý có tab Tổng hợp (tên ẩn mặc định, nút "Xem người gửi"), đổi trạng thái + trả lời.
 Lộ trình còn lại: Đơn từ & xin nghỉ → duyệt ở Phê duyệt; Nhắc việc tự động (email, cần cấp quyền).
 
 ## Cách làm việc (để tiết kiệm thời gian/token)

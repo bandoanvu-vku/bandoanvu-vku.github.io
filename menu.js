@@ -18,7 +18,8 @@
     bars: '<path d="M4 6h16M4 12h16M4 18h16"/>',
     chev: '<path d="m6 9 6 6 6-6"/>',
     meet: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="9" cy="15" r="1.6"/><circle cx="15" cy="15" r="1.6"/>',
-    send: '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/>'
+    send: '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/>',
+    chat: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>'
   };
   function icon(k) { return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[k] + '</svg>'; }
 
@@ -36,14 +37,15 @@
           { href: '/phe-duyet/', ten: 'Phê duyệt', icon: 'inbox', dem: true }, { href: '/lich-truc/', ten: 'Lịch trực', icon: 'cal' }, muc] },
         { muc: 'Theo dõi', ds: [{ href: '/hop-nhom/', ten: 'Họp nhóm', icon: 'meet' }, { href: '/thong-ke/', ten: 'Thống kê', icon: 'chart' }] },
         { muc: 'Cá nhân', ds: [{ href: '/ho-so/', ten: 'Hồ sơ của tôi', icon: 'user' }] },
-        { muc: 'Quản trị', ds: [{ href: '/tai-lieu/', ten: 'Tài liệu & biểu mẫu', icon: 'file' }, { href: '/cam-nang/', ten: 'Cẩm nang', icon: 'book' }, { href: '/cai-dat/', ten: 'Cài đặt', icon: 'gear' }] }
+        { muc: 'Quản trị', ds: [{ href: '/tai-lieu/', ten: 'Tài liệu & biểu mẫu', icon: 'file' }, { href: '/cam-nang/', ten: 'Cẩm nang', icon: 'book' }, { href: '/cai-dat/', ten: 'Cài đặt', icon: 'gear' }, { href: '/phan-hoi/', ten: 'Phản hồi hệ thống', icon: 'chat' }] }
       ];
     }
     return [
       { muc: null, ds: [{ href: '/cua-toi/', ten: 'Trang chủ', icon: 'home' }] },
       { muc: 'Hằng ngày', ds: [{ href: '/lich-truc/#diem-danh', ten: 'Điểm danh', icon: 'clock' }, { href: '/lich-truc/', ten: 'Đăng ký ca trực', icon: 'cal' }].concat(dsNhom.length ? [muc, { href: '/hop-nhom/', ten: 'Họp nhóm', icon: 'meet' }] : []) },
       { muc: 'Của tôi', ds: [{ href: '/ho-so/', ten: 'Hồ sơ của tôi', icon: 'user' }, { href: '/thong-ke/', ten: 'Thống kê của tôi', icon: 'chart' },
-        { href: '/tai-lieu/', ten: 'Tài liệu & biểu mẫu', icon: 'file' }, { href: '/cam-nang/', ten: 'Cẩm nang', icon: 'book' }] }
+        { href: '/tai-lieu/', ten: 'Tài liệu & biểu mẫu', icon: 'file' }, { href: '/cam-nang/', ten: 'Cẩm nang', icon: 'book' }] },
+      { muc: 'Hệ thống', ds: [{ href: '/phan-hoi/', ten: 'Phản hồi hệ thống', icon: 'chat' }] }
     ];
   }
 
@@ -51,7 +53,7 @@
      chọn năm khác thì các trang theo năm (việc, lịch trực, thống kê…) hiện "chưa có dữ liệu". Khi bổ sung dữ liệu năm cũ: thêm vào CO_DU_LIEU. */
   var NAM_HOC = ['2026 - 2027', '2025 - 2026', '2024 - 2025', '2023 - 2024'];
   var HIEN_TAI = '2026 - 2027', CO_DU_LIEU = ['2026 - 2027'];
-  var KHONG_THEO_NAM = ['/ho-so/', '/cam-nang/', '/cai-dat/', '/tai-lieu/', '/bao-mat/'];
+  var KHONG_THEO_NAM = ['/ho-so/', '/cam-nang/', '/cai-dat/', '/tai-lieu/', '/bao-mat/', '/phan-hoi/'];
   var namHoc = (function () { try { var v = localStorage.getItem('bdv.namHoc'); return NAM_HOC.indexOf(v) > -1 ? v : HIEN_TAI; } catch (e) { return HIEN_TAI; } })();
   window.BDV_NAM_HOC = { chon: function () { return namHoc; }, hienTai: HIEN_TAI, ds: NAM_HOC };
   var o = location.pathname.replace(/index\.html$/, ''); if (o.slice(-1) !== '/') o += '/';

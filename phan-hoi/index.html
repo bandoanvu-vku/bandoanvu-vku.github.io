@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phản hồi hệ thống · Ban Đoàn vụ</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/chung.css">
+<style>
+  .seg { display: flex; gap: 6px; flex-wrap: wrap; }
+  .seg button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 5px 12px; font-size: 13.5px; color: var(--muted); }
+  .seg button[aria-pressed=true] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+  .tabs { margin-bottom: 14px; }
+  .sao { display: flex; gap: 4px; }
+  .sao button { border: 1px solid var(--line); background: var(--card); border-radius: 8px; width: 40px; height: 38px; font-size: 18px; color: var(--muted); padding: 0; }
+  .sao button.on { color: #c98a00; border-color: #e7b84a; background: var(--warn-soft); }
+  .an-danh { display: flex; gap: 10px; align-items: flex-start; background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; margin: 14px 0 4px; font-size: 13.5px; }
+  .an-danh svg { flex: none; margin-top: 2px; color: var(--accent); }
+  .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+  .dem { text-align: right; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .muc { border-top: 1px solid var(--line); padding: 12px 0; }
+  .muc:first-of-type { border-top: 0; }
+  .muc .dau { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .muc .nd { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .muc .tl { margin-top: 8px; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--track); border-radius: 0 8px 8px 0; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .muc .xl { display: grid; grid-template-columns: 170px 1fr auto; gap: 8px; margin-top: 10px; align-items: start; }
+  .muc .xl select, .muc .xl textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; background: var(--card); }
+  .muc .xl textarea { min-height: 38px; resize: vertical; }
+  .nguoi { font-size: 13px; color: var(--text); background: var(--warn-soft); border-radius: 8px; padding: 2px 8px; }
+  .t-Moi { background: var(--accent-soft); color: var(--accent); } .t-Dang { background: var(--warn-soft); color: var(--warn); }
+  .t-Da { background: #dff3ea; color: #13734f; } .t-Khong { background: var(--track); color: var(--muted); }
+  .so { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .so .panel { margin: 0; } .so b { display: block; font-size: 22px; } .so span { font-size: 12.5px; color: var(--muted); }
+  .loc { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+  .loc select { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; background: var(--card); }
+  @media (max-width: 640px) { .muc .xl { grid-template-columns: 1fr; } .so { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+</head>
+<body>
+<div class="wrap hep">
+  <div class="top"><div><h1>Phản hồi hệ thống</h1><div class="sub">Góp ý để dashboard Ban Đoàn vụ dùng tốt hơn</div></div></div>
+  <div id="app"><div class="panel empty">Đang tải…</div></div>
+</div>
+<script src="/dangnhap.js"></script>
+<script src="/chung.js"></script>
+<script>
+(function () {
+  var app = T.$('app'), esc = T.esc, D = null;
+  var TRANG = ['Chung / toàn hệ thống', 'Trang chủ / Việc của tôi', 'Tổng quan', 'Lịch trực / Điểm danh', 'Trang nhóm', 'Họp nhóm', 'Thống kê',
+    'Giao việc / Duyệt việc / Phê duyệt', 'Hồ sơ', 'Tài liệu & Cẩm nang', 'Đăng nhập', 'Khác'];
+  var tab = (function () { try { return sessionStorage.getItem('bdv.phTab') || 'gui'; } catch (e) { return 'gui'; } })();
+  var F = { loai: 'Góp ý cải thiện', trang: TRANG[0], mucDo: 0, noiDung: '' }, hien = {}, loc = { tt: 'chua', loai: '' };
+  var KHIEN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>';
+
+  function tai() { BDV.goi('phanHoi', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function nhan(d) { D = d; if (!d.quanLy && tab === 'tong') tab = 'gui'; ve(); }
+  function lop(tt) { return 't-' + (tt === 'Mới' ? 'Moi' : tt === 'Đang xử lý' ? 'Dang' : tt === 'Đã xử lý' ? 'Da' : tt === 'Không xử lý' ? 'Khong' : 'Moi'); }
+  function pill(tt) { return '<span class="pill ' + lop(tt) + '">' + esc(tt) + '</span>'; }
+  function sao(n) { return n ? '<span title="Mức độ hài lòng">' + '★★★★★'.slice(0, n) + '<span style="opacity:.3">' + '★★★★★'.slice(n) + '</span></span>' : ''; }
+
+  function ve() {
+    var h = '';
+    if (D.quanLy) h += '<div class="seg tabs" role="tablist">' + [['gui', 'Gửi góp ý'], ['tong', 'Tổng hợp phản hồi (' + D.ds.filter(function (x) { return x.trangThai === 'Mới'; }).length + ' mới)']].map(function (t) {
+      return '<button type="button" data-tab="' + t[0] + '" aria-pressed="' + (tab === t[0]) + '">' + esc(t[1]) + '</button>'; }).join('') + '</div>';
+    h += tab === 'tong' && D.quanLy ? veTong() : veGui();
+    app.innerHTML = h;
+  }
+
+  function veGui() {
+    var f = '<form class="panel form" id="f"><h2>Gửi góp ý</h2>' +
+      '<label>Loại góp ý</label><div class="seg" id="fLoai">' + D.loai.map(function (l) { return '<button type="button" data-loai="' + esc(l) + '" aria-pressed="' + (F.loai === l) + '">' + esc(l) + '</button>'; }).join('') + '</div>' +
+      '<label for="fTrang">Trang / tính năng</label><select id="fTrang">' + TRANG.map(function (t) { return '<option' + (F.trang === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select>' +
+      '<label>Mức độ hài lòng với hệ thống (không bắt buộc)</label><div class="sao" id="fSao">' + [1, 2, 3, 4, 5].map(function (n) {
+        return '<button type="button" data-sao="' + n + '" class="' + (n <= F.mucDo ? 'on' : '') + '" aria-label="' + n + ' sao">★</button>'; }).join('') + '</div>' +
+      '<label for="fN">Nội dung</label><textarea id="fN" rows="6" maxlength="3000" placeholder="Bạn thấy chỗ nào khó dùng, lỗi gì, hay muốn thêm tính năng gì?">' + esc(F.noiDung) + '</textarea>' +
+      '<div class="dem" id="fDem">' + F.noiDung.length + '/3000</div>' +
+      '<div class="an-danh">' + KHIEN + '<div><b>Góp ý của bạn được ẩn danh với các thành viên khác.</b> Ban quản lý chỉ xem người gửi khi góp ý có lời lẽ thiếu chuẩn mực. ' +
+      'Hãy góp ý thẳng thắn, lịch sự và mang tính xây dựng.</div></div>' +
+      '<div class="acts"><button class="btn" type="submit">Gửi góp ý</button></div></form>';
+    var ds = D.cuaToi.length ? D.cuaToi.map(function (x) {
+      return '<div class="muc"><div class="dau">' + pill(x.trangThai) + '<span>' + esc(x.loai) + '</span>·<span>' + esc(x.trang) + '</span>·<span>' + esc(x.luc) + '</span>' + sao(x.mucDo) + '</div>' +
+        '<p class="nd">' + esc(x.noiDung) + '</p>' + (x.traLoi ? '<div class="tl"><b>Ban trả lời' + (x.xuLyLuc ? ' · ' + esc(x.xuLyLuc) : '') + ':</b> ' + esc(x.traLoi) + '</div>' : '') + '</div>';
+    }).join('') : '<div class="empty">Bạn chưa gửi góp ý nào.</div>';
+    return f + '<div class="panel"><h2>Góp ý bạn đã gửi</h2>' + ds + '</div>';
+  }
+
+  function veTong() {
+    var ds = D.ds, moi = ds.filter(function (x) { return x.trangThai === 'Mới'; }).length;
+    var xong = ds.filter(function (x) { return x.trangThai === 'Đã xử lý'; }).length;
+    var cs = ds.filter(function (x) { return x.mucDo; }), tb = cs.length ? (cs.reduce(function (a, x) { return a + x.mucDo; }, 0) / cs.length).toFixed(1).replace('.', ',') : '–';
+    var h = '<div class="so"><div class="panel"><b>' + ds.length + '</b><span>Tổng góp ý</span></div><div class="panel"><b>' + moi + '</b><span>Mới, chưa xem</span></div>' +
+      '<div class="panel"><b>' + xong + '</b><span>Đã xử lý</span></div><div class="panel"><b>' + tb + '</b><span>Hài lòng TB (' + cs.length + ' lượt)</span></div></div>';
+    var l = ds.filter(function (x) {
+      if (loc.tt === 'chua' && (x.trangThai === 'Đã xử lý' || x.trangThai === 'Không xử lý')) return false;
+      if (loc.tt !== 'chua' && loc.tt && x.trangThai !== loc.tt) return false;
+      return !loc.loai || x.loai === loc.loai;
+    });
+    h += '<div class="panel"><div class="loc"><select id="locTT" aria-label="Lọc trạng thái"><option value="chua"' + (loc.tt === 'chua' ? ' selected' : '') + '>Chưa xử lý xong</option><option value=""' + (!loc.tt ? ' selected' : '') + '>Tất cả trạng thái</option>' +
+      D.trangThai.map(function (t) { return '<option' + (loc.tt === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select>' +
+      '<select id="locLoai" aria-label="Lọc loại"><option value="">Tất cả loại</option>' + D.loai.map(function (t) { return '<option' + (loc.loai === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select>' +
+      '<span class="note">' + l.length + ' góp ý · tên người gửi ẩn mặc định, đầy đủ trong sheet tab "Phản hồi hệ thống"</span></div>';
+    h += l.length ? l.map(function (x) {
+      return '<div class="muc" data-ma="' + esc(x.ma) + '"><div class="dau">' + pill(x.trangThai) + '<span>' + esc(x.loai) + '</span>·<span>' + esc(x.trang) + '</span>·<span>' + esc(x.luc) + '</span>' + sao(x.mucDo) +
+        (hien[x.ma] ? '<span class="nguoi">' + esc(x.ten) + (x.nhom ? ' · ' + esc(x.nhom) : '') + ' · ' + esc(x.vaiTro) + '</span>' : '<button type="button" class="ghost sm" data-xem="' + esc(x.ma) + '">Xem người gửi</button>') + '</div>' +
+        '<p class="nd">' + esc(x.noiDung) + '</p>' +
+        (x.xuLyBoi ? '<div class="note" style="margin-top:6px">Cập nhật bởi ' + esc(x.xuLyBoi) + ' · ' + esc(x.xuLyLuc) + '</div>' : '') +
+        '<div class="xl"><select aria-label="Trạng thái">' + D.trangThai.map(function (t) { return '<option' + (x.trangThai === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select>' +
+        '<textarea rows="1" maxlength="2000" aria-label="Trả lời người gửi" placeholder="Trả lời người gửi (họ sẽ thấy ở mục Góp ý bạn đã gửi)">' + esc(x.traLoi) + '</textarea>' +
+        '<button type="button" class="btn" data-luu="' + esc(x.ma) + '">Lưu</button></div></div>';
+    }).join('') : '<div class="empty">Không có góp ý nào.</div>';
+    return h + '</div>';
+  }
+
+  app.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || !D) return;
+    if (b.dataset.tab) { tab = b.dataset.tab; try { sessionStorage.setItem('bdv.phTab', tab); } catch (er) {} ve(); return; }
+    if (b.dataset.loai) { F.loai = b.dataset.loai; luuF(); ve(); return; }
+    if (b.dataset.sao) { var n = Number(b.dataset.sao); F.mucDo = F.mucDo === n ? 0 : n; luuF(); ve(); return; }
+    if (b.dataset.xem) { hien[b.dataset.xem] = true; ve(); return; }
+    if (b.dataset.luu) {
+      var m = b.closest('.muc'); b.disabled = true;
+      BDV.goi('xuLyPhanHoi', { ma: b.dataset.luu, trangThai: m.querySelector('select').value, traLoi: m.querySelector('textarea').value })
+        .then(function (d) { nhan(d); T.toast('Đã lưu'); }).catch(function (er) { b.disabled = false; T.toast(er.message || String(er), true); });
+    }
+  });
+  function luuF() { var n = T.$('fN'), t = T.$('fTrang'); if (n) F.noiDung = n.value; if (t) F.trang = t.value; }
+  app.addEventListener('input', function (e) { if (e.target.id === 'fN') { F.noiDung = e.target.value; T.$('fDem').textContent = F.noiDung.length + '/3000'; } });
+  app.addEventListener('change', function (e) {
+    if (e.target.id === 'fTrang') F.trang = e.target.value;
+    if (e.target.id === 'locTT') { loc.tt = e.target.value; ve(); }
+    if (e.target.id === 'locLoai') { loc.loai = e.target.value; ve(); }
+  });
+  app.addEventListener('submit', function (e) {
+    e.preventDefault(); luuF();
+    if (F.noiDung.trim().length < 5) { T.toast('Bạn viết thêm nội dung góp ý nhé.', true); return; }
+    var nut = e.target.querySelector('button[type=submit]'); nut.disabled = true; nut.textContent = 'Đang gửi…';
+    BDV.goi('guiPhanHoi', { loai: F.loai, trang: F.trang, mucDo: F.mucDo, noiDung: F.noiDung.trim() })
+      .then(function (d) { F = { loai: 'Góp ý cải thiện', trang: TRANG[0], mucDo: 0, noiDung: '' }; nhan(d); T.toast('Cảm ơn bạn đã góp ý!'); })
+      .catch(function (er) { nut.disabled = false; nut.textContent = 'Gửi góp ý'; T.toast(er.message || String(er), true); });
+  });
+  T.khoi(app, tai);
+})();
+</script>
+<script src="/menu.js"></script>
+</body>
+</html>
