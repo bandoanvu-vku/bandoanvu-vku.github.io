@@ -92,8 +92,8 @@ Nguồn phân công: Google Sheet "BẢNG PHÂN CÔNG NHIỆM VỤ BĐV" (tab th
 Dashboard không đọc trực tiếp; nội dung được chép vào tab Thành viên + Mảng công việc của sheet nhóm. Tab "Mảng và thành viên" hiện phân công từng người.
 Sửa dữ liệu sheet một lần: thêm mục vào `CAP_NHAT` trong `9-cap-nhat-du-lieu.gs` (tự chạy ở lần gọi web app đầu tiên sau triển khai, đánh dấu Script Property).
 **Phản hồi hệ thống** (`/phan-hoi/`, `11-phan-hoi.gs`, actions `phanHoi` / `guiPhanHoi` / `xuLyPhanHoi`): mọi vai trò gửi góp ý (loại, trang, mức hài lòng 1–5, nội dung; tối đa 10/ngày),
-lưu tab "Phản hồi hệ thống" của sheet tài khoản KÈM họ tên/email/nhóm người gửi. Ghi chú trên trang (giữ đúng sự thật): ẩn danh với thành viên khác,
-Ban quản lý chỉ xem người gửi khi có lời lẽ thiếu chuẩn mực. Thành viên thấy góp ý của mình + trả lời của Ban; quản lý có tab Tổng hợp (tên ẩn mặc định, nút "Xem người gửi"), đổi trạng thái + trả lời.
+lưu tab "Phản hồi hệ thống" của sheet tài khoản KÈM họ tên/email/nhóm người gửi. Trang không có ghi chú về ẩn danh (không được hứa ẩn danh vì sheet lưu tên).
+ Thành viên thấy góp ý của mình + trả lời của Ban; quản lý có tab Tổng hợp (tên ẩn mặc định, nút "Xem người gửi"), đổi trạng thái + trả lời.
 Lộ trình còn lại: Đơn từ & xin nghỉ → duyệt ở Phê duyệt; Nhắc việc tự động (email, cần cấp quyền).
 
 ## Cách làm việc (để tiết kiệm thời gian/token)

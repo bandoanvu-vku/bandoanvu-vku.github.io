@@ -2,7 +2,6 @@
 /*
  * Mọi người dùng đã đăng nhập gửi góp ý về dashboard. Lưu ở tab "Phản hồi hệ thống" của sheet tài khoản,
  * có ghi họ tên / email / nhóm người gửi (lấy từ tài khoản, không tin trang gửi lên).
- * Trên trang, người gửi được báo: ẩn danh với thành viên khác; Ban quản lý chỉ xem người gửi khi góp ý có lời lẽ thiếu chuẩn mực.
  * Trang quản lý ẩn tên mặc định, bấm "Xem người gửi" mới hiện.
  * Thành viên chỉ thấy góp ý của chính mình (kèm trả lời của Ban); quản lý thấy tất cả và cập nhật trạng thái / trả lời.
  */

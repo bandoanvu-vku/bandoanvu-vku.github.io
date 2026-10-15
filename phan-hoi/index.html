@@ -14,8 +14,6 @@
   .sao { display: flex; gap: 4px; }
   .sao button { border: 1px solid var(--line); background: var(--card); border-radius: 8px; width: 40px; height: 38px; font-size: 18px; color: var(--muted); padding: 0; }
   .sao button.on { color: #c98a00; border-color: #e7b84a; background: var(--warn-soft); }
-  .an-danh { display: flex; gap: 10px; align-items: flex-start; background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; margin: 14px 0 4px; font-size: 13.5px; }
-  .an-danh svg { flex: none; margin-top: 2px; color: var(--accent); }
   .acts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
   .dem { text-align: right; font-size: 12px; color: var(--muted); margin-top: 4px; }
   .muc { border-top: 1px solid var(--line); padding: 12px 0; }
@@ -50,7 +48,6 @@
     'Giao việc / Duyệt việc / Phê duyệt', 'Hồ sơ', 'Tài liệu & Cẩm nang', 'Đăng nhập', 'Khác'];
   var tab = (function () { try { return sessionStorage.getItem('bdv.phTab') || 'gui'; } catch (e) { return 'gui'; } })();
   var F = { loai: 'Góp ý cải thiện', trang: TRANG[0], mucDo: 0, noiDung: '' }, hien = {}, loc = { tt: 'chua', loai: '' };
-  var KHIEN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>';
 
   function tai() { BDV.goi('phanHoi', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
   function nhan(d) { D = d; if (!d.quanLy && tab === 'tong') tab = 'gui'; ve(); }
@@ -74,8 +71,6 @@
         return '<button type="button" data-sao="' + n + '" class="' + (n <= F.mucDo ? 'on' : '') + '" aria-label="' + n + ' sao">★</button>'; }).join('') + '</div>' +
       '<label for="fN">Nội dung</label><textarea id="fN" rows="6" maxlength="3000" placeholder="Bạn thấy chỗ nào khó dùng, lỗi gì, hay muốn thêm tính năng gì?">' + esc(F.noiDung) + '</textarea>' +
       '<div class="dem" id="fDem">' + F.noiDung.length + '/3000</div>' +
-      '<div class="an-danh">' + KHIEN + '<div><b>Góp ý của bạn được ẩn danh với các thành viên khác.</b> Ban quản lý chỉ xem người gửi khi góp ý có lời lẽ thiếu chuẩn mực. ' +
-      'Hãy góp ý thẳng thắn, lịch sự và mang tính xây dựng.</div></div>' +
       '<div class="acts"><button class="btn" type="submit">Gửi góp ý</button></div></form>';
     var ds = D.cuaToi.length ? D.cuaToi.map(function (x) {
       return '<div class="muc"><div class="dau">' + pill(x.trangThai) + '<span>' + esc(x.loai) + '</span>·<span>' + esc(x.trang) + '</span>·<span>' + esc(x.luc) + '</span>' + sao(x.mucDo) + '</div>' +
