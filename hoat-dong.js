@@ -63,7 +63,7 @@
     '.hd .ht-bang td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}.hd .ht-bang td.so{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.hd .ht-bang th.so{text-align:right}' +
     '.hd .ht-bang tr.khu td{background:var(--bg);font-weight:700;font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:6px 8px}' +
     '.hd .ht-bang .vt{display:block;font-size:12px;color:var(--muted)}.hd .ht-bang .gc{display:block;font-size:12px;color:var(--muted);margin-top:2px}.hd .ht-bang .am{color:var(--bad);font-weight:600}.hd .ht-bang .duong{color:var(--ok,#17794a);font-weight:600}' +
-    '.hd .ht-bang tr.sua-r td{background:var(--bg)}.hd .ht-bang .form{margin:0;background:none;padding:2px 0}.hd .ht-bang input[type=number]{width:90px}.hd .ht-bang td button{white-space:nowrap}' +
+    '.hd .ht-bang tr.sua-r td{background:var(--bg)}.hd .ht-bang tr.khu.cu td{background:var(--track);padding-top:10px}.hd .ht-bang .form{margin:0;background:none;padding:2px 0}.hd .ht-bang input[type=number]{width:90px}.hd .ht-bang td button{white-space:nowrap}' +
     '@media (max-width:640px){.hd .ht-bang .an-dd{display:none}}' +
     '.hd .cv-r.nay-r{background:var(--accent-soft);margin:0 -16px;padding:8px 16px;border-radius:8px}.hd .cv-r .cho{justify-content:flex-end}' +
     '@media (max-width:640px){.hd .cv-r{grid-template-columns:1fr}.hd .cv-r .cho{justify-content:flex-start}}' +
@@ -411,12 +411,12 @@
   function veHt(o) {
     var d = o.d, ds = d.ds, l = o.loc;
     var khus = []; ds.forEach(function (x) { if (khus.indexOf(x.khu) === -1) khus.push(x.khu); });
-    var thieu = ds.filter(function (x) { return x.ss != null && x.kk != null && x.kk < x.ss; }).length;
+    var thieu = ds.filter(function (x) { return x.ss != null && x.kk && x.kk < x.ss; }).length, so0 = ds.filter(function (x) { return x.kk === 0; }).length;
     var hong = ds.filter(function (x) { return RE_HONG.test(x.tinhTrang + ' ' + x.ghiChu); }).length;
     var cho = ds.filter(function (x) { return x.choMuon.length; }).length;
     var tong = ds.reduce(function (a, x) { return a + (x.kk || 0); }, 0);
     var h = '<div class="hd"><div class="tiles">' +
-      '<div class="tile chinh"><span>Loại tài sản</span><b>' + ds.length + '</b><small>' + ds.filter(function (x) { return x.nhom === 'Tài sản cố định'; }).length + ' tài sản cố định · ' + ds.filter(function (x) { return x.nhom !== 'Tài sản cố định'; }).length + ' đồ trong kho</small></div>' +
+      '<div class="tile chinh"><span>Loại tài sản đang có</span><b>' + (ds.length - so0) + '</b><small>' + ds.filter(function (x) { return x.nhom === 'Tài sản cố định' && x.kk !== 0; }).length + ' tài sản cố định · ' + ds.filter(function (x) { return x.nhom !== 'Tài sản cố định' && x.kk !== 0; }).length + ' đồ trong kho · ' + so0 + ' mục cũ (hiện có 0)</small></div>' +
       '<div class="tile"><span>Tổng số lượng hiện có</span><b>' + tong.toLocaleString('vi-VN') + '</b><small>theo lần kiểm kê gần nhất</small></div>' +
       '<div class="tile"><span>Ít hơn sổ sách</span><b>' + thieu + '</b><small>loại tài sản đang thiếu</small></div>' +
       '<div class="tile"><span>Có ghi nhận hư / mất</span><b>' + hong + '</b><small>theo tình trạng, ghi chú</small></div>' +
@@ -450,9 +450,10 @@
     var d = o.d, ds = locHt(o);
     if (!ds.length) { box.innerHTML = '<div class="trong-k">Không có tài sản nào khớp bộ lọc.</div>'; return; }
     var cot = d.sua ? 8 : 7, khu = null, h = '<table><thead><tr><th>Tài sản</th><th class="an-dd">ĐVT</th><th class="so">Sổ sách</th><th class="so">Hiện có</th><th class="so">Chênh lệch</th><th>Tình trạng</th><th class="an-dd">Đang cho mượn</th>' + (d.sua ? '<th></th>' : '') + '</tr></thead><tbody>';
-    ds.forEach(function (x) {
-      if (x.khu !== khu) { khu = x.khu; h += '<tr class="khu"><td colspan="' + cot + '">' + esc(khu) + '</td></tr>'; }
-      var vt = [x.lop ? 'Lớp ' + x.lop : '', x.tang].filter(String).join(' · ');
+    var con = ds.filter(function (x) { return x.kk !== 0; }), cu = ds.filter(function (x) { return x.kk === 0; });
+    function dong(x, cu) {
+      var h = '';
+      var vt = [cu ? x.khu : '', x.lop ? 'Lớp ' + x.lop : '', x.tang].filter(String).join(' · ');
       var cl = x.ss != null && x.kk != null ? x.kk - x.ss : null;
       var tt = x.tinhTrang ? '<span class="pill ' + (RE_HONG.test(x.tinhTrang) ? 'p-bad' : x.tinhTrang === 'Không còn sử dụng' ? 'p-khoa' : 'p-mo') + '">' + esc(x.tinhTrang) + '</span>' : '';
       var cm = x.choMuon.map(function (c) { return esc(c.donVi) + ' <b>×' + c.sl + '</b>' + (c.hanTra ? ' <span class="vt">hạn ' + dmy(c.hanTra) + '</span>' : ''); }).join('<br>');
@@ -468,7 +469,16 @@
         '<label>Tình trạng<select data-f="tt"><option value="">—</option>' + d.tinhTrang.map(function (t) { return '<option' + (x.tinhTrang === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select></label>' +
         '<label class="rong">Ghi chú<input data-f="gc" maxlength="500" value="' + esc(x.ghiChu) + '"></label>' +
         '<button type="button" class="b1" data-hd="htLuu" data-t="' + esc(x.ma) + '">Lưu</button><button type="button" class="b3" data-hd="htDong">Đóng</button></div></td></tr>';
+      return h;
+    }
+    con.forEach(function (x) {
+      if (x.khu !== khu) { khu = x.khu; h += '<tr class="khu"><td colspan="' + cot + '">' + esc(khu) + '</td></tr>'; }
+      h += dong(x, false);
     });
+    if (cu.length) {
+      h += '<tr class="khu cu"><td colspan="' + cot + '">Cũ / không còn (hiện có = 0) · ' + cu.length + ' mục</td></tr>';
+      cu.forEach(function (x) { h += dong(x, true); });
+    }
     box.innerHTML = h + '</tbody></table>';
   }
   function formThemHt(d) {

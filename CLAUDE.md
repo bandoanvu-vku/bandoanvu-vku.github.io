@@ -65,7 +65,7 @@ Hiện trạng (`12-hien-trang.gs`, actions `hienTrang` / `luuHienTrang`, link k
 tab đầu: Mã TSnnn | Nhóm tài sản (Kho CSVC / Tài sản cố định) | Khu / vị trí | Lớp | Tầng / Ô | Tên | ĐVT | SL sổ sách | SL kiểm kê gần nhất | Ngày kiểm kê | Tình trạng | Ghi chú | Cập nhật bởi/lúc.
 Dữ liệu ban đầu chép (15/10/2026) từ 2 file xlsx của vanphongdoan: "KHO CSVC (VPĐ) VÀ KIỂM KÊ TUẦN/THÁNG" tab "Biên bản TuầnTháng" (lần đếm gần nhất, bỏ khu "Tài sản khác")
 + "(Cuối năm) Biên bản Kiểm kê Tài sản cố định" tab "6 tháng đầu năm 2026". Phụ trách chính mảng CSVC / quản lý sửa số lượng, tình trạng, ghi chú, thêm tài sản; không xoá dòng.
-Cột "Đang cho mượn" ghép theo tên đồ với phiếu Cho mượn trạng thái "Đang cho mượn". Thuộc tính lọc dùng `data-htl` (nhom.js đã dùng `data-loc`).
+Cột "Đang cho mượn" ghép theo tên đồ với phiếu Cho mượn trạng thái "Đang cho mượn". Thuộc tính lọc dùng `data-htl` (nhom.js đã dùng `data-loc`). Tài sản "hiện có" = 0 xếp cuối bảng trong mục "Cũ / không còn (hiện có = 0)".
 Kiểm kê: cột Kỳ = "Tuần YYYY-MM-DD" (thứ 2; chỉ chọn T5/T6) · "YYYY-MM" (7 ngày cuối tháng) · "Giữa năm YYYY" (15–31/5) / "Cuối năm YYYY" (15–31/12).
 Phụ trách chính mảng CSVC / quản lý đăng ký → duyệt 2 cấp → đến ngày nộp báo cáo (link biên bản bắt buộc + tổng/tốt/hỏng/mất/mới thêm/thanh lý + tóm tắt) → biểu đồ biến động.
 **Duyệt 2 cấp** (`10-csvc-cong-van.gs`: `trangThaiGui_`, `buocDuyet_`, TT2): Chờ phụ trách duyệt → Chờ quản lý duyệt → Đã duyệt; phụ trách từ chối = "Trả lại" (về thành viên),
