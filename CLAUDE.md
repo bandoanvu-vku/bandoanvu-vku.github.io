@@ -62,9 +62,11 @@ Mỗi CN có 4 đầu việc chuẩn bị (`VIEC_CNX`: Viết thông báo, Liên
 action `luuViecCnXanh` (nhận / giao (phụ trách) / bỏ nhận / xong / mở lại).
 Tab Cơ sở vật chất (`BDVHD.csvc`) có 3 tab con: Kiểm kê · Mượn về · Cho mượn.
 Kiểm kê: cột Kỳ = "Tuần YYYY-MM-DD" (thứ 2; chỉ chọn T5/T6) · "YYYY-MM" (7 ngày cuối tháng) · "Giữa năm YYYY" (15–31/5) / "Cuối năm YYYY" (15–31/12).
-Phụ trách CSVC / trưởng nhóm đăng ký → duyệt 2 cấp → đến ngày nộp báo cáo (link biên bản bắt buộc + tổng/tốt/hỏng/mất/mới thêm/thanh lý + tóm tắt) → biểu đồ biến động.
-**Duyệt 2 cấp** (`10-csvc-cong-van.gs`: `trangThaiGui_`, `buocDuyet_`, TT2): Chờ trưởng nhóm duyệt → Chờ quản lý duyệt → Đã duyệt; trưởng nhóm từ chối = "Trả lại" (về thành viên),
-quản lý từ chối = "Quản lý trả lại" (về nhóm). Trưởng nhóm = cột "Chức vụ" sheet tài khoản ghi "Trưởng nhóm"; nhóm chưa có thì gửi thẳng quản lý. Mục chờ quản lý hiện ở Phê duyệt (`choDuyetCsvc_`).
+Phụ trách chính mảng CSVC / quản lý đăng ký → duyệt 2 cấp → đến ngày nộp báo cáo (link biên bản bắt buộc + tổng/tốt/hỏng/mất/mới thêm/thanh lý + tóm tắt) → biểu đồ biến động.
+**Duyệt 2 cấp** (`10-csvc-cong-van.gs`: `trangThaiGui_`, `buocDuyet_`, TT2): Chờ phụ trách duyệt → Chờ quản lý duyệt → Đã duyệt; phụ trách từ chối = "Trả lại" (về thành viên),
+quản lý từ chối = "Quản lý trả lại" (về nhóm). Người duyệt cấp 1 = **phụ trách chính của mảng công việc đó** (cột "Phụ trách chính" tab Mảng công việc, `phuTrachMang_`;
+kiểm kê / cho mượn dùng mảng CSVC: `duyetCap1Csvc_`) — KHÔNG dùng chức vụ trưởng nhóm; mảng chưa có phụ trách hoặc chính phụ trách gửi thì đi thẳng quản lý.
+Trạng thái cũ "Chờ trưởng nhóm duyệt" được đọc như "Chờ phụ trách duyệt". Mục chờ quản lý hiện ở Phê duyệt (`choDuyetCsvc_`).
 Mượn trả: sheet "[BĐV 2026 - 2027] CSVC - Mượn trả tài sản" (tab đầu = danh mục tài sản chép từ 2 biên bản xlsx; tab "Mượn về", "Cho mượn" tự tạo).
 Mượn về: nguồn Phòng TCHC (bắt buộc link giấy đề nghị) / KTX (bắt buộc người liên hệ + SĐT) / Khác → Đang mượn → Đã trả. Cho mượn: bắt buộc giấy đề nghị, duyệt 2 cấp → giao → nhận lại.
 Công văn (`BDVHD.congVan`, action `congVan`): CHỈ ĐỌC sheet công văn đi (tab nhiệm kỳ mới nhất, số tiếp theo = số lớn nhất + 1, dòng đã lấy số chưa có tên, chưa PDF)
@@ -79,8 +81,8 @@ Hiện chỉ 2026 - 2027 có dữ liệu; năm khác thì trang theo năm hiện
 Khi bổ sung năm cũ: cần nguồn sheet theo năm ở máy chủ + thêm năm vào CO_DU_LIEU + truyền năm học trong các BDV.goi.
 Tất cả file .gs chung một không gian tên — build script / workflow dừng nếu trùng tên hàm.
 Quản lý không có "Việc của tôi"; thay bằng **Giao việc** (`/giao-viec/`, `8-giao-viec.gs`: tạo/sửa nhiệm vụ ghi vào tab Nhiệm vụ của 3 sheet nhóm,
-4T không giao được vì Timeline chỉ được ghi ô nhận/tick) và **Duyệt việc** 2 cấp: thành viên đặt "Chờ duyệt" (= chờ trưởng nhóm; nhóm chưa có trưởng nhóm
-hoặc chính trưởng nhóm gửi thì ghi thẳng "Chờ quản lý duyệt") → trưởng nhóm duyệt ở khung "Chờ trưởng nhóm duyệt" trên tab Nhiệm vụ nhóm (action `duyetViec`, `ve:'nhom'`)
+4T không giao được vì Timeline chỉ được ghi ô nhận/tick) và **Duyệt việc** 2 cấp: thành viên đặt "Chờ duyệt" (= chờ phụ trách chính của mảng ghi ở nhiệm vụ; mảng chưa có phụ trách
+hoặc chính phụ trách gửi thì ghi thẳng "Chờ quản lý duyệt") → phụ trách chính duyệt ở khung "Chờ bạn duyệt" trên tab Nhiệm vụ nhóm (action `duyetViec`, `ve:'nhom'`)
 → "Chờ quản lý duyệt" → quản lý duyệt ở `/duyet-viec/` = Hoàn thành. Trả lại (cả 2 cấp) = Đang làm + ghi chú. Menu đếm số chờ quản lý (`soViecChoQL_`).
 Xin vắng CN xanh vẫn 1 cấp (phụ trách chính duyệt).
 Xem như thành viên: quản lý chọn "Giao diện" trên header (Quản lý / Thành viên · nhóm X), nhớ ở localStorage `bdv.xemNhu`.

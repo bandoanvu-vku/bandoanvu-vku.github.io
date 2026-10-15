@@ -2,9 +2,9 @@
 /*
  * Liên kết (link sheet / folder) lưu ở tab "Cài đặt" của sheet lịch trực — quản lý dán ở trang Cài đặt. Không ghi ID vào repo.
  * Công văn: dashboard CHỈ ĐỌC 2 sheet công văn đi / đến (việc lưu công văn vẫn làm trên sheet).
- * Duyệt 2 cấp (việc của nhóm cần duyệt): trưởng nhóm duyệt → quản lý duyệt.
- *   Trưởng nhóm không duyệt → "Trả lại" (về thành viên sửa); quản lý không duyệt → "Quản lý trả lại" (về nhóm sửa).
- *   Trưởng nhóm = người thuộc nhóm có cột "Chức vụ" (sheet tài khoản) ghi "Trưởng nhóm". Nhóm chưa có trưởng nhóm thì gửi thẳng quản lý.
+ * Duyệt 2 cấp (việc của nhóm cần duyệt): PHỤ TRÁCH CHÍNH của công việc đó (cột Phụ trách chính, tab Mảng công việc) duyệt → quản lý duyệt.
+ *   Phụ trách không duyệt → "Trả lại" (về thành viên sửa); quản lý không duyệt → "Quản lý trả lại" (về nhóm sửa).
+ *   Công việc chưa có phụ trách chính, hoặc chính phụ trách gửi, thì gửi thẳng quản lý.
  * Mượn / trả: sheet riêng (link "Sheet mượn trả tài sản"), tab đầu là danh mục tài sản; tab "Mượn về", "Cho mượn" tự tạo.
  */
 const LIEN_KET = [
@@ -13,7 +13,7 @@ const LIEN_KET = [
   ['bbTuanThang', 'Link biên bản kiểm kê tuần/tháng'], ['bbNam', 'Link biên bản kiểm kê năm'],
   ['muonTra', 'Link sheet mượn trả tài sản']
 ];
-const TT2 = { CHO_TN: 'Chờ trưởng nhóm duyệt', CHO_QL: 'Chờ quản lý duyệt', DUYET: 'Đã duyệt', TRA_TN: 'Trả lại', TRA_QL: 'Quản lý trả lại', HUY: 'Đã huỷ' };
+const TT2 = { CHO_TN: 'Chờ phụ trách duyệt', CU_CHO_TN: 'Chờ trưởng nhóm duyệt', CHO_QL: 'Chờ quản lý duyệt', DUYET: 'Đã duyệt', TRA_TN: 'Trả lại', TRA_QL: 'Quản lý trả lại', HUY: 'Đã huỷ' };
 const NHOM_CSVC = 'csdl-csvc';
 
 /* ---------------- liên kết */
@@ -82,22 +82,32 @@ function truongNhom_(ma) {
   try { c.put(k, JSON.stringify(kq), 300); } catch (e) {}
   return kq;
 }
-function vaiDuyet_(nd, ma) {
-  const tn = truongNhom_(ma);
-  return { ql: nd.vaiTro === 'quanLy', tn: tn.indexOf(nd.ten) > -1, coTN: tn.length > 0, dsTN: tn };
+/** Phụ trách chính của một mảng công việc (theo tên mảng, tab Mảng công việc của nhóm). */
+function phuTrachMang_(ma, tenMang) {
+  const t = chuanHoa_(tenMang);
+  if (!t) return [];
+  const m = layNhom(ma, false).mang.filter(function (x) { return chuanHoa_(x.ten) === t; })[0];
+  return m ? tachTen_(m.chinh) : [];
+}
+/** Người duyệt cấp 1 của việc CSVC (kiểm kê, cho mượn) = phụ trách chính mảng Quản lý CSVC. */
+function duyetCap1Csvc_() { return mangNhom_(NHOM_CSVC, KIEM_KE.KHOA).phuTrach; }
+/** Vai trò duyệt: ds = phụ trách chính của công việc đó (duyệt cấp 1). tn/coTN/dsTN giữ tên cũ nhưng nghĩa là "phụ trách chính". */
+function vaiDuyet_(nd, ma, ds) {
+  ds = ds || [];
+  return { ql: nd.vaiTro === 'quanLy', tn: ds.indexOf(nd.ten) > -1, coTN: ds.length > 0, dsTN: ds };
 }
 /** Trạng thái khi gửi (hoặc gửi lại) một việc cần duyệt. */
-function trangThaiGui_(nd, ma) {
-  const v = vaiDuyet_(nd, ma);
+function trangThaiGui_(nd, ma, ds) {
+  const v = vaiDuyet_(nd, ma, ds);
   return v.ql ? TT2.DUYET : (v.tn || !v.coTN) ? TT2.CHO_QL : TT2.CHO_TN;
 }
 /** Một bước duyệt → { tt, cap: 'tn' | 'ql', ghi: 'Tên · thời điểm · Đồng ý/Trả lại' }. */
-function buocDuyet_(nd, ma, tt, dongY, gc) {
-  const v = vaiDuyet_(nd, ma), luc = Utilities.formatDate(new Date(), MUI_GIO, 'dd/MM HH:mm');
+function buocDuyet_(nd, ma, tt, dongY, gc, ds) {
+  const v = vaiDuyet_(nd, ma, ds), luc = Utilities.formatDate(new Date(), MUI_GIO, 'dd/MM HH:mm');
   if (!dongY && !gc) throw new Error('Ghi lý do / việc cần sửa khi trả lại.');
   const ghi = nd.ten + ' · ' + luc + ' · ' + (dongY ? 'Đồng ý' : 'Trả lại') + (gc ? ': ' + gc : '');
-  if (tt === TT2.CHO_TN) {
-    if (!v.ql && !v.tn) throw loiQuyen_('Chỉ trưởng nhóm (hoặc quản lý) duyệt bước này.');
+  if (tt === TT2.CHO_TN || tt === TT2.CU_CHO_TN) {
+    if (!v.ql && !v.tn) throw loiQuyen_('Chỉ phụ trách chính của công việc này (hoặc quản lý) duyệt bước này.');
     return { tt: dongY ? (v.ql ? TT2.DUYET : TT2.CHO_QL) : TT2.TRA_TN, cap: 'tn', ghi: ghi };
   }
   if (tt === TT2.CHO_QL) {
@@ -201,7 +211,7 @@ const NGUON_MUON = ['Phòng Tổ chức - Hành chính', 'Ký túc xá', 'Khác'
 const COT_MV = ['Mã', 'Ghi lúc', 'Nguồn', 'Chương trình / mục đích', 'Link giấy đề nghị', 'Danh sách đồ', 'Người đi mượn', 'Người liên hệ bên cho mượn', 'SĐT liên hệ',
   'Ngày mượn', 'Hạn trả', 'Trạng thái', 'Ngày trả', 'Người trả', 'Tình trạng khi trả', 'Ghi chú', 'Cập nhật bởi', 'Cập nhật lúc'];
 const COT_CM = ['Mã', 'Ghi lúc', 'Đơn vị mượn', 'Người đại diện', 'SĐT', 'Mục đích', 'Link giấy đề nghị', 'Danh sách đồ', 'Ngày giao dự kiến', 'Hạn trả', 'Trạng thái', 'Người tạo',
-  'Trưởng nhóm duyệt', 'Quản lý duyệt', 'Ghi chú duyệt', 'Ngày giao', 'Người giao', 'Tình trạng lúc giao', 'Ngày nhận lại', 'Người nhận lại', 'Tình trạng khi trả', 'Ghi chú', 'Cập nhật bởi', 'Cập nhật lúc'];
+  'Phụ trách duyệt', 'Quản lý duyệt', 'Ghi chú duyệt', 'Ngày giao', 'Người giao', 'Tình trạng lúc giao', 'Ngày nhận lại', 'Người nhận lại', 'Tình trạng khi trả', 'Ghi chú', 'Cập nhật bởi', 'Cập nhật lúc'];
 const TT_MUON = { DANG: 'Đang mượn', DANG_CHO: 'Đang cho mượn', DA_TRA: 'Đã trả' };
 
 function chuoiDo_(ds) { return ds.map(function (x) { return x.ten + ' × ' + x.sl; }).join('; '); }
@@ -248,7 +258,7 @@ function docMv_(ss) {
 function docCm_(ss) {
   return docTabHd_(ss, 'Cho mượn', COT_CM.length).map(function (r) {
     return { dong: r.dong, id: chuoi_(r[0]), luc: lucChu2_(r[1]), donVi: chuoi_(r[2]), daiDien: chuoi_(r[3]), sdt: chuoi_(r[4]), mucDich: chuoi_(r[5]), gdn: chuoi_(r[6]),
-      do: tachDo_(r[7]), ngayGiaoDk: ngayISO_(r[8], MUI_GIO) || '', hanTra: ngayISO_(r[9], MUI_GIO) || '', trangThai: chuoi_(r[10]), nguoiTao: chuoi_(r[11]),
+      do: tachDo_(r[7]), ngayGiaoDk: ngayISO_(r[8], MUI_GIO) || '', hanTra: ngayISO_(r[9], MUI_GIO) || '', trangThai: chuoi_(r[10]) === TT2.CU_CHO_TN ? TT2.CHO_TN : chuoi_(r[10]), nguoiTao: chuoi_(r[11]),
       tnDuyet: chuoi_(r[12]), qlDuyet: chuoi_(r[13]), ghiChuDuyet: chuoi_(r[14]), ngayGiao: ngayISO_(r[15], MUI_GIO) || '', nguoiGiao: chuoi_(r[16]), tinhTrangGiao: chuoi_(r[17]),
       ngayNhan: ngayISO_(r[18], MUI_GIO) || '', nguoiNhan: chuoi_(r[19]), tinhTrang: chuoi_(r[20]), ghiChu: chuoi_(r[21]), boi: chuoi_(r[22]), capNhat: lucChu2_(r[23]) };
   }).filter(function (x) { return x.id; });
@@ -257,7 +267,7 @@ function boDong_(x) { const o = Object.assign({}, x); delete o.dong; return o; }
 
 function muonTra_(nd) {
   canNhom_(nd, NHOM_CSVC);
-  const ss = ssMuonTra_(), now = bayGio_(), d = layNhom(NHOM_CSVC, false), v = vaiDuyet_(nd, NHOM_CSVC);
+  const ss = ssMuonTra_(), now = bayGio_(), d = layNhom(NHOM_CSVC, false), v = vaiDuyet_(nd, NHOM_CSVC, duyetCap1Csvc_());
   const ctx = mangNhom_(NHOM_CSVC, KIEM_KE.KHOA);
   const quaHan = function (x, dang) { return x.trangThai === dang && x.hanTra && x.hanTra < now.ngay; };
   const mv = docMv_(ss).reverse(), cm = docCm_(ss).reverse();
@@ -272,7 +282,7 @@ function muonTra_(nd) {
 function luuMuonVe_(nd, req) {
   canNhom_(nd, NHOM_CSVC);
   return voiKhoa_(function () {
-    const ss = ssMuonTra_(), s = ss.getSheetByName('Mượn về'), d = layNhom(NHOM_CSVC, false), v = vaiDuyet_(nd, NHOM_CSVC);
+    const ss = ssMuonTra_(), s = ss.getSheetByName('Mượn về'), d = layNhom(NHOM_CSVC, false), v = vaiDuyet_(nd, NHOM_CSVC, duyetCap1Csvc_());
     const laTV = d.thanhVien.indexOf(nd.ten) > -1 || v.ql, gc = chuoi_(req.ghiChu).slice(0, 500);
     if (!laTV) throw loiQuyen_('Chỉ thành viên nhóm CSDL - CSVC mới ghi mượn / trả.');
     if (req.viec === 'tao') {
@@ -310,7 +320,7 @@ function luuMuonVe_(nd, req) {
 function luuChoMuon_(nd, req) {
   canNhom_(nd, NHOM_CSVC);
   return voiKhoa_(function () {
-    const ss = ssMuonTra_(), s = ss.getSheetByName('Cho mượn'), d = layNhom(NHOM_CSVC, false), v = vaiDuyet_(nd, NHOM_CSVC);
+    const ds1 = duyetCap1Csvc_(), ss = ssMuonTra_(), s = ss.getSheetByName('Cho mượn'), d = layNhom(NHOM_CSVC, false), v = vaiDuyet_(nd, NHOM_CSVC, ds1);
     const laTV = d.thanhVien.indexOf(nd.ten) > -1 || v.ql, gc = chuoi_(req.ghiChu).slice(0, 500);
     if (!laTV) throw loiQuyen_('Chỉ thành viên nhóm CSDL - CSVC mới ghi cho mượn.');
     const x = req.id ? docCm_(ss).filter(function (y) { return y.id === chuoi_(req.id); })[0] : null;
@@ -324,7 +334,7 @@ function luuChoMuon_(nd, req) {
       const gdn = linkHopLe_(req.gdn, 'giấy đề nghị của đơn vị mượn', true);
       const ngayGiao = ngayHopLe_(req.ngayGiaoDk, 'ngày giao dự kiến'), hanTra = ngayHopLe_(req.hanTra, 'hạn trả');
       if (hanTra < ngayGiao) throw new Error('Hạn trả phải sau ngày giao.');
-      const tt = trangThaiGui_(nd, NHOM_CSVC);
+      const tt = trangThaiGui_(nd, NHOM_CSVC, ds1);
       const vals = [donVi, daiDien, sdt, mucDich, gdn, chuoiDo_(kiemDo_(req.do)), dmy_(ngayGiao), dmy_(hanTra), tt];
       if (x) {
         s.getRange(x.dong, 3, 1, 9).setValues([vals]);
@@ -333,7 +343,7 @@ function luuChoMuon_(nd, req) {
     } else {
       if (!x) throw new Error('Không tìm thấy yêu cầu cho mượn này.');
       if (req.viec === 'duyet') {
-        const b = buocDuyet_(nd, NHOM_CSVC, x.trangThai, req.dongY === true, chuoi_(req.ghiChu).slice(0, 300));
+        const b = buocDuyet_(nd, NHOM_CSVC, x.trangThai, req.dongY === true, chuoi_(req.ghiChu).slice(0, 300), ds1);
         s.getRange(x.dong, 11).setValue(b.tt);
         s.getRange(x.dong, b.cap === 'tn' ? 13 : 14).setValue(b.ghi);
         if (!req.dongY) s.getRange(x.dong, 15).setValue(b.ghi);

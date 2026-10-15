@@ -233,7 +233,7 @@
 
   /* ================= Kiểm kê CSVC ================= */
   // Hằng tuần (T5/T6) · hằng tháng (7 ngày cuối) · đợt giữa năm (15–31/5) / cuối năm (15–31/12); đăng ký → duyệt 2 cấp → báo cáo
-  var TT2 = { CHO_TN: 'Chờ trưởng nhóm duyệt', CHO_QL: 'Chờ quản lý duyệt', DUYET: 'Đã duyệt', TRA_TN: 'Trả lại', TRA_QL: 'Quản lý trả lại', HUY: 'Đã huỷ' };
+  var TT2 = { CHO_TN: 'Chờ phụ trách duyệt', CHO_QL: 'Chờ quản lý duyệt', DUYET: 'Đã duyệt', TRA_TN: 'Trả lại', TRA_QL: 'Quản lý trả lại', HUY: 'Đã huỷ' };
   var SO_KK = [['tong', 'Tổng số'], ['tot', 'Tốt'], ['hong', 'Hỏng'], ['mat', 'Mất'], ['moi', 'Mới thêm'], ['thanhLy', 'Thanh lý']];
   function pillTT(tt) {
     var c = tt === 'Đã báo cáo' || tt === 'Đã trả' ? 'p-mo' : tt === TT2.DUYET || tt === 'Đang mượn' || tt === 'Đang cho mượn' ? 'p-info'
@@ -261,9 +261,8 @@
     var bb = '<div class="cho" style="margin-top:8px">' + (d.lienKet.bbTuanThang ? '<a class="lk" href="' + esc(d.lienKet.bbTuanThang) + '" target="_blank" rel="noopener">Biên bản tuần / tháng ↗</a>' : '') +
       (d.lienKet.bbNam ? '<a class="lk" href="' + esc(d.lienKet.bbNam) + '" target="_blank" rel="noopener">Biên bản tài sản cố định (năm) ↗</a>' : '') + '</div>';
     var dau = '<div class="khung"><h3>Kiểm kê tài sản</h3><div class="mo-ta">Hằng tuần: thứ 5 hoặc thứ 6, tài sản biến động / dùng thường xuyên · Hằng tháng: tuần cuối tháng, toàn bộ tài sản · ' +
-      'Hằng năm: đợt giữa năm (15–31/5) và cuối năm (15–31/12).<br>Phụ trách chính: <b>' + (d.phuTrach.length ? esc(d.phuTrach.join(', ')) : 'chưa ghi') + '</b> · Trưởng nhóm: <b>' +
-      (d.truongNhom.length ? esc(d.truongNhom.join(', ')) : 'chưa có') + '</b> · Lịch đăng ký được duyệt 2 cấp (trưởng nhóm → quản lý), đến ngày thì nộp báo cáo kèm link biên bản.</div>' +
-      (!d.coTN ? '<div class="canh">Nhóm chưa có trưởng nhóm (cột "Chức vụ" trong sheet tài khoản), nên lịch gửi thẳng quản lý duyệt.</div>' : '') + bb + seg;
+      'Hằng năm: đợt giữa năm (15–31/5) và cuối năm (15–31/12).<br>Phụ trách chính: <b>' + (d.phuTrach.length ? esc(d.phuTrach.join(', ')) : 'chưa ghi') + '</b> · Lịch đăng ký được duyệt 2 cấp (phụ trách chính → quản lý; phụ trách chính tự đăng ký thì gửi thẳng quản lý), đến ngày thì nộp báo cáo kèm link biên bản.</div>' +
+      (!d.coTN ? '<div class="canh">Mảng Quản lý CSVC chưa ghi phụ trách chính (tab Mảng công việc), nên lịch gửi thẳng quản lý duyệt.</div>' : '') + bb + seg;
     if (o.loai === 'bd') { o.el.innerHTML = '<div class="hd">' + dau + veBieuDo(d) + '</div></div>'; return; }
     var L = d.loai.filter(function (x) { return x.ma === o.loai; })[0] || d.loai[1];
     var the = function (t) {
@@ -272,7 +271,7 @@
         nd = '<b>' + THU[thu(t.ngay)] + ' ' + dm(t.ngay) + (L.ma === 'nam' ? '/' + t.ngay.slice(0, 4) : '') + '</b> · Thực hiện: ' + t.thucHien.map(function (x) { return '<span class="ten' + (x === toi ? ' toi' : '') + '">' + esc(x) + '</span>'; }).join(' ');
         if (t.ghiChu) nd += '<div class="mo-ta" style="margin-top:4px">' + linkHoa(t.ghiChu) + '</div>';
         if (t.trangThai === TT2.TRA_TN || t.trangThai === TT2.TRA_QL) nd += '<div class="canh">' + esc(t.ghiChuDuyet || 'Bị trả lại') + '</div>';
-        else if (t.tnDuyet || t.qlDuyet) nd += '<div class="mo-ta">' + [t.tnDuyet && 'Trưởng nhóm: ' + esc(t.tnDuyet), t.qlDuyet && 'Quản lý: ' + esc(t.qlDuyet)].filter(Boolean).join(' · ') + '</div>';
+        else if (t.tnDuyet || t.qlDuyet) nd += '<div class="mo-ta">' + [t.tnDuyet && 'Phụ trách: ' + esc(t.tnDuyet), t.qlDuyet && 'Quản lý: ' + esc(t.qlDuyet)].filter(Boolean).join(' · ') + '</div>';
         if (t.trangThai === 'Đã báo cáo') {
           nd += '<div class="so-kk">' + SO_KK.map(function (k) { var v = t.so && t.so[k[0]]; return v == null ? '' : '<span><b>' + v + '</b> ' + k[1].toLowerCase() + '</span>'; }).join('') + '</div>' +
             (t.bienDong ? '<div style="margin-top:4px;white-space:pre-line">' + esc(t.bienDong) + '</div>' : '') + (t.deXuat ? '<div class="mo-ta">Đề xuất: ' + esc(t.deXuat) + '</div>' : '') +
@@ -292,7 +291,7 @@
             return '<label><input type="checkbox" data-f="tv" value="' + esc(x) + '"' + (t.thucHien.indexOf(x) > -1 ? ' checked' : '') + '>' + esc(x) + '</label>'; }).join('') + '</div></div>' +
           '<label class="rong">Ghi chú (khu vực, tài sản cần chú ý…)<input data-f="gc" maxlength="500" value="' + esc(t.ghiChu || '') + '"></label>' +
           '<button type="button" class="b1" data-hd="dk" data-t="' + esc(t.ky) + '">' + (d.laQL ? 'Lưu lịch' : 'Gửi duyệt') + '</button><button type="button" class="b3" data-hd="dong">Đóng</button>' +
-          '<span class="mo-ta ca">Chỉ chọn được ' + esc(t.luu) + '. ' + (d.laQL ? 'Quản lý đăng ký thì lịch được duyệt luôn.' : d.laTN || !d.coTN ? 'Lịch gửi quản lý duyệt.' : 'Lịch gửi trưởng nhóm duyệt, sau đó đến quản lý.') + '</span></div>';
+          '<span class="mo-ta ca">Chỉ chọn được ' + esc(t.luu) + '. ' + (d.laQL ? 'Quản lý đăng ký thì lịch được duyệt luôn.' : d.laTN || !d.coTN ? 'Lịch gửi quản lý duyệt.' : 'Lịch gửi phụ trách chính duyệt, sau đó đến quản lý.') + '</span></div>';
       }
       if (m === 'duyet') form = formDuyet(t.ky);
       if (m === 'bc') {
@@ -454,7 +453,7 @@
         '<div class="ca"><div class="mo-ta" style="margin-bottom:4px">Danh sách đồ cho mượn *</div><div class="do-ds">' + ((v0.do && v0.do.length ? v0.do : [{}]).map(doRow).join('')) + '</div><button type="button" class="b2" data-hd="themDo">+ Thêm món</button></div>' +
         '<label class="ca">Ghi chú<input data-f="gc" maxlength="500" value="' + esc(v0.ghiChu || '') + '"></label>' +
         '<button type="button" class="b1" data-hd="taoCho" data-t="' + esc(sua ? sua.id : '') + '">' + (d.laQL ? 'Lưu (duyệt luôn)' : 'Gửi duyệt') + '</button><button type="button" class="b3" data-hd="dong">Đóng</button>' +
-        '<span class="mo-ta ca">' + (d.laQL ? 'Quản lý tạo thì yêu cầu được duyệt luôn.' : d.laTN || !d.coTN ? 'Yêu cầu gửi quản lý duyệt.' : 'Yêu cầu gửi trưởng nhóm duyệt, sau đó đến quản lý.') + '</span></div>' : '';
+        '<span class="mo-ta ca">' + (d.laQL ? 'Quản lý tạo thì yêu cầu được duyệt luôn.' : d.laTN || !d.coTN ? 'Yêu cầu gửi quản lý duyệt.' : 'Yêu cầu gửi phụ trách chính mảng CSVC duyệt, sau đó đến quản lý.') + '</span></div>' : '';
       var dongC = function (x) {
         var nut = '', m = o.mo[x.id], tt = x.trangThai;
         if (duocDuyet(d, tt)) nut += '<button type="button" class="b1" data-hd="moDuyetC" data-t="' + esc(x.id) + '">Xem & duyệt</button>';
@@ -473,7 +472,7 @@
           '<div style="margin-top:3px">' + chuoiDo(x.do) + '</div>' +
           '<div class="mo-ta">' + (x.gdn ? '<a href="' + esc(x.gdn) + '" target="_blank" rel="noopener">Giấy đề nghị ↗</a> · ' : '') + 'Tạo bởi ' + esc(x.nguoiTao) + ' · ' + esc(x.luc) + '</div>' +
           ((tt === TT2.TRA_TN || tt === TT2.TRA_QL) ? '<div class="canh">' + esc(x.ghiChuDuyet || 'Bị trả lại') + '</div>'
-            : (x.tnDuyet || x.qlDuyet) ? '<div class="mo-ta">' + [x.tnDuyet && 'Trưởng nhóm: ' + esc(x.tnDuyet), x.qlDuyet && 'Quản lý: ' + esc(x.qlDuyet)].filter(Boolean).join(' · ') + '</div>' : '') +
+            : (x.tnDuyet || x.qlDuyet) ? '<div class="mo-ta">' + [x.tnDuyet && 'Phụ trách: ' + esc(x.tnDuyet), x.qlDuyet && 'Quản lý: ' + esc(x.qlDuyet)].filter(Boolean).join(' · ') + '</div>' : '') +
           (x.ngayGiao ? '<div class="mo-ta">Đã giao ' + dmy(x.ngayGiao) + ' · ' + esc(x.nguoiGiao) + ' · ' + esc(x.tinhTrangGiao) + '</div>' : '') +
           (x.ngayNhan ? '<div class="mo-ta">Đã nhận lại ' + dmy(x.ngayNhan) + ' · ' + esc(x.nguoiNhan) + ' · ' + esc(x.tinhTrang) + '</div>' : '') +
           '</div><div class="nut">' + nut + '</div>' + form + '</div>';
@@ -481,8 +480,8 @@
       var nhom = [['Cần duyệt', function (x) { return x.trangThai === TT2.CHO_TN || x.trangThai === TT2.CHO_QL; }], ['Bị trả lại', function (x) { return x.trangThai === TT2.TRA_TN || x.trangThai === TT2.TRA_QL; }],
         ['Đã duyệt, chờ giao', function (x) { return x.trangThai === TT2.DUYET; }], ['Đang cho mượn', function (x) { return x.trangThai === 'Đang cho mượn'; }]];
       var cu2 = ds.filter(function (x) { return x.trangThai === 'Đã trả' || x.trangThai === TT2.HUY; });
-      html = '<div class="khung"><h3>Cho mượn — đơn vị khác mượn tài sản của Ban</h3><div class="mo-ta">Đơn vị mượn phải có giấy đề nghị. Yêu cầu được duyệt 2 cấp (trưởng nhóm → quản lý) rồi mới giao đồ; khi nhận lại ghi tình trạng.' +
-        (d.truongNhom.length ? ' Trưởng nhóm: <b>' + esc(d.truongNhom.join(', ')) + '</b>.' : '') + '</div>' +
+      html = '<div class="khung"><h3>Cho mượn — đơn vị khác mượn tài sản của Ban</h3><div class="mo-ta">Đơn vị mượn phải có giấy đề nghị. Yêu cầu được duyệt 2 cấp (phụ trách chính → quản lý) rồi mới giao đồ; khi nhận lại ghi tình trạng.' +
+        (d.truongNhom.length ? ' Phụ trách chính duyệt cấp 1: <b>' + esc(d.truongNhom.join(', ')) + '</b>.' : '') + '</div>' +
         (laTV && !f ? '<div style="margin-top:8px"><button type="button" class="b1" data-hd="moMoi">+ Tạo yêu cầu cho mượn</button></div>' : '') + (f === 'moi' ? formCho : '') +
         nhom.map(function (g) { var a = ds.filter(g[1]); return a.length ? '<div class="nhom-t">' + g[0] + ' (' + a.length + ')</div>' + a.map(function (x) { return dongC(x) + (sua && sua.id === x.id ? formCho : ''); }).join('') : ''; }).join('') +
         (ds.length - cu2.length ? '' : '<div class="trong-k">Không có yêu cầu cho mượn nào đang mở.</div>') +

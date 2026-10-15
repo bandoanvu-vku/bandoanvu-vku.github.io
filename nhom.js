@@ -111,6 +111,12 @@
   function ngay(iso) { if (!iso) return null; var p = iso.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function soNgay(iso) { return Math.round((ngay(iso) - homNay()) / 864e5); }
   function dsHoTro(v) { return v.hoTro.split(',').map(function (x) { return x.replace(/\s+/g, ' ').trim(); }).filter(Boolean); }
+  // Phụ trách chính của một mảng công việc (tab Mảng công việc) — người duyệt cấp 1
+  function ptMang(ten) {
+    var t = String(ten || '').trim().toLowerCase(); if (!t || !D) return [];
+    var m = D.mang.filter(function (x) { return String(x.ten).trim().toLowerCase() === t; })[0];
+    return m ? String(m.chinh || '').split(/[,;]/).map(function (x) { return x.replace(/\s+/g, ' ').trim(); }).filter(Boolean) : [];
+  }
   function lienQuan(v) { return !!toi && (v.chinh === toi || dsHoTro(v).indexOf(toi) > -1); }
   function xong(v) { return v.trangThai === 'Hoàn thành'; }
   function tre(v) { return !xong(v) && !!v.han && soNgay(v.han) < 0; }
@@ -214,7 +220,7 @@
   function the(v) {
     var d = ngay(v.han), con = v.han ? soNgay(v.han) : null, lq = lienQuan(v), ht = dsHoTro(v);
     var tt = xong(v) ? ['ok', 'Hoàn thành'] : !v.chinh ? ['idle', 'Chưa có người nhận']
-      : v.trangThai === 'Chờ duyệt' ? ['doing', D.truongNhom && D.truongNhom.length ? 'Chờ trưởng nhóm duyệt' : 'Chờ quản lý duyệt']
+      : v.trangThai === 'Chờ duyệt' ? ['doing', ptMang(v.mang).length ? 'Chờ phụ trách duyệt' : 'Chờ quản lý duyệt']
       : (v.trangThai === 'Đang làm' || v.trangThai === CHO_QL) ? ['doing', v.trangThai] : ['plain', 'Chưa làm'];
     var kh = '';
     if (!xong(v) && con !== null) {
@@ -263,10 +269,10 @@
     var f = [['all', 'Tất cả'], ['todo', 'Chưa xong'], ['late', 'Quá hạn'], ['open', 'Chưa có người nhận']];
     var mangCo = D.mang.map(function (m) { return m.ten; });
     D.nhiemVu.forEach(function (v) { if (v.mang && mangCo.indexOf(v.mang) === -1) mangCo.push(v.mang); });
-    // Trưởng nhóm duyệt cấp 1 các việc thành viên gửi "Chờ duyệt" → chuyển quản lý duyệt
-    var tnDs = !cuaToi && D.truongNhom && D.truongNhom.indexOf(toi) > -1 ? D.nhiemVu.filter(function (v) { return v.trangThai === 'Chờ duyệt'; }) : [];
-    var tnHtml = tnDs.length ? '<div class="tn-duyet"><h2>Chờ trưởng nhóm duyệt (' + tnDs.length + ')</h2>' + tnDs.map(function (v) {
-      return '<div class="tn-r" data-dong="' + v.dong + '"><div><b>' + esc(v.ten) + '</b><div class="people">Phụ trách: ' + esc(v.chinh || '—') + (v.hoTro ? ' · Hỗ trợ: ' + esc(v.hoTro) : '') +
+    // Phụ trách chính của mảng công việc duyệt cấp 1 các việc thành viên gửi "Chờ duyệt" → chuyển quản lý duyệt
+    var tnDs = !cuaToi && toi ? D.nhiemVu.filter(function (v) { return v.trangThai === 'Chờ duyệt' && ptMang(v.mang).indexOf(toi) > -1; }) : [];
+    var tnHtml = tnDs.length ? '<div class="tn-duyet"><h2>Chờ bạn duyệt — mảng bạn phụ trách chính (' + tnDs.length + ')</h2>' + tnDs.map(function (v) {
+      return '<div class="tn-r" data-dong="' + v.dong + '"><div><b>' + esc(v.ten) + '</b><div class="people">Mảng: ' + esc(v.mang) + ' · Người làm: ' + esc(v.chinh || '—') + (v.hoTro ? ' · Hỗ trợ: ' + esc(v.hoTro) : '') +
         (v.link && /^https?:\/\//i.test(v.link) ? ' · <a href="' + esc(v.link) + '" target="_blank" rel="noopener">Xem sản phẩm ↗</a>' : ' · <i>chưa có link sản phẩm</i>') + '</div></div>' +
         '<div class="tn-b"><input type="text" maxlength="300" placeholder="Nhận xét (bắt buộc khi trả lại)" aria-label="Nhận xét"><button type="button" class="solid" data-tn="1">Duyệt → quản lý</button><button type="button" class="x" data-tn="0">Trả lại</button></div></div>';
     }).join('') + '</div>' : '';
@@ -352,7 +358,7 @@
       if (!ok && !gc) { toast('Ghi lý do / việc cần sửa khi trả lại.', true); r.querySelector('input').focus(); return; }
       busy = true; r.style.opacity = '.5';
       BDV.goi('duyetViec', { nhom: NHOM, dong: v.dong, ten: v.ten, dongY: ok, ghiChu: gc, ve: 'nhom' })
-        .then(function (d) { busy = false; nhan(d); toast(ok ? 'Đã duyệt, chuyển quản lý duyệt' : 'Đã trả lại cho thành viên'); })
+        .then(function (d) { busy = false; nhan(d); toast(ok ? 'Đã duyệt, chuyển quản lý duyệt' : 'Đã trả lại cho người làm'); })
         .catch(function (er) { busy = false; r.style.opacity = ''; toast(er && er.message ? er.message : String(er), true); });
       return;
     }

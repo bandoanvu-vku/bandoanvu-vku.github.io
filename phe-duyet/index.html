@@ -104,11 +104,11 @@
     var moi = y.ngay ? ngayCa(y.ngay, y.tu, y.den) : '';
     if (y.kieu === 'cnXanh') { var p = y.ngay.split('-'); return 'Chủ nhật <b>' + p[2] + '/' + p[1] + '</b> · người trực thay: <b>' + esc(y.thay) + '</b><br>Lý do: ' + esc(y.lyDo || '—') + ' · gửi ' + esc(y.guiLuc); }
     if (y.kieu === 'kiemKe') { var q = (y.ngay || '').split('-'); return '<b>' + esc(y.nhan) + '</b> · ngày <b>' + (q.length === 3 ? q[2] + '/' + q[1] : '—') + '</b> · thực hiện: ' + esc((y.thucHien || []).join(', ') || '—') +
-      (y.ghiChu ? '<br>Ghi chú: ' + esc(y.ghiChu) : '') + (y.tnDuyet ? '<br>Trưởng nhóm: ' + esc(y.tnDuyet) : ''); }
+      (y.ghiChu ? '<br>Ghi chú: ' + esc(y.ghiChu) : '') + (y.tnDuyet ? '<br>Phụ trách: ' + esc(y.tnDuyet) : ''); }
     if (y.kieu === 'choMuon') { var g = (y.ngay || '').split('-'), h = (y.hanTra || '').split('-');
       return 'Cho <b>' + esc(y.donVi) + '</b> (' + esc(y.daiDien) + ') mượn: ' + esc((y.do || []).map(function (x) { return x.ten + ' × ' + x.sl; }).join('; ')) +
         '<br>Giao ' + (g.length === 3 ? g[2] + '/' + g[1] : '—') + ' → trả ' + (h.length === 3 ? h[2] + '/' + h[1] : '—') + ' · ' + esc(y.mucDich) +
-        (y.gdn ? ' · <a href="' + esc(y.gdn) + '" target="_blank" rel="noopener">giấy đề nghị</a>' : '') + (y.tnDuyet ? '<br>Trưởng nhóm: ' + esc(y.tnDuyet) : ''); }
+        (y.gdn ? ' · <a href="' + esc(y.gdn) + '" target="_blank" rel="noopener">giấy đề nghị</a>' : '') + (y.tnDuyet ? '<br>Phụ trách: ' + esc(y.tnDuyet) : ''); }
     if (y.kieu === 'dotXuat') return 'Đã điểm danh <b>' + esc(moi) + '</b>' + (y.diemDanh ? ' lúc ' + esc(y.diemDanh) : '') + (y.cach != null ? ' · cách văn phòng ' + y.cach + ' m' : '');
     var s = '';
     if (y.goc) s += (y.loai === 'Huỷ ca' ? 'Huỷ <b>' : y.loai === 'Xin vắng' ? 'Vắng ca <b>' : 'Ca hiện tại <b>') + esc(y.goc) + '</b>';

@@ -3,7 +3,8 @@
 
 // Trạng thái nhiệm vụ của 3 nhóm (khớp danh sách chọn ở cột "Trạng thái" trong sheet nhóm)
 const TRANG_THAI = ['Chưa làm', 'Đang làm', 'Chờ duyệt', 'Hoàn thành'];
-// Duyệt việc 2 cấp: "Chờ duyệt" = chờ trưởng nhóm → "Chờ quản lý duyệt" → Hoàn thành (nhóm chưa có trưởng nhóm: gửi thẳng quản lý)
+// Duyệt việc 2 cấp: "Chờ duyệt" = chờ phụ trách chính của mảng công việc đó → "Chờ quản lý duyệt" → Hoàn thành
+// (việc chưa có mảng / mảng chưa có phụ trách chính, hoặc chính phụ trách gửi: thẳng quản lý)
 const VIEC_CHO_QL = 'Chờ quản lý duyệt';
 
 // 3 nhóm có sheet theo dõi riêng. ID sheet lưu ở Script Properties, khoá SHEET_NHOM ({ ma: { id, ten } }).
@@ -107,7 +108,7 @@ function nhomGhi(req) {
       const tt = String(req.trangThai || '');
       if (TRANG_THAI.indexOf(tt) === -1) throw new Error('Trạng thái không hợp lệ.');
       let ghiTT = tt;
-      if (tt === 'Chờ duyệt') { const tn = truongNhom_(maNhom); if (!tn.length || tn.indexOf(ten) > -1) ghiTT = VIEC_CHO_QL; }
+      if (tt === 'Chờ duyệt') { const pt = phuTrachMang_(maNhom, chuoi_(r[1])); if (!pt.length || pt.indexOf(ten) > -1) ghiTT = VIEC_CHO_QL; }
       sheet.getRange(dong, 10).setValue(ghiTT);
       hanhDong = 'Trạng thái: ' + ghiTT;
     } else if (req.viec === 'link') {
