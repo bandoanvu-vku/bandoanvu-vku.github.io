@@ -70,7 +70,8 @@ Mượn về: nguồn Phòng TCHC (bắt buộc link giấy đề nghị) / KTX 
 Công văn (`BDVHD.congVan`, action `congVan`): CHỈ ĐỌC sheet công văn đi (tab nhiệm kỳ mới nhất, số tiếp theo = số lớn nhất + 1, dòng đã lấy số chưa có tên, chưa PDF)
 và công văn đến (3 tab Trong trường / Ngoài trường / CLB Đội Nhóm). Không ghi gì vào 2 sheet này (của vanphongdoan). Danh sách "Chưa có file PDF" hiện đủ (xem tất cả).
 Việc lưu công văn tự động theo ca trực: ai có tên trong mảng "Lưu Công văn đi/đến" (phụ trách / hỗ trợ / tham gia, "Cả nhóm" = mọi người) thì mỗi ngày có ca trực
-(còn hiệu lực) tự có việc "Lưu CV đi / đến" — hiện ở Trang chủ (`cuaToi.viecCongVan`) và tab Công văn (`congVan.caTruc`); đánh dấu qua `luuViecCongVan`,
+(còn hiệu lực, từ 15/10/2026) tự có việc "Lưu công văn đi / đến (ngày trực dd/mm)", hạn = ngày trực — gộp như nhiệm vụ thường vào Việc cần làm / KPI Trang chủ
+(`cuaToi.viec`, `tuDong:'cv'`), tab "Việc của tôi" trang CSDL (`nhom.viecTuDong`), Thống kê (cột `luuCongVan`) và tab Công văn (`congVan.caTruc`); đánh dấu qua `luuViecCongVan`,
 lưu ở tab "Lưu công văn - ca trực" của sheet lịch trực (không thêm dòng vào sheet nhiệm vụ). Phụ trách mảng công văn / quản lý đánh dấu hộ được.
 Liên kết (link sheet / folder công văn, biên bản, sheet mượn trả) lưu ở tab "Cài đặt" của sheet lịch trực; quản lý dán ở trang Cài đặt (action `luuLienKet`) — không ghi ID vào repo. Họp tháng: mục riêng `/hop-nhom/` trên menu (tab theo nhóm; quản lý có tab Tổng hợp; thành viên nhóm đăng ký, quản lý xem;
 bảng tổng hợp ở tab Chung của Tổng quan). Năm học: ô chọn trên thanh header, bên trái — đối diện tài khoản (`menu.js`: NAM_HOC, HIEN_TAI, CO_DU_LIEU; nhớ ở localStorage `bdv.namHoc`, `window.BDV_NAM_HOC`).

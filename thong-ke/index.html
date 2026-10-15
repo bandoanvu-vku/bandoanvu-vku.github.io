@@ -9,13 +9,13 @@
   :root {
     --bg: #f4f6fa; --card: #ffffff; --line: #dfe4ec; --grid: #edf0f4; --text: #17202e; --muted: #5d6b80; --accent: #1a56c4;
     --bad: #b3261e; --ok: #1baf7a; --track: #e9edf3;
-    --c1: #2a78d6; --c1-soft: rgba(42,120,214,.22); --c2: #eda100; --c3: #6250d6;
+    --c1: #2a78d6; --c1-soft: rgba(42,120,214,.22); --c2: #eda100; --c3: #6250d6; --c4: #1f9a8a;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #10151d; --card: #19212c; --line: #2c3746; --grid: #222b37; --text: #e8edf4; --muted: #9aa8bb; --accent: #7fb0ff;
       --bad: #ff9d94; --ok: #199e70; --track: #242e3b;
-      --c1: #3987e5; --c1-soft: rgba(57,135,229,.28); --c2: #c98500; --c3: #9085e9;
+      --c1: #3987e5; --c1-soft: rgba(57,135,229,.28); --c2: #c98500; --c3: #9085e9; --c4: #2bb3a0;
     }
   }
   * { box-sizing: border-box; }
@@ -75,7 +75,7 @@
   .stk { display: flex; gap: 2px; height: 16px; }
   .stk i { display: block; height: 100%; min-width: 3px; }
   .stk i:last-child { border-radius: 0 4px 4px 0; }
-  .c-1 { background: var(--c1); } .c-2 { background: var(--c2); } .c-3 { background: var(--c3); }
+  .c-1 { background: var(--c1); } .c-2 { background: var(--c2); } .c-3 { background: var(--c3); } .c-4 { background: var(--c4); }
   .late { color: var(--bad); font-weight: 600; } .dat { color: var(--ok); font-weight: 600; }
   table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
   th, td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
@@ -118,7 +118,7 @@
 (function () {
   var TEN = { '4t': 'Truyền thông - Thông tin', 'nghiep-vu': 'Nghiệp vụ', 'csdl-csvc': 'CSDL - CSVC', 'noi-vu': 'Nội vụ' };
   var NGAN = { '4t': 'Truyền thông', 'nghiep-vu': 'Nghiệp vụ', 'csdl-csvc': 'CSDL - CSVC', 'noi-vu': 'Nội vụ' };
-  var HD = [['phuTrach', 'c-1', 'Phụ trách chính'], ['hoTro', 'c-2', 'Tham gia hỗ trợ'], ['truyenThong', 'c-3', 'Việc truyền thông (4T)']];
+  var HD = [['phuTrach', 'c-1', 'Phụ trách chính'], ['hoTro', 'c-2', 'Tham gia hỗ trợ'], ['truyenThong', 'c-3', 'Việc truyền thông (4T)'], ['luuCongVan', 'c-4', 'Lưu công văn (ca trực)']];
   var D = null, khoang = 'nam', chon = '', sapXep = ['gioTruc', -1];
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -128,7 +128,7 @@
   function dm(s) { var p = s.split('-'); return p[2] + '/' + p[1]; }
   function g(n) { return String(Math.round(n * 10) / 10).replace('.', ','); }
   function tenNgan(t) { var p = String(t).split(' '); return p.length > 2 ? p.slice(-2).join(' ') : t; }
-  function tongHD(p) { return p.phuTrach + p.hoTro + p.truyenThong; }
+  function tongHD(p) { return p.phuTrach + p.hoTro + p.truyenThong + (p.luuCongVan || 0); }
 
   function khoangNgay(k) {
     var hn = iso(new Date());
@@ -231,7 +231,7 @@
       html += '<div class="grid2"><div>' + gioHtml + '</div><div>' + hdHtml + '</div></div>';
 
       var COT = [['ten', 'Thành viên'], ['gioDangKy', 'Giờ đăng ký'], ['gioTruc', 'Giờ thực tế'], ['gioDotXuat', 'Đột xuất'], ['soCa', 'Số ca'], ['vang', 'Vắng'], ['vangPhep', 'Vắng có phép'],
-        ['phuTrach', 'Phụ trách'], ['hoTro', 'Hỗ trợ'], ['truyenThong', 'Truyền thông'], ['xong', 'Đã xong']];
+        ['phuTrach', 'Phụ trách'], ['hoTro', 'Hỗ trợ'], ['truyenThong', 'Truyền thông'], ['luuCongVan', 'Lưu công văn'], ['xong', 'Đã xong']];
       var bang = ds.slice().sort(function (a, b) { var k = sapXep[0], x = a[k], y = b[k]; return (x < y ? -1 : x > y ? 1 : 0) * sapXep[1]; });
       html += '<div class="panel"><div class="ph"><div><h2>Bảng số liệu</h2><div class="sub">Bấm tiêu đề cột để sắp xếp</div></div><button type="button" class="ghost sm" id="csv">Tải file CSV</button></div><div class="tblw"><table><thead><tr>' +
         COT.map(function (c) { return '<th data-k="' + c[0] + '"' + (sapXep[0] === c[0] ? ' aria-sort="' + (sapXep[1] > 0 ? 'ascending' : 'descending') + '"' : '') + '>' + c[1] + (sapXep[0] === c[0] ? (sapXep[1] > 0 ? ' ↑' : ' ↓') : '') + '</th>'; }).join('') + '</tr></thead><tbody>' +
@@ -252,8 +252,8 @@
   }
 
   function taiCSV() {
-    var COT = ['ten', 'nhom', 'gioDangKy', 'gioTruc', 'gioDotXuat', 'soCa', 'vang', 'vangPhep', 'phuTrach', 'hoTro', 'truyenThong', 'xong'];
-    var dau = ['Thành viên', 'Nhóm', 'Giờ đăng ký', 'Giờ thực tế', 'Giờ đột xuất', 'Số ca', 'Vắng', 'Vắng có phép', 'Phụ trách', 'Hỗ trợ', 'Truyền thông', 'Đã xong'];
+    var COT = ['ten', 'nhom', 'gioDangKy', 'gioTruc', 'gioDotXuat', 'soCa', 'vang', 'vangPhep', 'phuTrach', 'hoTro', 'truyenThong', 'luuCongVan', 'xong'];
+    var dau = ['Thành viên', 'Nhóm', 'Giờ đăng ký', 'Giờ thực tế', 'Giờ đột xuất', 'Số ca', 'Vắng', 'Vắng có phép', 'Phụ trách', 'Hỗ trợ', 'Truyền thông', 'Lưu công văn', 'Đã xong'];
     var dong = [dau].concat(locNguoi().map(function (p) { return COT.map(function (k) { return k === 'nhom' ? p.nhom.map(function (m) { return TEN[m] || m; }).join('; ') : /^gio/.test(k) ? g(p[k]) : p[k]; }); }));
     var csv = '﻿' + dong.map(function (r) { return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));

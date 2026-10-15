@@ -62,9 +62,9 @@ function doPost(e) {
     const doc = {
       toi: function () { return nd; },
       data: function () { canNhom_(nd, '4t'); return layDuLieu(req.moi === true); },
-      nhom: function () { const n = String(req.n || ''); canNhom_(nd, n); const d = layNhom(n, req.moi === true); try { d.truongNhom = n === '4t' ? [] : truongNhom_(n); } catch (e) { d.truongNhom = []; } return d; },
+      nhom: function () { const n = String(req.n || ''); canNhom_(nd, n); const d = layNhom(n, req.moi === true); try { d.truongNhom = n === '4t' ? [] : truongNhom_(n); } catch (e) { d.truongNhom = []; } if (n === NHOM_CSVC) { try { d.viecTuDong = viecCongVanNhiemVu_(nd.ten); } catch (e) { d.viecTuDong = []; } } return d; },
       tongquan: function () { return locTongQuan_(layTongQuan(req.moi === true), nd); },
-      cuaToi: function () { const o = cuaToi_(nd, req.moi === true); o.truc = trucTuanNay_(nd); o.viecCongVan = viecCongVanCuaToi_(nd); return o; },
+      cuaToi: function () { const o = cuaToi_(nd, req.moi === true); o.truc = trucTuanNay_(nd); try { if (nd.nhom.indexOf(NHOM_CSVC) > -1) o.viec = o.viec.concat(viecCongVanNhiemVu_(nd.ten)); } catch (e) {} return o; },
       lichTruc: function () { return lichTruc_(nd, req.tuan); },
       dangKyTruc: function () { return dangKyTruc_(nd, req); },
       huyTruc: function () { return huyTruc_(nd, req); },

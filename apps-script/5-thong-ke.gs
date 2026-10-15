@@ -22,7 +22,7 @@ function thongKe_(nd, req) {
   const tao = function (ten, email, nhom) {
     if (!nguoi[ten]) {
       nguoi[ten] = { ten: ten, email: email || '', nhom: [], gioDangKy: 0, gioTruc: 0, gioDotXuat: 0, gioCho: 0, soCa: 0, vang: 0,
-        phuTrach: 0, hoTro: 0, truyenThong: 0, xong: 0, vangPhep: 0, tuan: {} };
+        phuTrach: 0, hoTro: 0, truyenThong: 0, luuCongVan: 0, xong: 0, vangPhep: 0, tuan: {} };
     }
     const p = nguoi[ten];
     (nhom || []).forEach(function (m) { if (p.nhom.indexOf(m) === -1) p.nhom.push(m); });
@@ -87,6 +87,11 @@ function thongKe_(nd, req) {
     } catch (e) { loi.push(n.ten); }
   });
 
+  // việc lưu công văn tự động theo ca trực (nhóm CSDL - CSVC)
+  try {
+    viecCongVanNhiemVu_('', tu, den).forEach(function (v) { const p = lay(v.nguoi, '', [NHOM_CSVC]); p.luuCongVan++; if (v.xong) p.xong++; });
+  } catch (e) { loi.push('Lưu công văn theo ca trực'); }
+
   // số tuần làm mục tiêu: từ tuần đầu có lịch trực (hoặc đầu khoảng) đến tuần hiện tại / cuối khoảng
   const cuoi = den < now.ngay ? den : now.ngay;
   const bd = dauTuan_(ngayDau && ngayDau > tu ? ngayDau : tu);
@@ -98,7 +103,7 @@ function thongKe_(nd, req) {
     return {
       ten: p.ten, email: p.email, nhom: p.nhom,
       gioDangKy: p.gioDangKy / 60, gioTruc: p.gioTruc / 60, gioDotXuat: p.gioDotXuat / 60, gioCho: p.gioCho / 60,
-      soCa: p.soCa, vang: p.vang, vangPhep: p.vangPhep, phuTrach: p.phuTrach, hoTro: p.hoTro, truyenThong: p.truyenThong, xong: p.xong,
+      soCa: p.soCa, vang: p.vang, vangPhep: p.vangPhep, phuTrach: p.phuTrach, hoTro: p.hoTro, truyenThong: p.truyenThong, luuCongVan: p.luuCongVan, xong: p.xong,
       tuan: Object.keys(p.tuan).sort().map(function (w) { return { tuan: w, dangKy: p.tuan[w].dk / 60, truc: p.tuan[w].tt / 60 }; })
     };
   });

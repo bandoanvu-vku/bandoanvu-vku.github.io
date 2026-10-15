@@ -445,6 +445,24 @@ function luuViecCongVan_(nd, req) {
     const dong = [dmy_(ngay), ten, di ? '✓' : '', den ? '✓' : '', gc, nd.ten, new Date()];
     if (cu) s.getRange(cu.dong, 1, 1, dong.length).setValues([dong]); else s.appendRow(dong);
     SpreadsheetApp.flush();
-    return req.ve === 'congVan' ? congVan_(nd) : viecCongVanCuaToi_(nd);
+    return req.ve === 'congVan' ? congVan_(nd) : req.ve === 'nhiemVu' ? viecCongVanNhiemVu_(nd.ten) : viecCongVanCuaToi_(nd);
   });
+}
+
+/** Việc lưu công văn dạng "nhiệm vụ" (mỗi ngày trực × mỗi loại đi / đến) để gộp vào Việc của tôi, trang nhóm và Thống kê. */
+const VIEC_CV_BD = '2026-10-15';
+function viecCongVanNhiemVu_(ten, tu, den) {
+  const now = bayGio_();
+  tu = tu || (themNgay_(now.ngay, -60) > VIEC_CV_BD ? themNgay_(now.ngay, -60) : VIEC_CV_BD);
+  den = den || themNgay_(now.ngay, 7);
+  if (tu < VIEC_CV_BD) tu = VIEC_CV_BD;
+  const kq = [];
+  viecCongVan_(tu, den, ten).forEach(function (v) {
+    [['di', 'đi', v.canDi, v.xongDi], ['den', 'đến', v.canDen, v.xongDen]].forEach(function (l) {
+      if (!l[2]) return;
+      kq.push({ nhom: NHOM_CSVC, tuDong: 'cv', loai: l[0], ngay: v.ngay, nguoi: v.ten, ten: 'Lưu công văn ' + l[1] + ' (ngày trực ' + dmy_(v.ngay).slice(0, 5) + ')',
+        vaiTro: 'Tự động theo ca trực', han: v.ngay, xong: !!l[3], trangThai: l[3] ? 'Hoàn thành' : 'Chưa làm', mang: 'Lưu Công văn ' + l[1], ca: v.ca });
+    });
+  });
+  return kq;
 }

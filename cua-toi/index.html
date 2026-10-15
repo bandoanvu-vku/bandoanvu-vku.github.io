@@ -175,7 +175,13 @@
       '<div><div class="t">' + esc(v.ten) + '</div><div class="s">' + esc(TEN[v.nhom] || v.nhom) + ' · ' + esc(v.vaiTro) +
       (v.xong ? '' : ' · ' + esc(v.trangThai)) + (v.mang ? ' · ' + esc(v.mang) : '') +
       (v.link && /^https?:\/\//i.test(v.link) ? ' · <a href="' + esc(v.link) + '" target="_blank" rel="noopener">Link sản phẩm</a>' : '') + '</div></div>' +
-      '<div class="r">' + pill + '<a class="mo" href="/' + v.nhom + '/">Mở nhóm →</a></div></div>';
+      '<div class="r">' + pill + (v.tuDong === 'cv' ? nutCv(v) : '<a class="mo" href="/' + v.nhom + '/">Mở nhóm →</a>') + '</div></div>';
+  }
+  // Việc tự động: lưu công văn theo ngày trực — đánh dấu ngay tại đây (đến ngày trực mới bấm được)
+  function nutCv(v) {
+    if (v.han > D.homNay) return '<a class="mo" href="/csdl-csvc/#cong-van">Trang Công văn →</a>';
+    var i = D.viec.indexOf(v);
+    return '<button type="button" class="' + (v.xong ? 'ghost' : 'btn') + ' sm" data-cv="' + i + '">' + (v.xong ? 'Bỏ đánh dấu' : '✓ Đã lưu') + '</button>';
   }
   function ve() {
     $('reload').style.display = '';
@@ -207,21 +213,7 @@
     var dx = xong.length ? '<div class="panel"><h2>Đã hoàn thành (' + xong.length + ')</h2><div style="margin-top:8px">' +
       (hetXong ? xong : xong.slice(0, 5)).map(function (v) { return dong(v, hn); }).join('') +
       (xong.length > 5 ? '<button type="button" class="ghost" id="more" style="margin-top:8px">' + (hetXong ? 'Thu gọn' : 'Xem cả ' + xong.length + ' việc') + '</button>' : '') + '</div></div>' : '';
-    // Việc lưu công văn tự động theo ngày trực (nhóm CSDL - CSVC)
-    var THU2 = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-    var cvNut = function (v, l) {
-      var can = l === 'di' ? v.canDi : v.canDen, x = l === 'di' ? v.xongDi : v.xongDen, ten = l === 'di' ? 'công văn đi' : 'công văn đến';
-      if (!can) return '';
-      if (v.ngay > D.homNay) return '<span class="tag">Lưu ' + ten + '</span>';
-      return '<button type="button" class="' + (x ? 'ghost' : 'btn') + ' sm" data-cv="' + v.ngay + '" data-l="' + l + '" data-x="' + (x ? 1 : 0) + '">' + (x ? '✓ Đã lưu ' + ten : 'Đánh dấu đã lưu ' + ten) + '</button>';
-    };
-    var cv = (D.viecCongVan || []).length ? '<div class="panel"><h2>Lưu công văn theo ngày trực</h2><div class="sub">Bạn có tên trong mảng lưu công văn của nhóm CSDL - CSVC: mỗi ngày trực hãy cập nhật công văn mới vào sheet, xong thì đánh dấu.' +
-      ' <a href="/csdl-csvc/#cong-van">Mở trang Công văn →</a></div><div style="margin-top:8px">' + D.viecCongVan.map(function (v) {
-        var p = v.ngay.split('-'), d0 = new Date(+p[0], +p[1] - 1, +p[2]);
-        return '<div class="cvv' + (v.qua && !v.xong ? ' tre' : '') + '"><div><b>' + THU2[d0.getDay()] + ' ' + p[2] + '/' + p[1] + (v.ngay === D.homNay ? ' · hôm nay' : v.qua ? ' · đã qua' : '') + '</b>' +
-          '<span class="note"> · ca ' + esc(v.ca.join(', ')) + (v.qua && !v.xong ? ' · <span class="late">chưa xong</span>' : '') + '</span></div><div class="cvb">' + cvNut(v, 'di') + cvNut(v, 'den') + '</div></div>';
-      }).join('') + '</div></div>' : '';
-    $('app').innerHTML = ho + tr + cv + kpi + ds + veTQ(hn) + dx;
+    $('app').innerHTML = ho + tr + kpi + ds + veTQ(hn) + dx;
     var t = new Date();
     $('foot').textContent = 'Cập nhật lúc ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '. Nhóm Truyền thông tính theo từng việc con (viết bài, thiết kế, chụp hình).';
   }
@@ -229,8 +221,9 @@
   $('app').addEventListener('click', function (e) {
     if (e.target.id === 'more') { hetXong = !hetXong; ve(); return; }
     var b = e.target.closest('button[data-cv]'); if (!b || b.disabled) return;
-    var ok = b.dataset.x !== '1'; b.disabled = true;
-    BDV.goi('luuViecCongVan', { ngay: b.dataset.cv, loai: b.dataset.l, xong: ok }).then(function (ds) { D.viecCongVan = ds; ve(); T0(ok ? 'Đã đánh dấu đã lưu công văn' : 'Đã bỏ đánh dấu'); })
+    var v = D.viec[+b.dataset.cv]; if (!v) return;
+    var ok = !v.xong; b.disabled = true;
+    BDV.goi('luuViecCongVan', { ngay: v.ngay, loai: v.loai, xong: ok, ve: 'nhiemVu' }).then(function () { v.xong = ok; v.trangThai = ok ? 'Hoàn thành' : 'Chưa làm'; ve(); T0(ok ? 'Đã đánh dấu đã lưu công văn' : 'Đã bỏ đánh dấu'); })
       .catch(function (er) { b.disabled = false; T0(er && er.message ? er.message : String(er), true); });
   });
   function T0(m, err) { var t = document.getElementById('toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); } t.textContent = m; t.className = err ? 'err' : ''; t.style.display = 'block'; clearTimeout(T0.t); T0.t = setTimeout(function () { t.style.display = 'none'; }, err ? 6000 : 2600); }

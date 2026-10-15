@@ -144,6 +144,7 @@
   function dangGo() { var a = document.activeElement; return !!(a && a.matches && a.matches('input[type=url]')); }
   function nhan(d) {
     if (!d.truongNhom && D && D.truongNhom) d.truongNhom = D.truongNhom;
+    if (!d.viecTuDong && D && D.viecTuDong) d.viecTuDong = D.viecTuDong;
     D = d; moKhoa();
     try { localStorage.setItem('bdv.' + NHOM + '.data', JSON.stringify(d)); } catch (e) {}
     document.title = 'Nhóm ' + D.ten + ' · Ban Đoàn vụ';
@@ -243,7 +244,7 @@
   }
   function veNhiemVu(cuaToi) {
     if (cuaToi && !toi) { $('view').innerHTML = '<div class="empty-box">Đăng nhập (nút ở góc trên) để xem việc của mình.</div>'; return; }
-    if (!D.nhiemVu.length) {
+    if (!D.nhiemVu.length && !(cuaToi && D.viecTuDong && D.viecTuDong.length)) {
       $('view').innerHTML = '<div class="empty-box">Sheet của nhóm chưa có nhiệm vụ nào.<br>Trưởng nhóm nhập việc vào tab “Nhiệm vụ” của sheet, mỗi dòng một việc; dashboard sẽ tự hiện.</div>';
       return;
     }
@@ -269,7 +270,17 @@
         (v.link && /^https?:\/\//i.test(v.link) ? ' · <a href="' + esc(v.link) + '" target="_blank" rel="noopener">Xem sản phẩm ↗</a>' : ' · <i>chưa có link sản phẩm</i>') + '</div></div>' +
         '<div class="tn-b"><input type="text" maxlength="300" placeholder="Nhận xét (bắt buộc khi trả lại)" aria-label="Nhận xét"><button type="button" class="solid" data-tn="1">Duyệt → quản lý</button><button type="button" class="x" data-tn="0">Trả lại</button></div></div>';
     }).join('') + '</div>' : '';
-    $('view').innerHTML = tnHtml + (cuaToi ? '' : '<div class="filters">' + f.map(function (x) {
+    // Việc tự động của tôi (nhóm CSDL - CSVC: lưu công văn theo ngày trực)
+    var td = cuaToi && D.viecTuDong ? D.viecTuDong.filter(function (v) { return !v.xong || soNgay(v.han) >= -7; }) : [];
+    var tdHtml = td.length ? '<h2>Việc tự động theo ca trực (' + td.filter(function (v) { return !v.xong; }).length + ' chưa xong)</h2>' + td.map(function (v) {
+      var d = ngay(v.han), con = soNgay(v.han), i = D.viecTuDong.indexOf(v);
+      var pill = v.xong ? '<span class="pill ok">Hoàn thành</span>' : con < 0 ? '<span class="pill bad">Quá hạn ' + (-con) + ' ngày</span>' : con === 0 ? '<span class="pill doing">Hôm nay</span>' : '<span class="pill plain">Còn ' + con + ' ngày</span>';
+      return '<div class="act' + (v.xong ? ' done' : '') + '"><div class="date"><b>' + ('0' + d.getDate()).slice(-2) + '</b><span>Th' + (d.getMonth() + 1) + '</span></div>' +
+        '<div><h3>' + esc(v.ten) + '</h3><div class="meta">' + pill + '<span>' + esc(v.mang) + '</span><span>ca ' + esc((v.ca || []).join(', ')) + '</span></div>' +
+        '<div class="people">Cập nhật công văn mới vào sheet trong ngày trực rồi đánh dấu. <a href="#cong-van">Mở tab Công văn</a></div></div>' +
+        (con <= 0 ? '<div class="acts"><button type="button" class="' + (v.xong ? 'x' : 'solid') + '" data-td="' + i + '">' + (v.xong ? 'Bỏ đánh dấu' : '✓ Đã lưu') + '</button></div>' : '') + '</div>';
+    }).join('') + '<h2>Nhiệm vụ trong sheet</h2>' : '';
+    $('view').innerHTML = tnHtml + tdHtml + (cuaToi ? '' : '<div class="filters">' + f.map(function (x) {
       return '<button type="button" data-loc="' + x[0] + '" aria-pressed="' + (loc === x[0]) + '">' + x[1] + '</button>';
     }).join('') + '<select id="locMang" aria-label="Lọc theo mảng công việc"><option value="">Tất cả mảng công việc</option>' + mangCo.map(function (m) {
       return '<option' + (m === locMang ? ' selected' : '') + '>' + esc(m) + '</option>';
@@ -325,6 +336,15 @@
   });
   $('view').addEventListener('click', function (e) {
     var f = e.target.closest('[data-loc]'); if (f) { loc = f.dataset.loc; ve(); return; }
+    var tdb = e.target.closest('button[data-td]');
+    if (tdb) {
+      var vt = D.viecTuDong[+tdb.dataset.td]; if (!vt || busy) return;
+      var ok2 = !vt.xong; busy = true; tdb.disabled = true;
+      BDV.goi('luuViecCongVan', { ngay: vt.ngay, loai: vt.loai, xong: ok2, ve: 'nhiemVu' })
+        .then(function (ds) { busy = false; D.viecTuDong = ds; ve(); toast(ok2 ? 'Đã đánh dấu đã lưu công văn' : 'Đã bỏ đánh dấu'); })
+        .catch(function (er) { busy = false; tdb.disabled = false; toast(er && er.message ? er.message : String(er), true); });
+      return;
+    }
     var tb = e.target.closest('button[data-tn]');
     if (tb) {
       var r = tb.closest('.tn-r'), v = D.nhiemVu.filter(function (x) { return x.dong === +r.dataset.dong; })[0], ok = tb.dataset.tn === '1', gc = r.querySelector('input').value.trim();
