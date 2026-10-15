@@ -65,6 +65,21 @@
     '.hd .ht-bang .vt{display:block;font-size:12px;color:var(--muted)}.hd .ht-bang .gc{display:block;font-size:12px;color:var(--muted);margin-top:2px}.hd .ht-bang .am{color:var(--bad);font-weight:600}.hd .ht-bang .duong{color:var(--ok,#17794a);font-weight:600}' +
     '.hd .ht-bang tr.sua-r td{background:var(--bg)}.hd .ht-bang tr.khu.cu td{background:var(--track);padding-top:10px}.hd .ht-bang .form{margin:0;background:none;padding:2px 0}.hd .ht-bang input[type=number]{width:90px}.hd .ht-bang td button{white-space:nowrap}' +
     '@media (max-width:640px){.hd .ht-bang .an-dd{display:none}}' +
+    '.hd .ht-bd{position:relative}.hd .ht-so{display:flex;gap:10px 28px;flex-wrap:wrap;margin-bottom:14px}.hd .ht-so div{display:flex;gap:8px;align-items:baseline}.hd .ht-so b{font-size:26px;line-height:1.1}' +
+    '.hd .ht-so span{font-size:13.5px}.hd .ht-so small{display:block;font-size:12px;color:var(--muted)}' +
+    '.hd .ht-t{font-weight:600;font-size:13.5px;margin-bottom:6px}.hd .ht-t span{font-weight:400;font-size:12px;color:var(--muted);margin-left:6px}' +
+    '.hd{--ht-du:#0ca30c;--ht-thieu:#fab219;--ht-hong:#d03b3b;--ht-cu:#b4bcc8;--ht-co:var(--c1)}@media (prefers-color-scheme:dark){.hd{--ht-cu:#4b5563}}' +
+    '.hd .ht-du{background:var(--ht-du)}.hd .ht-thieu{background:var(--ht-thieu)}.hd .ht-hong{background:var(--ht-hong)}.hd .ht-cu{background:var(--ht-cu)}.hd .ht-co{background:var(--ht-co)}' +
+    '.hd .ht-chong{display:flex;gap:2px;height:22px}.hd .ht-chong button{border:0;padding:0;min-width:6px;flex-basis:0;cursor:pointer}.hd .ht-chong button:first-child{border-radius:4px 0 0 4px}.hd .ht-chong button:last-child{border-radius:0 4px 4px 0}' +
+    '.hd .ht-chong button.mo,.hd .ht-kr.mo{opacity:.3}.hd .ht-chong button:hover{filter:brightness(1.08)}' +
+    '.hd .ht-chu{display:flex;gap:6px 16px;flex-wrap:wrap;margin-top:8px}.hd .ht-chu button{border:0;background:none;padding:2px 0;font-size:13px;color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:6px}' +
+    '.hd .ht-chu button[aria-pressed=true]{font-weight:700;text-decoration:underline}.hd .ht-chu i,.hd .ht-lg i{display:inline-block;width:10px;height:10px;border-radius:3px}' +
+    '.hd .ht-lg{display:flex;gap:16px;font-size:12.5px;color:var(--muted);margin-bottom:6px}.hd .ht-lg span{display:inline-flex;align-items:center;gap:6px}' +
+    '.hd .ht-khu{display:flex;flex-direction:column;gap:4px}.hd .ht-kr{display:grid;grid-template-columns:minmax(120px,240px) 1fr;gap:10px;align-items:center;border:0;background:none;padding:2px 0;cursor:pointer;text-align:left;color:var(--text);font-size:13px}' +
+    '.hd .ht-kr:hover .ht-kt{color:var(--accent)}.hd .ht-kt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hd .ht-kb{display:flex;align-items:center;gap:6px}' +
+    '.hd .ht-kv{display:flex;gap:2px;height:14px}.hd .ht-kv i{display:block;min-width:3px;flex-basis:0}.hd .ht-kv i:last-child{border-radius:0 4px 4px 0}.hd .ht-kb em{font-style:normal;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}' +
+    '.hd .ht-tip{position:absolute;z-index:3;pointer-events:none;background:var(--text);color:var(--card);font-size:12.5px;padding:5px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
+    '@media (max-width:640px){.hd .ht-kr{grid-template-columns:110px 1fr}}' +
     '.hd .cv-r.nay-r{background:var(--accent-soft);margin:0 -16px;padding:8px 16px;border-radius:8px}.hd .cv-r .cho{justify-content:flex-end}' +
     '@media (max-width:640px){.hd .cv-r{grid-template-columns:1fr}.hd .cv-r .cho{justify-content:flex-start}}' +
     '@media (max-width:640px){.hd .vc-i{grid-template-columns:22px 1fr}.hd .vc-i .nut{grid-column:2}.hd .dong{grid-template-columns:64px 1fr}.hd .nut{grid-column:1/-1;justify-content:flex-start}.hd .yc{grid-template-columns:1fr}}';
@@ -392,10 +407,18 @@
   /* ================= Hiện trạng tài sản ================= */
   function hienTrang(el) {
     var o = khoi(el, 'ht', 'hienTrang', {}, veHt);
-    o.loc = o.loc || { q: '', nhom: '', khu: '', chuY: false };
+    o.loc = o.loc || { q: '', nhom: '', khu: '', chuY: false, tt: '' };
     ganSuKien(el, function (b) { suKienHt(o, b); });
     if (el.dataset.htGan !== '1') {
       el.dataset.htGan = '1';
+      el.addEventListener('mousemove', function (e) {
+        var t = e.target.closest('[data-tip]'), tip = el.querySelector('.ht-tip'); if (!tip) return;
+        if (!t) { tip.hidden = true; return; }
+        var r = el.querySelector('.ht-bd').getBoundingClientRect();
+        tip.textContent = t.dataset.tip; tip.hidden = false;
+        tip.style.left = Math.min(e.clientX - r.left + 12, r.width - tip.offsetWidth - 4) + 'px'; tip.style.top = (e.clientY - r.top + 14) + 'px';
+      });
+      el.addEventListener('mouseleave', function () { var tip = el.querySelector('.ht-tip'); if (tip) tip.hidden = true; });
       el.addEventListener('input', function (e) { if (e.target.dataset.htl === 'q') { o.loc.q = e.target.value; veBangHt(o); } });
       el.addEventListener('change', function (e) {
         var k = e.target.dataset.htl; if (!k || k === 'q') return;
@@ -411,16 +434,7 @@
   function veHt(o) {
     var d = o.d, ds = d.ds, l = o.loc;
     var khus = []; ds.forEach(function (x) { if (khus.indexOf(x.khu) === -1) khus.push(x.khu); });
-    var thieu = ds.filter(function (x) { return x.ss != null && x.kk && x.kk < x.ss; }).length, so0 = ds.filter(function (x) { return x.kk === 0; }).length;
-    var hong = ds.filter(function (x) { return RE_HONG.test(x.tinhTrang + ' ' + x.ghiChu); }).length;
-    var cho = ds.filter(function (x) { return x.choMuon.length; }).length;
-    var tong = ds.reduce(function (a, x) { return a + (x.kk || 0); }, 0);
-    var h = '<div class="hd"><div class="tiles">' +
-      '<div class="tile chinh"><span>Loại tài sản đang có</span><b>' + (ds.length - so0) + '</b><small>' + ds.filter(function (x) { return x.nhom === 'Tài sản cố định' && x.kk !== 0; }).length + ' tài sản cố định · ' + ds.filter(function (x) { return x.nhom !== 'Tài sản cố định' && x.kk !== 0; }).length + ' đồ trong kho · ' + so0 + ' mục cũ (hiện có 0)</small></div>' +
-      '<div class="tile"><span>Tổng số lượng hiện có</span><b>' + tong.toLocaleString('vi-VN') + '</b><small>theo lần kiểm kê gần nhất</small></div>' +
-      '<div class="tile"><span>Ít hơn sổ sách</span><b>' + thieu + '</b><small>loại tài sản đang thiếu</small></div>' +
-      '<div class="tile"><span>Có ghi nhận hư / mất</span><b>' + hong + '</b><small>theo tình trạng, ghi chú</small></div>' +
-      '<div class="tile"><span>Đang cho mượn</span><b>' + cho + '</b><small>loại tài sản chưa nhận lại</small></div></div>';
+    var h = '<div class="hd">' + bieuDoHt(o);
     h += '<div class="khung"><div class="ht-loc"><input type="search" data-htl="q" placeholder="Tìm tên tài sản, vị trí, ghi chú…" value="' + esc(l.q) + '" aria-label="Tìm tài sản">' +
       '<select data-htl="nhom" aria-label="Nhóm tài sản"><option value="">Tất cả nhóm</option>' + d.nhom.map(function (x) { return '<option' + (l.nhom === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>' +
       '<select data-htl="khu" aria-label="Khu / vị trí"><option value="">Tất cả vị trí</option>' + khus.map(function (x) { return '<option' + (l.khu === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>' +
@@ -436,12 +450,48 @@
     o.el.innerHTML = h + '</div>';
     veBangHt(o);
   }
+
+  // Trạng thái loại trừ nhau (ưu tiên: cũ > hư/mất > thiếu > đủ) để chia 100%
+  var HT_TT = [['du', 'Đủ so với sổ sách', 'ht-du'], ['thieu', 'Ít hơn sổ sách', 'ht-thieu'], ['hong', 'Có ghi nhận hư / mất', 'ht-hong'], ['cu', 'Cũ (hiện có 0)', 'ht-cu']];
+  function ttHt(x) {
+    if (x.kk === 0) return 'cu';
+    if (RE_HONG.test(x.tinhTrang + ' ' + x.ghiChu)) return 'hong';
+    if (x.ss != null && x.kk != null && x.kk < x.ss) return 'thieu';
+    return 'du';
+  }
+  function bieuDoHt(o) {
+    var ds = o.d.ds, l = o.loc, n = ds.length || 1;
+    var dem = {}; HT_TT.forEach(function (t) { dem[t[0]] = 0; }); ds.forEach(function (x) { dem[ttHt(x)]++; });
+    var tong = ds.reduce(function (a, x) { return a + (x.kk || 0); }, 0), cho = ds.filter(function (x) { return x.choMuon.length; }).length;
+    var tsc = ds.filter(function (x) { return x.nhom === 'Tài sản cố định' && x.kk !== 0; }).length;
+    var h = '<div class="khung ht-bd"><div class="ht-so"><div><b>' + (ds.length - dem.cu) + '</b><span>loại tài sản đang có<small>' + tsc + ' tài sản cố định · ' + (ds.length - dem.cu - tsc) + ' đồ trong kho</small></span></div>' +
+      '<div><b>' + tong.toLocaleString('vi-VN') + '</b><span>món hiện có<small>theo lần kiểm kê gần nhất</small></span></div>' +
+      '<div><b>' + cho + '</b><span>loại đang cho mượn<small>chưa nhận lại</small></span></div></div>';
+    h += '<div class="ht-t">Tình trạng ' + ds.length + ' loại tài sản <span>bấm vào một phần để lọc bảng</span></div><div class="ht-chong" role="img" aria-label="' +
+      esc(HT_TT.map(function (t) { return t[1] + ': ' + dem[t[0]]; }).join(', ')) + '">' + HT_TT.filter(function (t) { return dem[t[0]]; }).map(function (t) {
+        return '<button type="button" class="' + t[2] + (l.tt && l.tt !== t[0] ? ' mo' : '') + '" style="flex-grow:' + dem[t[0]] + '" data-hd="htTT" data-t="' + t[0] + '" data-tip="' + esc(t[1] + ': ' + dem[t[0]] + ' loại (' + Math.round(dem[t[0]] * 100 / n) + '%)') + '" aria-label="' + esc(t[1] + ' ' + dem[t[0]]) + '"></button>'; }).join('') + '</div>' +
+      '<div class="ht-chu">' + HT_TT.map(function (t) {
+        return '<button type="button" data-hd="htTT" data-t="' + t[0] + '" aria-pressed="' + (l.tt === t[0]) + '"><i class="' + t[2] + '"></i>' + t[1] + ' <b>' + dem[t[0]] + '</b></button>'; }).join('') + '</div>';
+    // Theo vị trí: đang có / cũ
+    var khu = [], m = {};
+    ds.forEach(function (x) { if (!m[x.khu]) { m[x.khu] = { co: 0, cu: 0 }; khu.push(x.khu); } m[x.khu][x.kk === 0 ? 'cu' : 'co']++; });
+    var max = Math.max.apply(null, khu.map(function (k) { return m[k].co + m[k].cu; }).concat([1]));
+    h += '<div class="ht-t" style="margin-top:16px">Số loại tài sản theo vị trí <span>bấm để lọc</span></div><div class="ht-lg"><span><i class="ht-co"></i>Đang có</span><span><i class="ht-cu"></i>Cũ (hiện có 0)</span></div><div class="ht-khu">' +
+      khu.map(function (k) {
+        var c = m[k], t = c.co + c.cu;
+        return '<button type="button" class="ht-kr' + (l.khu && l.khu !== k ? ' mo' : '') + '" data-hd="htKhu" data-t="' + esc(k) + '" data-tip="' + esc(k + ': ' + c.co + ' đang có' + (c.cu ? ', ' + c.cu + ' cũ' : '')) + '">' +
+          '<span class="ht-kt">' + esc(k) + '</span><span class="ht-kb"><span class="ht-kv" style="width:' + (t * 100 / max) + '%">' +
+          (c.co ? '<i class="ht-co" style="flex-grow:' + c.co + '"></i>' : '') + (c.cu ? '<i class="ht-cu" style="flex-grow:' + c.cu + '"></i>' : '') + '</span><em>' + t + '</em></span></button>';
+      }).join('') + '</div>';
+    return h + '<div class="ht-tip" hidden></div></div>';
+  }
   function locHt(o) {
     var l = o.loc, q = l.q.trim().toLowerCase();
     return o.d.ds.filter(function (x) {
       if (l.nhom && x.nhom !== l.nhom) return false;
       if (l.khu && x.khu !== l.khu) return false;
       if (l.chuY && !chuY(x)) return false;
+      if (l.tt && ttHt(x) !== l.tt) return false;
       return !q || (x.ten + ' ' + x.khu + ' ' + x.lop + ' ' + x.tang + ' ' + x.ghiChu + ' ' + x.tinhTrang).toLowerCase().indexOf(q) > -1;
     });
   }
@@ -494,6 +544,8 @@
   }
   function suKienHt(o, b) {
     var k = b.dataset.hd;
+    if (k === 'htTT') { o.loc.tt = o.loc.tt === b.dataset.t ? '' : b.dataset.t; o.ve(); return; }
+    if (k === 'htKhu') { o.loc.khu = o.loc.khu === b.dataset.t ? '' : b.dataset.t; o.ve(); return; }
     if (k === 'htThem') { o.mo = { them: true }; o.ve(); return; }
     if (k === 'htDong') { o.mo = {}; o.ve(); return; }
     if (k === 'htSua') { o.mo = { sua: b.dataset.t }; veBangHt(o); return; }
