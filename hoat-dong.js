@@ -65,21 +65,29 @@
     '.hd .ht-bang .vt{display:block;font-size:12px;color:var(--muted)}.hd .ht-bang .gc{display:block;font-size:12px;color:var(--muted);margin-top:2px}.hd .ht-bang .am{color:var(--bad);font-weight:600}.hd .ht-bang .duong{color:var(--ok,#17794a);font-weight:600}' +
     '.hd .ht-bang tr.sua-r td{background:var(--bg)}.hd .ht-bang tr.khu.cu td{background:var(--track);padding-top:10px}.hd .ht-bang .form{margin:0;background:none;padding:2px 0}.hd .ht-bang input[type=number]{width:90px}.hd .ht-bang td button{white-space:nowrap}' +
     '@media (max-width:640px){.hd .ht-bang .an-dd{display:none}}' +
-    '.hd .ht-bd{position:relative}.hd .ht-so{display:flex;gap:10px 28px;flex-wrap:wrap;margin-bottom:14px}.hd .ht-so div{display:flex;gap:8px;align-items:baseline}.hd .ht-so b{font-size:26px;line-height:1.1}' +
+    '.hd .ht-bd{position:relative}.hd .ht-so{display:flex;gap:10px 32px;flex-wrap:wrap}.hd .ht-so div{display:flex;gap:8px;align-items:baseline}.hd .ht-so b{font-size:26px;line-height:1.1}' +
     '.hd .ht-so span{font-size:13.5px}.hd .ht-so small{display:block;font-size:12px;color:var(--muted)}' +
-    '.hd .ht-t{font-weight:600;font-size:13.5px;margin-bottom:6px}.hd .ht-t span{font-weight:400;font-size:12px;color:var(--muted);margin-left:6px}' +
+    '.hd .ht-luoi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px}.hd .ht-luoi .khung{margin:0}' +
+    '.hd .ht-t{font-weight:600;font-size:13.5px;margin-bottom:8px}.hd .ht-t span{font-weight:400;font-size:12px;color:var(--muted);margin-left:6px}' +
     '.hd{--ht-du:#0ca30c;--ht-thieu:#fab219;--ht-hong:#d03b3b;--ht-cu:#b4bcc8;--ht-co:var(--c1)}@media (prefers-color-scheme:dark){.hd{--ht-cu:#4b5563}}' +
-    '.hd .ht-du{background:var(--ht-du)}.hd .ht-thieu{background:var(--ht-thieu)}.hd .ht-hong{background:var(--ht-hong)}.hd .ht-cu{background:var(--ht-cu)}.hd .ht-co{background:var(--ht-co)}' +
-    '.hd .ht-chong{display:flex;gap:2px;height:22px}.hd .ht-chong button{border:0;padding:0;min-width:6px;flex-basis:0;cursor:pointer}.hd .ht-chong button:first-child{border-radius:4px 0 0 4px}.hd .ht-chong button:last-child{border-radius:0 4px 4px 0}' +
-    '.hd .ht-chong button.mo,.hd .ht-kr.mo{opacity:.3}.hd .ht-chong button:hover{filter:brightness(1.08)}' +
-    '.hd .ht-chu{display:flex;gap:6px 16px;flex-wrap:wrap;margin-top:8px}.hd .ht-chu button{border:0;background:none;padding:2px 0;font-size:13px;color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:6px}' +
-    '.hd .ht-chu button[aria-pressed=true]{font-weight:700;text-decoration:underline}.hd .ht-chu i,.hd .ht-lg i{display:inline-block;width:10px;height:10px;border-radius:3px}' +
+    '.hd .ht-du{background:var(--ht-du);stroke:var(--ht-du)}.hd .ht-thieu{background:var(--ht-thieu);stroke:var(--ht-thieu)}.hd .ht-hong{background:var(--ht-hong);stroke:var(--ht-hong)}.hd .ht-cu{background:var(--ht-cu);stroke:var(--ht-cu)}.hd .ht-co{background:var(--ht-co)}' +
+    '.hd .ht-donut{display:flex;gap:18px;align-items:center;flex-wrap:wrap}.hd .ht-donut svg{width:150px;height:150px;flex:none}' +
+    '.hd circle.ht-sg{fill:none;stroke-width:22;cursor:pointer;transition:opacity .15s}.hd circle.ht-sg:hover{stroke-width:26}.hd .ht-sg.mo,.hd .ht-kr.mo{opacity:.3}' +
+    '.hd .ht-dn{font-size:24px;font-weight:700;fill:var(--text);pointer-events:none}.hd .ht-dl{font-size:11px;fill:var(--muted);pointer-events:none}' +
+    '.hd .ht-chu{display:flex;flex-direction:column;gap:4px;flex:1 1 160px}.hd .ht-chu button{border:0;background:none;padding:4px 6px;border-radius:6px;font-size:13px;color:var(--text);cursor:pointer;display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;text-align:left}' +
+    '.hd .ht-chu button:hover{background:var(--bg)}.hd .ht-chu button[aria-pressed=true]{background:var(--accent-soft);font-weight:700}.hd .ht-chu i,.hd .ht-lg i{display:inline-block;width:10px;height:10px;border-radius:3px}' +
     '.hd .ht-lg{display:flex;gap:16px;font-size:12.5px;color:var(--muted);margin-bottom:6px}.hd .ht-lg span{display:inline-flex;align-items:center;gap:6px}' +
-    '.hd .ht-khu{display:flex;flex-direction:column;gap:4px}.hd .ht-kr{display:grid;grid-template-columns:minmax(120px,240px) 1fr;gap:10px;align-items:center;border:0;background:none;padding:2px 0;cursor:pointer;text-align:left;color:var(--text);font-size:13px}' +
-    '.hd .ht-kr:hover .ht-kt{color:var(--accent)}.hd .ht-kt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hd .ht-kb{display:flex;align-items:center;gap:6px}' +
-    '.hd .ht-kv{display:flex;gap:2px;height:14px}.hd .ht-kv i{display:block;min-width:3px;flex-basis:0}.hd .ht-kv i:last-child{border-radius:0 4px 4px 0}.hd .ht-kb em{font-style:normal;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}' +
+    '.hd .ht-khu,.hd .ht-db{display:flex;flex-direction:column;gap:3px}.hd .ht-kr,.hd .ht-dr{display:grid;grid-template-columns:minmax(90px,38%) 1fr;gap:10px;align-items:center;border:0;background:none;padding:3px 0;cursor:pointer;text-align:left;color:var(--text);font-size:13px}' +
+    '.hd .ht-dr{grid-template-columns:minmax(90px,38%) 1fr 34px}.hd .ht-kr:hover .ht-kt,.hd .ht-dr:hover .ht-kt{color:var(--accent)}.hd .ht-kt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hd .ht-kb{display:flex;align-items:center;gap:6px}' +
+    '.hd .ht-kv{display:flex;gap:2px;height:14px}.hd .ht-kv i{display:block;min-width:3px;flex-basis:0}.hd .ht-kv i:last-child{border-radius:0 4px 4px 0}.hd .ht-kb em,.hd .ht-dr em{font-style:normal;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}' +
+    '.hd .ht-dr em{color:var(--bad);font-weight:600;text-align:right}.hd .ht-dt{position:relative;height:16px;margin:0 6px}.hd .ht-dline{position:absolute;top:7px;height:2px;background:var(--line)}' +
+    '.hd .ht-dot{position:absolute;top:3px;width:10px;height:10px;border-radius:50%;margin-left:-5px;box-shadow:0 0 0 2px var(--card)}.hd .ht-kkc{background:var(--c1)}.hd .ht-ss{background:var(--card);border:2px solid var(--muted);box-sizing:border-box}' +
+    '.hd .ht-lg i.ht-ss{border-radius:50%}.hd .ht-lg i.ht-kkc{border-radius:50%}' +
+    '.hd .ht-cot{display:flex;align-items:flex-end;gap:8px;height:150px;padding-top:4px}.hd .ht-c{flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}' +
+    '.hd .ht-c em{font-style:normal;font-size:12px;color:var(--muted);margin-bottom:3px}.hd .ht-cv{display:block;width:100%;max-width:40px;background:var(--c1);border-radius:4px 4px 0 0}.hd .ht-cv.cu{background:var(--ht-thieu)}' +
+    '.hd .ht-c small{font-size:11.5px;color:var(--muted);margin-top:4px;white-space:nowrap}.hd .ht-nhac{font-size:12.5px;color:var(--warn);background:var(--warn-soft);border-radius:8px;padding:4px 10px;margin-bottom:8px;display:inline-block}' +
     '.hd .ht-tip{position:absolute;z-index:3;pointer-events:none;background:var(--text);color:var(--card);font-size:12.5px;padding:5px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
-    '@media (max-width:640px){.hd .ht-kr{grid-template-columns:110px 1fr}}' +
+    '@media (max-width:760px){.hd .ht-luoi{grid-template-columns:1fr}}' +
     '.hd .cv-r.nay-r{background:var(--accent-soft);margin:0 -16px;padding:8px 16px;border-radius:8px}.hd .cv-r .cho{justify-content:flex-end}' +
     '@media (max-width:640px){.hd .cv-r{grid-template-columns:1fr}.hd .cv-r .cho{justify-content:flex-start}}' +
     '@media (max-width:640px){.hd .vc-i{grid-template-columns:22px 1fr}.hd .vc-i .nut{grid-column:2}.hd .dong{grid-template-columns:64px 1fr}.hd .nut{grid-column:1/-1;justify-content:flex-start}.hd .yc{grid-template-columns:1fr}}';
@@ -418,6 +426,7 @@
         tip.textContent = t.dataset.tip; tip.hidden = false;
         tip.style.left = Math.min(e.clientX - r.left + 12, r.width - tip.offsetWidth - 4) + 'px'; tip.style.top = (e.clientY - r.top + 14) + 'px';
       });
+      el.addEventListener('click', function (e) { var c = e.target.closest('circle[data-hd]'); if (c) suKienHt(o, c); });
       el.addEventListener('mouseleave', function () { var tip = el.querySelector('.ht-tip'); if (tip) tip.hidden = true; });
       el.addEventListener('input', function (e) { if (e.target.dataset.htl === 'q') { o.loc.q = e.target.value; veBangHt(o); } });
       el.addEventListener('change', function (e) {
@@ -464,26 +473,61 @@
     var dem = {}; HT_TT.forEach(function (t) { dem[t[0]] = 0; }); ds.forEach(function (x) { dem[ttHt(x)]++; });
     var tong = ds.reduce(function (a, x) { return a + (x.kk || 0); }, 0), cho = ds.filter(function (x) { return x.choMuon.length; }).length;
     var tsc = ds.filter(function (x) { return x.nhom === 'Tài sản cố định' && x.kk !== 0; }).length;
-    var h = '<div class="khung ht-bd"><div class="ht-so"><div><b>' + (ds.length - dem.cu) + '</b><span>loại tài sản đang có<small>' + tsc + ' tài sản cố định · ' + (ds.length - dem.cu - tsc) + ' đồ trong kho</small></span></div>' +
+    var h = '<div class="ht-bd"><div class="khung ht-so"><div><b>' + (ds.length - dem.cu) + '</b><span>loại tài sản đang có<small>' + tsc + ' tài sản cố định · ' + (ds.length - dem.cu - tsc) + ' đồ trong kho</small></span></div>' +
       '<div><b>' + tong.toLocaleString('vi-VN') + '</b><span>món hiện có<small>theo lần kiểm kê gần nhất</small></span></div>' +
-      '<div><b>' + cho + '</b><span>loại đang cho mượn<small>chưa nhận lại</small></span></div></div>';
-    h += '<div class="ht-t">Tình trạng ' + ds.length + ' loại tài sản <span>bấm vào một phần để lọc bảng</span></div><div class="ht-chong" role="img" aria-label="' +
-      esc(HT_TT.map(function (t) { return t[1] + ': ' + dem[t[0]]; }).join(', ')) + '">' + HT_TT.filter(function (t) { return dem[t[0]]; }).map(function (t) {
-        return '<button type="button" class="' + t[2] + (l.tt && l.tt !== t[0] ? ' mo' : '') + '" style="flex-grow:' + dem[t[0]] + '" data-hd="htTT" data-t="' + t[0] + '" data-tip="' + esc(t[1] + ': ' + dem[t[0]] + ' loại (' + Math.round(dem[t[0]] * 100 / n) + '%)') + '" aria-label="' + esc(t[1] + ' ' + dem[t[0]]) + '"></button>'; }).join('') + '</div>' +
+      '<div><b>' + Math.round(dem.du * 100 / n) + '%</b><span>loại đủ so với sổ sách<small>' + dem.du + ' / ' + ds.length + ' loại</small></span></div>' +
+      '<div><b>' + cho + '</b><span>loại đang cho mượn<small>chưa nhận lại</small></span></div></div><div class="ht-luoi">';
+
+    // 1. Vành khuyên: tình trạng
+    var R = 54, C = 2 * Math.PI * R, off = 0, seg = '';
+    HT_TT.forEach(function (t) {
+      var v = dem[t[0]]; if (!v) return;
+      var len = v / n * C, gap = Math.min(3, len / 3);
+      seg += '<circle class="ht-sg ' + t[2] + (l.tt && l.tt !== t[0] ? ' mo' : '') + '" cx="70" cy="70" r="' + R + '" stroke-dasharray="' + (len - gap).toFixed(2) + ' ' + (C - len + gap).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '" data-hd="htTT" data-t="' + t[0] + '" data-tip="' + esc(t[1] + ': ' + v + ' loại (' + Math.round(v * 100 / n) + '%)') + '"/>';
+      off += len;
+    });
+    h += '<div class="khung"><div class="ht-t">Tình trạng ' + ds.length + ' loại tài sản<span>bấm để lọc</span></div><div class="ht-donut">' +
+      '<svg viewBox="0 0 140 140" role="img" aria-label="' + esc(HT_TT.map(function (t) { return t[1] + ' ' + dem[t[0]]; }).join(', ')) + '"><g transform="rotate(-90 70 70)">' + seg + '</g>' +
+      '<text x="70" y="68" text-anchor="middle" class="ht-dn">' + Math.round(dem.du * 100 / n) + '%</text><text x="70" y="86" text-anchor="middle" class="ht-dl">đủ sổ sách</text></svg>' +
       '<div class="ht-chu">' + HT_TT.map(function (t) {
-        return '<button type="button" data-hd="htTT" data-t="' + t[0] + '" aria-pressed="' + (l.tt === t[0]) + '"><i class="' + t[2] + '"></i>' + t[1] + ' <b>' + dem[t[0]] + '</b></button>'; }).join('') + '</div>';
-    // Theo vị trí: đang có / cũ
+        return '<button type="button" data-hd="htTT" data-t="' + t[0] + '" aria-pressed="' + (l.tt === t[0]) + '"><i class="' + t[2] + '"></i><span>' + t[1] + '</span><b>' + dem[t[0]] + '</b></button>'; }).join('') + '</div></div></div>';
+
+    // 2. Thanh ngang chồng: theo vị trí
     var khu = [], m = {};
     ds.forEach(function (x) { if (!m[x.khu]) { m[x.khu] = { co: 0, cu: 0 }; khu.push(x.khu); } m[x.khu][x.kk === 0 ? 'cu' : 'co']++; });
     var max = Math.max.apply(null, khu.map(function (k) { return m[k].co + m[k].cu; }).concat([1]));
-    h += '<div class="ht-t" style="margin-top:16px">Số loại tài sản theo vị trí <span>bấm để lọc</span></div><div class="ht-lg"><span><i class="ht-co"></i>Đang có</span><span><i class="ht-cu"></i>Cũ (hiện có 0)</span></div><div class="ht-khu">' +
+    h += '<div class="khung"><div class="ht-t">Số loại tài sản theo vị trí<span>bấm để lọc</span></div><div class="ht-lg"><span><i class="ht-co"></i>Đang có</span><span><i class="ht-cu"></i>Cũ (hiện có 0)</span></div><div class="ht-khu">' +
       khu.map(function (k) {
         var c = m[k], t = c.co + c.cu;
         return '<button type="button" class="ht-kr' + (l.khu && l.khu !== k ? ' mo' : '') + '" data-hd="htKhu" data-t="' + esc(k) + '" data-tip="' + esc(k + ': ' + c.co + ' đang có' + (c.cu ? ', ' + c.cu + ' cũ' : '')) + '">' +
           '<span class="ht-kt">' + esc(k) + '</span><span class="ht-kb"><span class="ht-kv" style="width:' + (t * 100 / max) + '%">' +
           (c.co ? '<i class="ht-co" style="flex-grow:' + c.co + '"></i>' : '') + (c.cu ? '<i class="ht-cu" style="flex-grow:' + c.cu + '"></i>' : '') + '</span><em>' + t + '</em></span></button>';
-      }).join('') + '</div>';
-    return h + '<div class="ht-tip" hidden></div></div>';
+      }).join('') + '</div></div>';
+
+    // 3. Dumbbell: thiếu nhiều nhất so với sổ sách (đồ đang có)
+    var thieu = ds.filter(function (x) { return x.kk && x.ss != null && x.kk < x.ss; }).sort(function (a, b) { return (b.ss - b.kk) - (a.ss - a.kk); }).slice(0, 8);
+    var mx = Math.max.apply(null, thieu.map(function (x) { return x.ss; }).concat([1]));
+    h += '<div class="khung"><div class="ht-t">Thiếu nhiều nhất so với sổ sách<span>đồ đang có · bấm để tìm</span></div><div class="ht-lg"><span><i class="ht-ss"></i>Sổ sách</span><span><i class="ht-kkc"></i>Hiện có</span></div>' +
+      (thieu.length ? '<div class="ht-db">' + thieu.map(function (x) {
+        var a = x.kk * 100 / mx, b = x.ss * 100 / mx;
+        return '<button type="button" class="ht-dr" data-hd="htTim" data-t="' + esc(x.ten) + '" data-tip="' + esc(x.ten + ' (' + x.khu + '): hiện có ' + x.kk + ' / sổ sách ' + x.ss + ', thiếu ' + (x.ss - x.kk)) + '">' +
+          '<span class="ht-kt">' + esc(x.ten) + '</span><span class="ht-dt"><span class="ht-dline" style="left:' + a + '%;width:' + (b - a) + '%"></span>' +
+          '<span class="ht-dot ht-kkc" style="left:' + a + '%"></span><span class="ht-dot ht-ss" style="left:' + b + '%"></span></span><em>−' + (x.ss - x.kk) + '</em></button>';
+      }).join('') + '</div>' : '<div class="trong-k">Không có đồ nào thiếu so với sổ sách.</div>') + '</div>';
+
+    // 4. Cột: lần kiểm kê gần nhất theo ngày
+    var ng = {}; ds.forEach(function (x) { if (/^\d{4}-\d{2}-\d{2}$/.test(x.ngay)) ng[x.ngay] = (ng[x.ngay] || 0) + 1; });
+    var ngs = Object.keys(ng).sort(), mn = Math.max.apply(null, ngs.map(function (k) { return ng[k]; }).concat([1]));
+    var homNay = o.d.homNay, cu90 = 0;
+    ngs.forEach(function (k) { if ((new Date(homNay) - new Date(k)) / 864e5 > 90) cu90 += ng[k]; });
+    h += '<div class="khung"><div class="ht-t">Lần kiểm kê gần nhất<span>số loại tài sản theo ngày đếm</span></div>' +
+      '<div class="ht-lg"><span><i class="ht-co"></i>Trong 90 ngày</span><span><i class="ht-thieu"></i>Hơn 90 ngày chưa đếm lại</span></div>' +
+      (cu90 ? '<div class="ht-nhac">' + cu90 + ' loại chưa được kiểm lại hơn 90 ngày</div>' : '') +
+      '<div class="ht-cot">' + ngs.map(function (k) {
+        var qua = (new Date(homNay) - new Date(k)) / 864e5 > 90;
+        return '<div class="ht-c" data-tip="' + esc(dmy(k) + ': ' + ng[k] + ' loại') + '"><em>' + ng[k] + '</em><span class="ht-cv' + (qua ? ' cu' : '') + '" style="height:' + Math.max(4, ng[k] * 100 / mn) + '%"></span><small>' + dm(k) + '</small></div>';
+      }).join('') + '</div></div>';
+    return h + '</div><div class="ht-tip" hidden></div></div>';
   }
   function locHt(o) {
     var l = o.loc, q = l.q.trim().toLowerCase();
@@ -545,6 +589,7 @@
   function suKienHt(o, b) {
     var k = b.dataset.hd;
     if (k === 'htTT') { o.loc.tt = o.loc.tt === b.dataset.t ? '' : b.dataset.t; o.ve(); return; }
+    if (k === 'htTim') { o.loc.q = b.dataset.t; o.loc.tt = ''; o.loc.khu = ''; o.ve(); var bang = o.el.querySelector('.ht-bang'); if (bang) bang.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (k === 'htKhu') { o.loc.khu = o.loc.khu === b.dataset.t ? '' : b.dataset.t; o.ve(); return; }
     if (k === 'htThem') { o.mo = { them: true }; o.ve(); return; }
     if (k === 'htDong') { o.mo = {}; o.ve(); return; }
