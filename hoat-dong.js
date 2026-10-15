@@ -1,6 +1,6 @@
 /* Các khối hoạt động riêng của nhóm, dùng trong trang nhóm (nhom.js) và trang 4T:
      BDVHD.cnXanh(el)        — Chủ nhật xanh (nhóm CSDL - CSVC): đăng ký / xếp người / xin vắng có người trực thay / 4 đầu việc chuẩn bị mỗi CN
-     BDVHD.csvc(el)          — Cơ sở vật chất: kiểm kê (đăng ký → duyệt 2 cấp → báo cáo, biểu đồ) · mượn về · cho mượn
+     BDVHD.csvc(el)          — Cơ sở vật chất: hiện trạng tài sản · kiểm kê (đăng ký → duyệt 2 cấp → báo cáo, biểu đồ) · mượn về · cho mượn
      BDVHD.congVan(el)       — Công văn đi / đến (chỉ xem từ sheet): đăng ký ngày + phân công, đánh dấu đã kiểm kê
      BDVHD.hopNhom(el, nhom) — Lịch họp tháng của nhóm
    Mỗi khối tự gọi máy chủ, tự vẽ và tự xử lý bấm nút bên trong el. Gọi lại khi trang vẽ lại: dùng dữ liệu đã có, làm mới nếu cũ hơn 60 giây. */
@@ -57,6 +57,14 @@
     '.hd .bd-pt:hover circle.bd-c1{r:6}.hd .bd-pt:hover path{opacity:.8}.hd .bd-lg{display:flex;gap:14px;font-size:12.5px;color:var(--muted);margin-bottom:4px}.hd .bd-lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}' +
     '.hd .bd-lg i.bd-c1{background:var(--c1)}.hd .bd-lg i.bd-c2{background:var(--c2)}.hd .bd-lg i.bd-c3{background:var(--c3)}' +
     '.hd .bd-bang{overflow-x:auto}.hd .bd-bang table{border-collapse:collapse;font-size:12.5px;width:100%;margin-top:6px}.hd .bd-bang th,.hd .bd-bang td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:right;white-space:nowrap}.hd .bd-bang th:first-child,.hd .bd-bang td:first-child{text-align:left}' +
+    '.hd .ht-loc{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.hd .ht-loc input[type=search],.hd .ht-loc select{font:inherit;font-size:13.5px;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-height:36px}' +
+    '.hd .ht-loc input[type=search]{flex:1 1 220px;min-width:0}.hd .ht-loc label{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--text)}' +
+    '.hd .ht-bang{overflow-x:auto}.hd .ht-bang table{border-collapse:collapse;width:100%;font-size:13.5px}.hd .ht-bang th{font-size:12px;color:var(--muted);font-weight:600;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}' +
+    '.hd .ht-bang td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}.hd .ht-bang td.so{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.hd .ht-bang th.so{text-align:right}' +
+    '.hd .ht-bang tr.khu td{background:var(--bg);font-weight:700;font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding:6px 8px}' +
+    '.hd .ht-bang .vt{display:block;font-size:12px;color:var(--muted)}.hd .ht-bang .gc{display:block;font-size:12px;color:var(--muted);margin-top:2px}.hd .ht-bang .am{color:var(--bad);font-weight:600}.hd .ht-bang .duong{color:var(--ok,#17794a);font-weight:600}' +
+    '.hd .ht-bang tr.sua-r td{background:var(--bg)}.hd .ht-bang .form{margin:0;background:none;padding:2px 0}.hd .ht-bang input[type=number]{width:90px}.hd .ht-bang td button{white-space:nowrap}' +
+    '@media (max-width:640px){.hd .ht-bang .an-dd{display:none}}' +
     '.hd .cv-r.nay-r{background:var(--accent-soft);margin:0 -16px;padding:8px 16px;border-radius:8px}.hd .cv-r .cho{justify-content:flex-end}' +
     '@media (max-width:640px){.hd .cv-r{grid-template-columns:1fr}.hd .cv-r .cho{justify-content:flex-start}}' +
     '@media (max-width:640px){.hd .vc-i{grid-template-columns:22px 1fr}.hd .vc-i .nut{grid-column:2}.hd .dong{grid-template-columns:64px 1fr}.hd .nut{grid-column:1/-1;justify-content:flex-start}.hd .yc{grid-template-columns:1fr}}';
@@ -380,15 +388,122 @@
     if (k === 'moLai') return gui(o, 'luuKiemKe', { viec: 'moLai', ky: t }, dong, 'Đã mở lại').catch(function () {});
   }
 
-  /* ================= Cơ sở vật chất: Kiểm kê · Mượn về · Cho mượn ================= */
-  var CSVC_TAB = [['kk', 'Kiểm kê tài sản'], ['ve', 'Mượn về'], ['cho', 'Cho mượn']];
+
+  /* ================= Hiện trạng tài sản ================= */
+  function hienTrang(el) {
+    var o = khoi(el, 'ht', 'hienTrang', {}, veHt);
+    o.loc = o.loc || { q: '', nhom: '', khu: '', chuY: false };
+    ganSuKien(el, function (b) { suKienHt(o, b); });
+    if (el.dataset.htGan !== '1') {
+      el.dataset.htGan = '1';
+      el.addEventListener('input', function (e) { if (e.target.dataset.htl === 'q') { o.loc.q = e.target.value; veBangHt(o); } });
+      el.addEventListener('change', function (e) {
+        var k = e.target.dataset.htl; if (!k || k === 'q') return;
+        o.loc[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; veBangHt(o);
+      });
+    }
+  }
+  var RE_HONG = /(^|[^a-zà-ỹ])(hư|hỏng|mất)(?![a-zà-ỹ])/i;
+  function chuY(x) {
+    return (x.ss != null && x.kk != null && x.kk < x.ss) || RE_HONG.test(x.tinhTrang + ' ' + x.ghiChu) || x.choMuon.length > 0;
+  }
+  function sumCho(x) { return x.choMuon.reduce(function (a, c) { return a + c.sl; }, 0); }
+  function veHt(o) {
+    var d = o.d, ds = d.ds, l = o.loc;
+    var khus = []; ds.forEach(function (x) { if (khus.indexOf(x.khu) === -1) khus.push(x.khu); });
+    var thieu = ds.filter(function (x) { return x.ss != null && x.kk != null && x.kk < x.ss; }).length;
+    var hong = ds.filter(function (x) { return RE_HONG.test(x.tinhTrang + ' ' + x.ghiChu); }).length;
+    var cho = ds.filter(function (x) { return x.choMuon.length; }).length;
+    var tong = ds.reduce(function (a, x) { return a + (x.kk || 0); }, 0);
+    var h = '<div class="hd"><div class="tiles">' +
+      '<div class="tile chinh"><span>Loại tài sản</span><b>' + ds.length + '</b><small>' + ds.filter(function (x) { return x.nhom === 'Tài sản cố định'; }).length + ' tài sản cố định · ' + ds.filter(function (x) { return x.nhom !== 'Tài sản cố định'; }).length + ' đồ trong kho</small></div>' +
+      '<div class="tile"><span>Tổng số lượng hiện có</span><b>' + tong.toLocaleString('vi-VN') + '</b><small>theo lần kiểm kê gần nhất</small></div>' +
+      '<div class="tile"><span>Ít hơn sổ sách</span><b>' + thieu + '</b><small>loại tài sản đang thiếu</small></div>' +
+      '<div class="tile"><span>Có ghi nhận hư / mất</span><b>' + hong + '</b><small>theo tình trạng, ghi chú</small></div>' +
+      '<div class="tile"><span>Đang cho mượn</span><b>' + cho + '</b><small>loại tài sản chưa nhận lại</small></div></div>';
+    h += '<div class="khung"><div class="ht-loc"><input type="search" data-htl="q" placeholder="Tìm tên tài sản, vị trí, ghi chú…" value="' + esc(l.q) + '" aria-label="Tìm tài sản">' +
+      '<select data-htl="nhom" aria-label="Nhóm tài sản"><option value="">Tất cả nhóm</option>' + d.nhom.map(function (x) { return '<option' + (l.nhom === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>' +
+      '<select data-htl="khu" aria-label="Khu / vị trí"><option value="">Tất cả vị trí</option>' + khus.map(function (x) { return '<option' + (l.khu === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>' +
+      '<label><input type="checkbox" data-htl="chuY"' + (l.chuY ? ' checked' : '') + '> Chỉ hiện mục cần chú ý</label>' +
+      (d.sua ? '<button type="button" class="b2" data-hd="htThem">+ Thêm tài sản</button>' : '') +
+      (d.link ? '<a class="lk" href="' + esc(d.link) + '" target="_blank" rel="noopener">Mở sheet hiện trạng</a>' : '') + '</div>' +
+      (o.mo.them ? formThemHt(d) : '') +
+      '<div class="ht-bang"></div>' +
+      '<div class="mo-ta" style="margin-top:8px">Số liệu ban đầu lấy từ biên bản kiểm kê kho tuần/tháng (lần gần nhất 26/05/2026) và biên bản kiểm kê tài sản cố định (21/05/2026). ' +
+      (d.sua ? 'Bạn có thể cập nhật số lượng, tình trạng sau mỗi lần kiểm kê.' : 'Phụ trách chính mảng CSVC' + (d.phuTrach.length ? ' (' + esc(d.phuTrach.join(', ')) + ')' : '') + ' cập nhật số lượng, tình trạng.') + '</div></div>';
+    if (d.muonVe.length) h += '<div class="khung"><h3>Đồ đang mượn về (không thuộc tài sản văn phòng)</h3>' + d.muonVe.map(function (x) {
+      return '<div class="cv-r"><b>' + esc(x.nguon) + '</b><div>' + esc(x.ten) + ' <b>×' + x.sl + '</b><small>' + esc(x.mucDich) + '</small></div><div class="cho">' + (x.hanTra ? 'Hạn trả ' + dmy(x.hanTra) : '') + '</div></div>'; }).join('') + '</div>';
+    o.el.innerHTML = h + '</div>';
+    veBangHt(o);
+  }
+  function locHt(o) {
+    var l = o.loc, q = l.q.trim().toLowerCase();
+    return o.d.ds.filter(function (x) {
+      if (l.nhom && x.nhom !== l.nhom) return false;
+      if (l.khu && x.khu !== l.khu) return false;
+      if (l.chuY && !chuY(x)) return false;
+      return !q || (x.ten + ' ' + x.khu + ' ' + x.lop + ' ' + x.tang + ' ' + x.ghiChu + ' ' + x.tinhTrang).toLowerCase().indexOf(q) > -1;
+    });
+  }
+  function veBangHt(o) {
+    var box = o.el.querySelector('.ht-bang'); if (!box) return;
+    var d = o.d, ds = locHt(o);
+    if (!ds.length) { box.innerHTML = '<div class="trong-k">Không có tài sản nào khớp bộ lọc.</div>'; return; }
+    var cot = d.sua ? 8 : 7, khu = null, h = '<table><thead><tr><th>Tài sản</th><th class="an-dd">ĐVT</th><th class="so">Sổ sách</th><th class="so">Hiện có</th><th class="so">Chênh lệch</th><th>Tình trạng</th><th class="an-dd">Đang cho mượn</th>' + (d.sua ? '<th></th>' : '') + '</tr></thead><tbody>';
+    ds.forEach(function (x) {
+      if (x.khu !== khu) { khu = x.khu; h += '<tr class="khu"><td colspan="' + cot + '">' + esc(khu) + '</td></tr>'; }
+      var vt = [x.lop ? 'Lớp ' + x.lop : '', x.tang].filter(String).join(' · ');
+      var cl = x.ss != null && x.kk != null ? x.kk - x.ss : null;
+      var tt = x.tinhTrang ? '<span class="pill ' + (RE_HONG.test(x.tinhTrang) ? 'p-bad' : x.tinhTrang === 'Không còn sử dụng' ? 'p-khoa' : 'p-mo') + '">' + esc(x.tinhTrang) + '</span>' : '';
+      var cm = x.choMuon.map(function (c) { return esc(c.donVi) + ' <b>×' + c.sl + '</b>' + (c.hanTra ? ' <span class="vt">hạn ' + dmy(c.hanTra) + '</span>' : ''); }).join('<br>');
+      h += '<tr><td><b>' + esc(x.ten) + '</b>' + (vt ? '<span class="vt">' + esc(vt) + '</span>' : '') + '</td><td class="an-dd">' + esc(x.dvt) + '</td>' +
+        '<td class="so">' + (x.ss == null ? '—' : x.ss) + '</td><td class="so"><b>' + (x.kk == null ? '—' : x.kk) + '</b>' + (x.ngay && /^\d{4}-/.test(x.ngay) ? '<span class="vt">' + dmy(x.ngay) + '</span>' : '') + '</td>' +
+        '<td class="so">' + (cl == null || cl === 0 ? '<span class="vt">0</span>' : '<span class="' + (cl < 0 ? 'am' : 'duong') + '">' + (cl > 0 ? '+' : '−') + Math.abs(cl) + '</span>') + '</td>' +
+        '<td>' + tt + (x.ghiChu ? '<span class="gc">' + esc(x.ghiChu) + '</span>' : '') + (x.boi && x.boi !== 'Biên bản kiểm kê' ? '<span class="gc">Cập nhật: ' + esc(x.boi) + (x.luc ? ' · ' + esc(x.luc) : '') + '</span>' : '') + '</td>' +
+        '<td class="an-dd">' + (cm || '<span class="vt">—</span>') + '</td>' +
+        (d.sua ? '<td><button type="button" class="b3" data-hd="htSua" data-t="' + esc(x.ma) + '">Sửa</button></td>' : '') + '</tr>';
+      if (d.sua && o.mo.sua === x.ma) h += '<tr class="sua-r"><td colspan="' + cot + '"><div class="form" data-ma="' + esc(x.ma) + '">' +
+        '<label>Hiện có<input type="number" min="0" step="1" data-f="kk" value="' + (x.kk == null ? '' : x.kk) + '"></label>' +
+        '<label>Sổ sách<input type="number" min="0" step="1" data-f="ss" value="' + (x.ss == null ? '' : x.ss) + '"></label>' +
+        '<label>Tình trạng<select data-f="tt"><option value="">—</option>' + d.tinhTrang.map(function (t) { return '<option' + (x.tinhTrang === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</select></label>' +
+        '<label class="rong">Ghi chú<input data-f="gc" maxlength="500" value="' + esc(x.ghiChu) + '"></label>' +
+        '<button type="button" class="b1" data-hd="htLuu" data-t="' + esc(x.ma) + '">Lưu</button><button type="button" class="b3" data-hd="htDong">Đóng</button></div></td></tr>';
+    });
+    box.innerHTML = h + '</tbody></table>';
+  }
+  function formThemHt(d) {
+    return '<div class="form" data-form="htThem" style="margin-bottom:10px"><label>Nhóm<select data-f="nhom">' + d.nhom.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="rong">Tên tài sản *<input data-f="ten" maxlength="150"></label>' +
+      '<label>Khu / vị trí *<input data-f="khu" maxlength="120" list="htKhu" placeholder="Khu A, Tủ sắt 8 hộc…"></label>' +
+      '<datalist id="htKhu">' + d.ds.map(function (x) { return x.khu; }).filter(function (x, i, a) { return a.indexOf(x) === i; }).map(function (x) { return '<option value="' + esc(x) + '">'; }).join('') + '</datalist>' +
+      '<label>Lớp<input data-f="lop" maxlength="30" style="width:70px"></label><label>Tầng / Ô<input data-f="tang" maxlength="80" style="width:120px"></label>' +
+      '<label>ĐVT<input data-f="dvt" maxlength="20" value="Cái" style="width:80px"></label><label>Số lượng *<input type="number" min="0" step="1" data-f="kk" style="width:90px"></label>' +
+      '<label>Tình trạng<select data-f="tt">' + d.tinhTrang.map(function (t) { return '<option>' + esc(t) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="rong">Ghi chú<input data-f="gc" maxlength="500"></label>' +
+      '<button type="button" class="b1" data-hd="htThemLuu">Thêm</button><button type="button" class="b3" data-hd="htDong">Đóng</button></div>';
+  }
+  function suKienHt(o, b) {
+    var k = b.dataset.hd;
+    if (k === 'htThem') { o.mo = { them: true }; o.ve(); return; }
+    if (k === 'htDong') { o.mo = {}; o.ve(); return; }
+    if (k === 'htSua') { o.mo = { sua: b.dataset.t }; veBangHt(o); return; }
+    var f = b.closest('.form'), v = function (n) { var e = f.querySelector('[data-f=' + n + ']'); return e ? e.value.trim() : ''; };
+    if (k === 'htLuu') return gui(o, 'luuHienTrang', { viec: 'sua', ma: b.dataset.t, kk: v('kk'), ss: v('ss'), tinhTrang: v('tt'), ghiChu: v('gc') }, f, 'Đã cập nhật').catch(function () {});
+    if (k === 'htThemLuu') {
+      if (!v('ten') || !v('khu') || v('kk') === '') { bao('Nhập tên, vị trí và số lượng.', true); return; }
+      return gui(o, 'luuHienTrang', { viec: 'them', nhom: v('nhom'), ten: v('ten'), khu: v('khu'), lop: v('lop'), tang: v('tang'), dvt: v('dvt'), kk: v('kk'), tinhTrang: v('tt'), ghiChu: v('gc') }, f, 'Đã thêm tài sản').catch(function () {});
+    }
+  }
+
+  /* ================= Cơ sở vật chất: Hiện trạng · Kiểm kê · Mượn về · Cho mượn ================= */
+  var CSVC_TAB = [['ht', 'Hiện trạng tài sản'], ['kk', 'Kiểm kê tài sản'], ['ve', 'Mượn về'], ['cho', 'Cho mượn']];
   function csvc(el) {
-    var tab = 'kk'; try { tab = sessionStorage.getItem('bdv.csvcTab') || 'kk'; } catch (e) {}
+    var tab = 'ht'; try { tab = sessionStorage.getItem('bdv.csvcTab') || 'ht'; } catch (e) {}
     var ve = function () {
       el.innerHTML = '<div class="hd"><div class="seg seg-to" role="tablist" aria-label="Cơ sở vật chất">' + CSVC_TAB.map(function (x) {
         return '<button type="button" role="tab" data-csvc="' + x[0] + '" aria-selected="' + (x[0] === tab) + '" aria-pressed="' + (x[0] === tab) + '">' + x[1] + '</button>'; }).join('') + '</div></div><div class="csvc-body"></div>';
       var body = el.querySelector('.csvc-body');
-      if (tab === 'kk') kiemKe(body); else muonTra(body, tab);
+      if (tab === 'ht') hienTrang(body); else if (tab === 'kk') kiemKe(body); else muonTra(body, tab);
     };
     if (el.dataset.csvcGan !== '1') {
       el.dataset.csvcGan = '1';

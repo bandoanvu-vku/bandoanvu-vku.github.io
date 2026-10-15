@@ -11,7 +11,7 @@ const LIEN_KET = [
   ['cvDi', 'Link sheet công văn đi'], ['cvDiFolder', 'Link folder công văn đi'],
   ['cvDen', 'Link sheet công văn đến'], ['cvDenFolder', 'Link folder công văn đến'],
   ['bbTuanThang', 'Link biên bản kiểm kê tuần/tháng'], ['bbNam', 'Link biên bản kiểm kê năm'],
-  ['muonTra', 'Link sheet mượn trả tài sản']
+  ['muonTra', 'Link sheet mượn trả tài sản'], ['hienTrang', 'Link sheet hiện trạng tài sản']
 ];
 const TT2 = { CHO_TN: 'Chờ phụ trách duyệt', CU_CHO_TN: 'Chờ trưởng nhóm duyệt', CHO_QL: 'Chờ quản lý duyệt', DUYET: 'Đã duyệt', TRA_TN: 'Trả lại', TRA_QL: 'Quản lý trả lại', HUY: 'Đã huỷ' };
 const NHOM_CSVC = 'csdl-csvc';
