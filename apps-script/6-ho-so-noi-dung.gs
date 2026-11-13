@@ -183,7 +183,8 @@ function caiDat_(nd) {
   canQuanLy_(nd, 'xem được cài đặt');
   const cd = caiDatTruc_(sheetTruc_());
   return { lat: cd.lat, lng: cd.lng, banKinh: cd.banKinh, soBuoi: cd.toiThieuGio / 3, ngayNghi: cd.ngayNghi.slice().sort(), homNay: bayGio_().ngay, lienKet: lienKet_(), dsLienKet: LIEN_KET,
-    heThong: sheetHeThong_() };
+    heThong: sheetHeThong_(), phuTrach4t: (giaTriCaiDat_().filter(function (x) { return chuanHoa_(x[0]) === chuanHoa_('Phụ trách chính 4T'); })[0] || ['', ''])[1] || '',
+    truongNhom4t: (function () { try { return truongNhom_('4t'); } catch (e) { return []; } })() };
 }
 /** Các sheet dashboard dùng (ID trong Script Properties) — chỉ để quản lý mở nhanh ở trang Cài đặt, không sửa ở đây. [nhóm, tên, url] */
 function sheetHeThong_() {

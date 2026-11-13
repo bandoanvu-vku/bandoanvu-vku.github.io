@@ -98,7 +98,10 @@ Tất cả file .gs chung một không gian tên — build script / workflow d�
 Quản lý không có "Việc của tôi"; thay bằng **Giao việc** (`/giao-viec/`, `8-giao-viec.gs`: tạo/sửa nhiệm vụ ghi vào tab Nhiệm vụ của 3 sheet nhóm;
 tab đầu **Truyền thông - Thông tin** dùng `15-giao-4t.gs` (actions `giao4tDs` {tab} / `giao4t` {viec:'tao'|'nguoi'}): chọn tháng → form đủ cột như tab tháng
 (danh sách chọn Mức độ / Vị trí đăng / Thư mục / người lấy từ data validation hàng 3 của tab, `tieuChi4t_`, cache 30 phút; không có thì ô nhập + gợi ý giá trị đã dùng),
-ngày phải thuộc tháng của tab; danh sách hoạt động tháng cho đổi người làm (việc đã tick thì khoá); mọi thao tác ghi Nhật ký dashboard) và **Duyệt việc** 2 cấp: thành viên đặt "Chờ duyệt" (= chờ phụ trách chính của mảng ghi ở nhiệm vụ; mảng chưa có phụ trách
+ngày phải thuộc tháng của tab; danh sách hoạt động tháng cho đổi người làm (việc đã tick thì khoá); mọi thao tác ghi Nhật ký dashboard;
+quyền = quản lý + **phụ trách chính 4T** (`phuTrach4t_`: dòng "Phụ trách chính 4T" tab Cài đặt, sửa ở Cài đặt → khung 4T; trống = Chức vụ "Trưởng nhóm" 4T; `nd.pt4t` → menu "Giao việc 4T", trang chỉ có tab 4T);
+**Sửa / Xoá / Khôi phục** chỉ cho hoạt động do dashboard tạo (sổ "4T - hoạt động dashboard" ở sheet lịch trực, khớp tab + tên; hoạt động tạo trước đó lấy từ Nhật ký `boSungG4_`),
+chưa tick việc con / Tiến độ; xoá = `deleteCells` cột B → hết cột hoạt động, dồn ô lên (KHÔNG xoá cả hàng vì bảng thành viên bên phải), lưu JSON vào sổ + Nhật ký → nút Hoàn tác / mục "Đã xoá gần đây") và **Duyệt việc** 2 cấp: thành viên đặt "Chờ duyệt" (= chờ phụ trách chính của mảng ghi ở nhiệm vụ; mảng chưa có phụ trách
 hoặc chính phụ trách gửi thì ghi thẳng "Chờ quản lý duyệt") → phụ trách chính duyệt ở khung "Chờ bạn duyệt" trên tab Nhiệm vụ nhóm (action `duyetViec`, `ve:'nhom'`)
 → "Chờ quản lý duyệt" → quản lý duyệt ở `/duyet-viec/` = Hoàn thành. Trả lại (cả 2 cấp) = Đang làm + ghi chú. Menu đếm số chờ quản lý (`soViecChoQL_`).
 Xin vắng CN xanh vẫn 1 cấp (phụ trách chính duyệt).

@@ -66,6 +66,12 @@ function luuLienKet_(nd, req) {
       if (!d) { s.appendRow([k[1], '', '']); d = s.getLastRow(); nhan.push(chuanHoa_(k[1])); }
       s.getRange(d, 2).setNumberFormat('@').setValue(url);
     });
+    if (req.phuTrach4t !== undefined) {
+      const ten = chuAnToan_(chuoi_(req.phuTrach4t).slice(0, 300));
+      let d = nhan.indexOf(chuanHoa_('Phụ trách chính 4T')) + 1;
+      if (!d) { s.appendRow(['Phụ trách chính 4T', '', '']); d = s.getLastRow(); }
+      s.getRange(d, 2).setNumberFormat('@').setValue(ten);
+    }
     SpreadsheetApp.flush(); xoaCaiDatNho_();
     try { CacheService.getScriptCache().removeAll(['congvan', 'danhmuc', 'doanvu2']); } catch (e) {}
     return caiDat_(nd);

@@ -90,6 +90,8 @@
             (v ? '<a class="note" href="' + esc(v) + '" target="_blank" rel="noopener">Mở</a>' : '') + '</div>' +
             (v && /rtpof=true/.test(v) ? '<div class="hint">File Excel (.xlsx): dashboard chỉ hiện nút mở file, không đọc nội dung.</div>' : '');
         }).join('') +
+        (g === 'Truyền thông - Thông tin' ? '<label for="pt4t">Phụ trách chính nhóm 4T</label><input id="pt4t" maxlength="300" placeholder="' + esc((D.truongNhom4t || []).join(', ') || 'Họ tên, cách nhau dấu phẩy') + '" value="' + esc(D.phuTrach4t || '') + '">' +
+          '<div class="hint">Được giao / sửa / xoá việc 4T ở trang Giao việc. Để trống = lấy người có Chức vụ "Trưởng nhóm" của 4T' + ((D.truongNhom4t || []).length ? ' (hiện: ' + esc(D.truongNhom4t.join(', ')) + ')' : '') + '.</div>' : '') +
         (htG.length ? '<div class="lk-ht"><div class="hint">Sheet hệ thống của dashboard (đổi trong Script Properties, không sửa ở đây):</div>' +
           htG.map(function (x) { return '<a href="' + esc(x[2]) + '" target="_blank" rel="noopener">' + esc(x[1]) + ' ↗</a>'; }).join('') + '</div>' : '') +
         '</div></details>';
@@ -112,7 +114,7 @@
     if (f.id === 'f4') {
       var lk = {}; [].forEach.call(f.querySelectorAll('[data-lk]'), function (x) { lk[x.dataset.lk] = x.value.trim(); });
       var b = f.querySelector('button[type=submit]'); b.disabled = true;
-      BDV.goi('luuLienKet', { lienKet: lk }).then(function (d) { nhan(d); T.toast('Đã lưu liên kết'); }).catch(function (er) { b.disabled = false; T.toast(er.message || String(er), true); });
+      BDV.goi('luuLienKet', { lienKet: lk, phuTrach4t: T.$('pt4t') ? T.$('pt4t').value : undefined }).then(function (d) { nhan(d); T.toast('Đã lưu liên kết'); }).catch(function (er) { b.disabled = false; T.toast(er.message || String(er), true); });
     }
   });
   app.addEventListener('input', function (e) { if (e.target.id === 'sb') T.$('sbGio').textContent = '= ' + String((+e.target.value || 0) * 3).replace('.', ',') + ' giờ mỗi tuần'; });

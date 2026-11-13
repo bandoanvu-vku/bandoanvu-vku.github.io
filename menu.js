@@ -42,7 +42,8 @@
     }
     return [
       { muc: null, ds: [{ href: '/cua-toi/', ten: 'Trang chủ', icon: 'home' }] },
-      { muc: 'Hằng ngày', ds: [{ href: '/lich-truc/#diem-danh', ten: 'Điểm danh', icon: 'clock' }, { href: '/lich-truc/', ten: 'Đăng ký ca trực', icon: 'cal' }].concat(dsNhom.length ? [muc, { href: '/hop-nhom/', ten: 'Họp nhóm', icon: 'meet' }] : []) },
+      { muc: 'Hằng ngày', ds: [{ href: '/lich-truc/#diem-danh', ten: 'Điểm danh', icon: 'clock' }, { href: '/lich-truc/', ten: 'Đăng ký ca trực', icon: 'cal' }].concat(dsNhom.length ? [muc, { href: '/hop-nhom/', ten: 'Họp nhóm', icon: 'meet' }] : [])
+        .concat(n.pt4t ? [{ href: '/giao-viec/', ten: 'Giao việc 4T', icon: 'send' }] : []) },
       { muc: 'Của tôi', ds: [{ href: '/ho-so/', ten: 'Hồ sơ của tôi', icon: 'user' }, { href: '/thong-ke/', ten: 'Thống kê của tôi', icon: 'chart' },
         { href: '/tai-lieu/', ten: 'Tài liệu & biểu mẫu', icon: 'file' }, { href: '/cam-nang/', ten: 'Cẩm nang', icon: 'book' }] },
       { muc: 'Hệ thống', ds: [{ href: '/phan-hoi/', ten: 'Phản hồi hệ thống', icon: 'chat' }] }

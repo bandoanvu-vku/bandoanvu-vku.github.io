@@ -129,7 +129,9 @@ function hoSoDoc_(email) {
     try { return (ma === '4t' ? layDuLieu(false) : layNhom(ma, false)).thanhVien.indexOf(tk.ten) > -1; } catch (err) { return false; }
   };
   ['4t'].concat(NHOM_MOI.map(function (n) { return n.ma; })).forEach(function (ma) { if (coTrongNhom(ma)) nhom.push(ma); });
-  return { email: email, ten: tk.ten, vaiTro: tk.quanLy ? 'quanLy' : 'thanhVien', nhom: nhom };
+  let pt4t = false;
+  try { pt4t = phuTrach4t_().indexOf(tk.ten) > -1; } catch (err) {}
+  return { email: email, ten: tk.ten, vaiTro: tk.quanLy ? 'quanLy' : 'thanhVien', nhom: nhom, pt4t: pt4t };
 }
 
 /** Bước đăng nhập: đổi ID token Google lấy phiên dashboard. */
