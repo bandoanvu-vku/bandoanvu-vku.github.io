@@ -324,9 +324,9 @@
     $('tieuDe').textContent = 'Lịch trực văn phòng'; $('phuDe').innerHTML = PHU_DE;
     $('tt').textContent = D.toiThieuGio;
     var dau = D.tuan, cuoi = cong(dau, 4), tuanNay = D.homNay >= dau && D.homNay <= cong(dau, 6), st = D.trangThaiTuan;
-    var dong = st.dong.split(' '), moL = st.mo.split(' ')[0];
-    var ban = st.ma === 'mo' ? '<span><b>Đang mở đăng ký</b> đến ' + dong[1] + ' chủ nhật ' + dm(dong[0]) + '. Chỉ bạn thấy lịch của mình; những người khác hiện dạng số người.</span>'
-      : st.ma === 'chuaMo' ? '<span><b>Chưa mở đăng ký.</b> Mở từ thứ 6 ' + dm(moL) + ' đến ' + dong[1] + ' chủ nhật ' + dm(dong[0]) + '.</span>'
+    var moc = function (m) { var p = m.split(' '), q = p[0].split('-'); return p[1] + ' ' + ['chủ nhật', 'thứ 2', 'thứ 3', 'thứ 4', 'thứ 5', 'thứ 6', 'thứ 7'][new Date(+q[0], +q[1] - 1, +q[2]).getDay()] + ' ' + dm(p[0]); };
+    var ban = st.ma === 'mo' ? '<span><b>Đang mở đăng ký</b> đến ' + moc(st.dong) + '. Chỉ bạn thấy lịch của mình; những người khác hiện dạng số người.</span>'
+      : st.ma === 'chuaMo' ? '<span><b>Chưa mở đăng ký.</b> Mở từ ' + moc(st.mo) + ' đến ' + moc(st.dong) + '.</span>'
       : st.ma === 'khoa' ? '<span><b>Đã khoá đăng ký</b>, chờ quản lý công bố. Muốn đổi ca, xin vắng hoặc thêm ca thì gửi yêu cầu.</span>' + (D.quanLy ? '<button class="btn sm" type="button" id="congbo">Công bố lịch tuần này</button>' : '')
       : '<span><b>Lịch đã công bố.</b> Muốn đổi ca, xin vắng hoặc thêm ca thì gửi yêu cầu để quản lý duyệt.</span>';
     var kpi = '<div class="kpis k3">' +
@@ -528,8 +528,8 @@
     if (!e.detail) { chan(); return; }
     if (!D) { $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Đang tải lịch trực…</div>'; tai(); }
   });
-  // Mặc định: đang mở đăng ký tuần sau (thứ 6 → CN) thì mở thẳng tuần sau
-  function tuanMacDinh() { var d = new Date(), t = d.getDay(); if (t === 5 || t === 6 || (t === 0 && d.getHours() < 17)) { var n = new Date(d.getTime() + (t === 0 ? 1 : 8 - t) * 864e5); return n.getFullYear() + '-' + ('0' + (n.getMonth() + 1)).slice(-2) + '-' + ('0' + n.getDate()).slice(-2); } return ''; }
+  // Mặc định: tuần sau đang mở đăng ký (theo mốc Nội vụ đặt) thì máy chủ mở thẳng tuần sau
+  function tuanMacDinh() { return 'auto'; }
   if (!BDV.nguoi()) chan(); else tai(cheDoDiemDanh() ? '' : tuanMacDinh());
   setInterval(function () { if (!document.hidden && D && !busy && !F) tai(); }, 120000);
 })();

@@ -53,7 +53,8 @@ function hoSoCuaToi_(nd) {
   return {
     ten: nd.ten, email: nd.email, vaiTro: nd.vaiTro, nhom: nd.nhom,
     chucVu: o('Chức vụ'), mssv: o('MSSV'), lop: o('Lớp'), sdt: o('Số điện thoại'),
-    suaChucVu: nd.vaiTro === 'quanLy'
+    suaChucVu: nd.vaiTro === 'quanLy',
+    lich: lichCuaToi_(nd) // lịch học / lịch thi (16-lich-hoc-thi.gs)
   };
 }
 function luuHoSo_(nd, req) {

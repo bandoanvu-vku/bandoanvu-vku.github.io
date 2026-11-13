@@ -161,13 +161,18 @@ function gioChu_(v) { // ô giờ trong sheet có thể là chuỗi "08:30" ho�
   return m ? ('0' + m[1]).slice(-2) + ':' + m[2] : '';
 }
 
-/** Trạng thái đăng ký của tuần bắt đầu t0 (thứ 2): chuaMo | mo | khoa | congBo. */
+/** Trạng thái đăng ký của tuần bắt đầu t0 (thứ 2): chuaMo | mo | khoa | congBo. Mốc mở / khoá do Nội vụ đặt (mocTuan_). */
 function trangThaiTuan_(t0, now, congBo) {
-  const mo = themNgay_(t0, -3) + ' 00:00', dong = themNgay_(t0, -1) + ' ' + TRUC.DONG_GIO, bg = now.ngay + ' ' + now.gio;
+  const m = mocTuan_(t0), mo = m.mo, dong = m.dong, bg = now.ngay + ' ' + now.gio;
   if (t0 < TRUC.AP_DUNG_TU) return { ma: 'congBo', mo: mo, dong: dong };
-  if (bg < mo) return { ma: 'chuaMo', mo: mo, dong: dong };
-  if (bg < dong) return { ma: 'mo', mo: mo, dong: dong };
-  return { ma: congBo.indexOf(t0) > -1 ? 'congBo' : 'khoa', mo: mo, dong: dong };
+  if (bg < mo) return { ma: 'chuaMo', mo: mo, dong: dong, rieng: m.rieng };
+  if (bg < dong) return { ma: 'mo', mo: mo, dong: dong, rieng: m.rieng };
+  return { ma: congBo.indexOf(t0) > -1 ? 'congBo' : 'khoa', mo: mo, dong: dong, rieng: m.rieng };
+}
+/** "00:00 thứ 6 13/11" */
+function moTaMoc_(moc) {
+  const p = String(moc).split(' '), d = p[0].split('-');
+  return p[1] + ' ' + ['', 'thứ 2', 'thứ 3', 'thứ 4', 'thứ 5', 'thứ 6', 'thứ 7', 'chủ nhật'][thuCua_(p[0])] + ' ' + d[2] + '/' + d[1];
 }
 
 /* ---------------- đọc dữ liệu */
@@ -250,7 +255,9 @@ function daQua_(ngay, gio, now) { return ngay < now.ngay || (ngay === now.ngay &
 
 function lichTruc_(nd, tuan) {
   const ss = sheetTruc_(), cd = caiDatTruc_(ss), now = bayGio_();
-  const t0 = dauTuan_(/^\d{4}-\d{2}-\d{2}$/.test(String(tuan || '')) ? tuan : now.ngay);
+  let t0 = dauTuan_(/^\d{4}-\d{2}-\d{2}$/.test(String(tuan || '')) ? tuan : now.ngay);
+  // 'auto': tuần sau đang mở đăng ký thì mở thẳng tuần sau
+  if (tuan === 'auto' && trangThaiTuan_(themNgay_(t0, 7), now, []).ma === 'mo') t0 = themNgay_(t0, 7);
   const ngay = [0, 1, 2, 3, 4].map(function (i) { return themNgay_(t0, i); });
   const tat = docTruc_(ss), yc = docYeuCau_(ss), cb = docCongBo_(ss);
   const st = trangThaiTuan_(t0, now, cb);
@@ -351,7 +358,7 @@ function dangKyTruc_(nd, req) {
     const c = kiemTraCa_(req.ngay, req.buoi, req.tu, req.den, cd);
     const st = trangThaiTuan_(dauTuan_(req.ngay), now, docCongBo_(ss));
     if (st.ma !== 'mo') {
-      throw new Error(st.ma === 'chuaMo' ? 'Lịch tuần này chưa mở đăng ký (mở từ thứ 6 tuần trước).'
+      throw new Error(st.ma === 'chuaMo' ? 'Lịch tuần này chưa mở đăng ký (mở từ ' + moTaMoc_(st.mo) + ').'
         : 'Lịch tuần này đã khoá đăng ký. Gửi yêu cầu "Thêm ca" để quản lý duyệt.');
     }
     const ds = docTruc_(ss).filter(cuaNguoi_(nd));

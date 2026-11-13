@@ -26,7 +26,9 @@
       ['nhan-su', 'Nhân sự', ['nhân sự'], 'novNhanSu', ['Cập nhật thành viên mới', 'Ứng tuyển theo đợt']],
       ['vpp', 'Văn phòng phẩm', ['văn phòng phẩm', 'vpp'], 'novVpp', ['Kiểm tra định kỳ, cập nhật tồn kho', 'Ghi nhận sử dụng / mượn', 'Đề nghị cấp VPP theo quý']],
       ['hoat-dong', 'Hoạt động · Vệ sinh', ['hoạt động', 'vệ sinh'], 'novHoatDong', ['Theo dõi, điểm danh, chấm điểm hoạt động', 'Lịch trực vệ sinh VPĐ']],
-      ['lich', 'Lịch trực · Lịch học', ['lịch trực'], 'novLich', ['Lịch trực tuần (trang Lịch trực)', 'Lịch học – lịch thi theo học kỳ']]
+      ['lich', 'Lịch trực', ['lịch trực', 'giờ trực'], 'novTruc', ['Đặt thời gian mở / khoá đăng ký', 'Nhắc người chưa đăng ký đủ giờ', 'Quản lý công bố lịch']],
+      ['lich-hoc', 'Lịch học', ['lịch trực'], 'novLichHoc', ['Thành viên đăng ký ở Hồ sơ của tôi đầu học kỳ', 'Nhắc người chưa đăng ký']],
+      ['lich-thi', 'Lịch thi', ['lịch trực'], 'novLichThi', ['Thành viên thêm lịch thi ở Hồ sơ của tôi', 'Tránh xếp trực trùng ngày thi']]
     ]
   };
   var DS_MANG = MANG_RIENG[NHOM] || [];

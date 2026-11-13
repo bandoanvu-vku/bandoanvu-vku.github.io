@@ -34,7 +34,7 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
   Công bố (tuần đã công bố), Cài đặt (vị trí văn phòng, bán kính, số buổi tối thiểu, ngày nghỉ).
   Buổi: sáng 8–11h, chiều 14–17h, T2–T6; ca tự chọn giờ:phút bất kỳ trong 8:00–17:00, tối thiểu 1 giờ (bắt đầu trước 12:30 xếp buổi sáng);
   trực đột xuất tính từ lúc điểm danh, đến giờ tự chọn ≤ 17:00; tính theo giờ (1 buổi = 3 giờ). Trang Lịch trực có nút "Tạo yêu cầu đổi lịch" (đổi ca / xin vắng / thêm ca; bỏ "Huỷ ca") và nút "Xin vắng" cạnh nút Điểm danh. Duyệt xin vắng → ca Đã huỷ với ghi chú "Vắng có phép…" (Thống kê đếm riêng).
-  Quy trình tuần: mở đăng ký 00:00 thứ 6 → khoá 17:00 CN tuần trước; trong lúc mở thành viên chỉ thấy lịch mình + số người;
+  Quy trình tuần: mở đăng ký 00:00 thứ 6 → khoá 17:00 CN tuần trước (mặc định; **Nội vụ + quản lý đổi được**, xem `16-lich-hoc-thi.gs`); trong lúc mở thành viên chỉ thấy lịch mình + số người;
   khoá xong quản lý chỉnh rồi Công bố; sau khoá muốn đổi/huỷ/thêm thì gửi yêu cầu cho quản lý duyệt;
   trực đột xuất điểm danh luôn → "Chờ duyệt" → quản lý duyệt mới tính giờ. Tuần trước 19/10/2026 coi như đã công bố.
 
@@ -127,6 +127,15 @@ Link Nội vụ: phần tử thứ 3 'Nội vụ' trong LIEN_KET.
 **Phản hồi hệ thống** (`/phan-hoi/`, `11-phan-hoi.gs`, actions `phanHoi` / `guiPhanHoi` / `xuLyPhanHoi`): mọi vai trò gửi góp ý (loại, trang, mức hài lòng 1–5, nội dung; tối đa 10/ngày),
 lưu tab "Phản hồi hệ thống" của sheet tài khoản KÈM họ tên/email/nhóm người gửi. Trang không có ghi chú về ẩn danh (không được hứa ẩn danh vì sheet lưu tên).
  Thành viên thấy góp ý của mình + trả lời của Ban; quản lý có tab Tổng hợp (tên ẩn mặc định, nút "Xem người gửi"), đổi trạng thái + trả lời.
+**Nội vụ: lịch trực · lịch học · lịch thi** (`16-lich-hoc-thi.gs`, giao diện `hoat-dong.js` novTruc / novLichHoc / novLichThi, hiển thị chung `/lich-hoc.js` BDVLH.luoi / bangThi):
+quyền `laNoiVu_` = quản lý hoặc thuộc nhóm noi-vu. Trang Nội vụ có 3 tab `#lich` (Lịch trực), `#lich-hoc`, `#lich-thi`.
+Đợt đăng ký: `mocTuan_(t0)` = chỉnh riêng ở tab "Đợt đăng ký trực" (Tuần | Mở lúc | Khoá lúc, chuỗi yyyy-MM-dd HH:mm, cache `dottruc1`) hoặc quy tắc mặc định ở tab Cài đặt
+("Mở đăng ký trực" / "Khoá đăng ký trực", dạng "T6 00:00", ngày của TUẦN TRƯỚC); `trangThaiTuan_` dùng mốc này. Khoá muộn nhất 17:00 thứ 6 tuần trực.
+actions `quanLyTruc` {tuan} (5 tuần + ai chưa đăng ký / chưa đủ / đủ giờ, nút "Chép lời nhắc") / `luuQuanLyTruc` {viec: macDinh|tuan|boTuan}. `lichTruc` nhận tuan:'auto' (tuần sau đang mở thì mở tuần sau).
+Lịch học / thi: thành viên đăng ký ở `/ho-so/` (hoSo trả thêm `lich`); tab "Lịch học" (Email | Họ và tên | Học kỳ | Lịch JSON [{thu 2..8, tu, den, mon, phong}] | Cập nhật lúc; 1 dòng/người/học kỳ,
+`hocKy_`: T8–T1 = HK1, T2–T6 = HK2, T7 = Hè) + tab "Lịch thi" (Mã | Email | Họ và tên | Học kỳ | Môn thi | Ngày thi | Giờ thi | Phòng / ghi chú | Cập nhật lúc) trong sheet lịch trực.
+actions `luuLichHoc` {slots}, `luuLichThi` {viec: them|sua|xoa}, `lichThanhVien` (Nội vụ + quản lý; ô chọn thành viên, mặc định chính mình; lịch thi có lựa chọn "Tất cả").
+Sổ cũ SO_NV `lichHoc` (link Google Calendar) không còn hiện trên trang.
 Lộ trình còn lại: Đơn từ & xin nghỉ → duyệt ở Phê duyệt; Nhắc việc tự động (email, cần cấp quyền).
 
 ## Tốc độ (11/2026)
