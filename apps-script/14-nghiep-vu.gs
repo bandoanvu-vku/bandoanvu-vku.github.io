@@ -1,4 +1,4 @@
-/* ------------------------------------------------ nhóm Nghiệp vụ: sổ theo dõi theo quy trình */
+/* ------------------------------------------------ sổ theo dõi theo quy trình: nhóm Nghiệp vụ + nhóm Nội vụ */
 /*
  * Mỗi "sổ" là một tab trong sheet lịch trực (tự tạo), mô tả bằng cấu hình SO_NV: các trường, trạng thái theo quy trình,
  * điều kiện để chuyển trạng thái (trường bắt buộc đã đánh dấu / có link), trạng thái chỉ phụ trách chính của mảng (hoặc quản lý) chốt được,
@@ -126,6 +126,128 @@ const SO_NV = {
       ['Người chịu trách nhiệm chính', 'Kiểm tra thông tin ký nhận · chuyển tiền cho người có STK · lưu ảnh minh chứng để đối chiếu.'],
       ['Lưu ý', 'Dashboard không lưu STK hay ảnh thẻ: STK ghi trên danh sách giấy, ảnh lưu trong folder minh chứng.']
     ]
+  },
+  /* ---------- nhóm Nội vụ (quy trình Nội vụ: nhân sự, văn phòng phẩm, hoạt động, lịch trực - lịch học) ---------- */
+  thanhVienMoi: {
+    nhom: 'noi-vu', ten: 'Cập nhật thành viên mới', tab: 'NoV - Thành viên mới', mang: ['nhân sự'], donVi: 'thành viên',
+    truong: [
+      ['dot', 'Đợt tuyển', 'text', { bb: 1, goiY: 'Đợt 9', bang: 1 }], ['hoTen', 'Họ tên', 'text', { bb: 1, bang: 1 }], ['mssv', 'MSSV', 'text', { bang: 1 }],
+      ['nhomVao', 'Nhóm', 'select', { ds: ['Truyền thông - Thông tin', 'Nghiệp vụ', 'CSDL - CSVC', 'Nội vụ'], bang: 1 }], ['nguoiPT', 'Nội vụ phụ trách', 'tv', { bang: 1 }],
+      ['daForm', 'Đã điền form thông tin cá nhân', 'check', { bang: 1 }], ['daKiemTra', 'Nội vụ đã kiểm tra, xác nhận lại với thành viên', 'check', { bang: 1 }],
+      ['daNhap', 'Đã nhập sheet "THÔNG TIN THÀNH VIÊN BĐV"', 'check', { bang: 1 }], ['taiKhoan', 'Đã thêm vào sheet tài khoản dashboard', 'check', { bang: 1 }],
+      ['ghiChu', 'Ghi chú', 'area']
+    ],
+    trangThai: ['Chờ điền form', 'Đang kiểm tra', 'Đã lưu trữ'],
+    can: { 'Đang kiểm tra': ['daForm'], 'Đã lưu trữ': ['daForm', 'daKiemTra', 'daNhap'] },
+    lienKet: ['ttThanhVien'],
+    buoc: [
+      ['Bước 1 · Cập nhật thành viên mới', 'Kết thúc đợt ứng tuyển, Nội vụ cập nhật danh sách thành viên. Thành viên điền form thông tin cá nhân (họ tên, MSSV, lớp, SĐT, email, chức vụ, đơn vị công tác, nơi ở, nhóm…). Nội vụ kiểm tra, xác nhận lại với thành viên, sai thì hỗ trợ sửa.'],
+      ['Bước 2 · Lưu trữ', 'Nhập vào sheet "THÔNG TIN THÀNH VIÊN BĐV", lưu ở thư mục Nội vụ → Quản lý Nhân sự → Thành viên BĐV. Thêm email vào sheet tài khoản dashboard để thành viên đăng nhập được.'],
+      ['Bảo mật', 'Thông tin cá nhân và hoàn cảnh gia đình chỉ lưu trong sheet của Nội vụ (chia sẻ hạn chế); dashboard chỉ theo dõi đã làm / chưa làm.']
+    ]
+  },
+  ungTuyen: {
+    nhom: 'noi-vu', ten: 'Ứng tuyển theo đợt', tab: 'NoV - Ứng tuyển', mang: ['nhân sự'], donVi: 'ứng viên',
+    truong: [
+      ['dot', 'Đợt', 'text', { bb: 1, goiY: 'Đợt 9', bang: 1 }], ['hoTen', 'Họ tên', 'text', { bb: 1, bang: 1 }], ['mssv', 'MSSV', 'text', { bang: 1 }],
+      ['nhomMuon', 'Nhóm đăng ký', 'select', { ds: ['Truyền thông - Thông tin', 'Nghiệp vụ', 'CSDL - CSVC', 'Nội vụ'], bang: 1 }], ['tracNghiem', 'Kết quả trắc nghiệm', 'text', { bang: 1 }],
+      ['phongVan', 'Kết quả phỏng vấn', 'select', { ds: ['Đạt', 'Không đạt', 'Vắng'], bang: 1 }], ['buoiTruc', 'Số buổi trực thực tập', 'num', { bang: 1 }],
+      ['yThuc', 'Ý thức đi trực', 'select', { ds: ['Tốt', 'Khá', 'Cần nhắc nhở'], bang: 1 }], ['ghiChu', 'Nhận xét', 'area']
+    ],
+    trangThai: ['Đã đăng ký', 'Đã phỏng vấn', 'Đang thực tập', 'Trúng tuyển', 'Không trúng tuyển'],
+    chot: ['Trúng tuyển', 'Không trúng tuyển'],
+    can: { 'Đã phỏng vấn': ['phongVan'], 'Trúng tuyển': ['phongVan', 'buoiTruc', 'yThuc'] },
+    lienKet: ['folderUngTuyen'],
+    buoc: [
+      ['Lưu thông tin ứng tuyển', 'Thông tin ứng viên điền trên form đăng ký vào Ban Đoàn vụ · bộ câu hỏi chuẩn bị · kết quả trắc nghiệm – phỏng vấn · đăng ký trực – đi trực (ý thức đi trực trong thời gian thực tập). Lưu tại folder ứng tuyển của đợt.'],
+      ['Sau khi chốt', 'Người trúng tuyển chuyển sang "Cập nhật thành viên mới" để điền form thông tin và lưu trữ.']
+    ]
+  },
+  vppKiem: {
+    nhom: 'noi-vu', ten: 'Kiểm tra VPP', tab: 'NoV - Kiểm tra VPP', mang: ['văn phòng phẩm'], donVi: 'lần kiểm tra',
+    truong: [
+      ['ngay', 'Ngày kiểm tra', 'date', { bb: 1, bang: 1 }], ['loai', 'Loại', 'select', { ds: ['Hằng tháng', 'Hằng tuần (tháng nhiều sự kiện)', 'Khi nhận VPP từ trường'], bang: 1 }],
+      ['nguoiKiem', 'Người kiểm tra', 'tv', { bb: 1, bang: 1 }], ['daSapXep', 'Đã sắp xếp theo loại (giấy in, bút, hồ sơ…)', 'check', { bang: 1 }],
+      ['daNhap', 'Đã nhập số lượng vào sheet "Tồn kho VPP VPĐ"', 'check', { bang: 1 }], ['thieu', 'Món sắp hết / thiếu / hỏng', 'area']
+    ],
+    trangThai: ['Đang kiểm tra', 'Đã cập nhật tồn kho'],
+    can: { 'Đã cập nhật tồn kho': ['daNhap'] },
+    lienKet: ['tonKhoVpp'],
+    buoc: [
+      ['Nhận VPP', 'Nhận ở Phòng Tổ chức - Hành chính (khu V): kiểm tra số lượng, tình trạng, sắp xếp theo loại.'],
+      ['Kiểm tra định kỳ', '1 lần/tháng; tháng nhiều sự kiện thì 1–2 lần/tuần để tránh mất mát. Xong thì nhập lại số lượng vào sheet "Tồn kho VPP VPĐ".']
+    ]
+  },
+  vppDung: {
+    nhom: 'noi-vu', ten: 'Sử dụng / mượn VPP', tab: 'NoV - Sử dụng VPP', mang: ['văn phòng phẩm'], donVi: 'lượt',
+    truong: [
+      ['nguoi', 'Người dùng', 'ban', { bb: 1, bang: 1 }], ['mon', 'Văn phòng phẩm', 'text', { bb: 1, bang: 1 }], ['soLuong', 'Số lượng', 'num', { bang: 1 }],
+      ['ngay', 'Ngày', 'date', { bang: 1 }], ['mucDich', 'Dùng cho', 'text', { bang: 1 }], ['traLai', 'Đã trả, để lại chỗ cũ', 'check', { bang: 1 }], ['ghiChu', 'Ghi chú', 'area']
+    ],
+    trangThai: ['Đang dùng', 'Đã trả', 'Dùng hết (tiêu hao)'],
+    can: { 'Đã trả': ['traLai'] },
+    lienKet: ['tonKhoVpp'],
+    buoc: [['Khi dùng VPP', 'Thành viên dùng VPP thì báo Nội vụ (ghi một lượt ở đây). Mượn xong để lại chỗ cũ và báo đã trả, tránh làm mất, tổn thất VPP của Văn phòng Đoàn.']]
+  },
+  vppDeNghi: {
+    nhom: 'noi-vu', ten: 'Đề nghị cấp VPP', tab: 'NoV - Đề nghị VPP', mang: ['văn phòng phẩm'], donVi: 'đề nghị',
+    truong: [
+      ['ky', 'Quý / năm', 'text', { bb: 1, goiY: 'Quý I/2027', bang: 1 }], ['nguoiLap', 'Người lập', 'tv', { bang: 1 }],
+      ['bangTongHop', 'Link bảng "Tổng hợp đề nghị văn phòng phẩm"', 'link', { bang: 1 }], ['giayDeNghi', 'Link giấy đề nghị rút gọn', 'link', { bang: 1 }],
+      ['coKy', 'Cô Ngân đã ký', 'check', { bang: 1 }], ['daNop', 'Đã nộp Phòng TC-HC', 'check', { bang: 1 }],
+      ['daNhan', 'Đã nhận VPP, kiểm tra số lượng', 'check', { bang: 1 }], ['ngayNhan', 'Ngày nhận', 'date', { bang: 1 }], ['ghiChu', 'Ghi chú', 'area']
+    ],
+    trangThai: ['Đang lập bảng', 'Chờ ký', 'Đã nộp TC-HC', 'Đã nhận VPP'],
+    can: { 'Chờ ký': ['bangTongHop', 'giayDeNghi'], 'Đã nộp TC-HC': ['coKy', 'daNop'], 'Đã nhận VPP': ['daNhan'] },
+    lienKet: ['tonKhoVpp', 'folderDeNghiVpp'],
+    buoc: [
+      ['Yêu cầu', 'Xin 1 lần dùng cho cả năm; xin thêm thì phải có giấy đề nghị.'],
+      ['Viết giấy đề nghị', 'Lập bảng "TỔNG HỢP ĐỀ NGHỊ VĂN PHÒNG PHẨM QUÝ … NĂM …" (dựa trên tồn kho) → gửi cô Ngân ký, cô nộp lên Phòng TC-HC → viết giấy đề nghị rút gọn để trình ký. Nhận VPP thì ghi một lần kiểm tra "Khi nhận VPP từ trường".']
+    ]
+  },
+  hoatDong: {
+    nhom: 'noi-vu', ten: 'Theo dõi hoạt động', tab: 'NoV - Theo dõi hoạt động', mang: ['hoạt động'], donVi: 'hoạt động',
+    truong: [
+      ['tenHd', 'Hoạt động', 'text', { bb: 1, bang: 1 }], ['ngay', 'Ngày', 'date', { bb: 1, bang: 1 }], ['nguoiTD', 'Nội vụ theo dõi', 'tv', { bang: 1 }],
+      ['soVote', 'Số đăng ký (vote)', 'num', { bang: 1 }], ['soThamGia', 'Số tham gia (điểm danh)', 'num', { bang: 1 }],
+      ['daDiemDanh', 'Đã điểm danh tại hoạt động', 'check', { bang: 1 }], ['daCham', 'Đã chấm điểm (thời gian + thái độ, công việc)', 'check', { bang: 1 }],
+      ['daLuu', 'Đã lưu vào sheet "Theo dõi hoạt động BĐV"', 'check', { bang: 1 }], ['ghiChu', 'Nhận xét', 'area']
+    ],
+    trangThai: ['Sắp diễn ra', 'Đã điểm danh', 'Đã chấm điểm', 'Đã lưu'],
+    can: { 'Đã điểm danh': ['daDiemDanh', 'soThamGia'], 'Đã chấm điểm': ['daDiemDanh', 'daCham'], 'Đã lưu': ['daDiemDanh', 'daCham', 'daLuu'] },
+    lienKet: ['theoDoiHoatDong', 'tongKetHoatDong', 'folderHoatDong'],
+    buoc: [
+      ['Bước 1 · Ghi nhận', 'Tạo vote để biết trước số người tham gia; đến hoạt động thì điểm danh lại, ghi những thành viên có mặt.'],
+      ['Bước 2 · Chấm điểm', 'Thời gian: đúng giờ 100; trễ thì cứ 15 phút trừ 5%; có xin phép 80. Thái độ – công việc: theo lượng việc hỗ trợ trong hoạt động, thái độ vui vẻ, hoà đồng.'],
+      ['Bước 3 · Lưu', 'Lưu vào sheet "Theo dõi hoạt động BĐV"; cuối năm tổng kết cùng giờ trực VPĐ (dashboard Thống kê) và trực vệ sinh.']
+    ]
+  },
+  veSinh: {
+    nhom: 'noi-vu', ten: 'Trực vệ sinh VPĐ', tab: 'NoV - Trực vệ sinh', mang: ['vệ sinh'], donVi: 'buổi',
+    truong: [
+      ['ngay', 'Ngày', 'date', { bb: 1, bang: 1 }], ['nguoi', 'Người được phân công', 'text', { bb: 1, bang: 1, goiY: 'Tên, cách nhau bằng dấu phẩy' }],
+      ['nhiemVu', 'Phân công cụ thể', 'area'], ['daThongBao', 'Đã thông báo trước', 'check', { bang: 1 }],
+      ['hoanThanh', 'Đã dọn xong (đổ rác, xếp bàn ghế, tắt điện)', 'check', { bang: 1 }], ['nguoiKT', 'Nội vụ kiểm tra', 'tv', { bang: 1 }], ['ghiChu', 'Ghi chú', 'area']
+    ],
+    trangThai: ['Đã lên lịch', 'Đã thông báo', 'Hoàn thành', 'Vắng / chưa làm'],
+    can: { 'Đã thông báo': ['daThongBao'], 'Hoàn thành': ['daThongBao', 'hoanThanh', 'nguoiKT'] },
+    lienKet: ['tongKetHoatDong'],
+    buoc: [['Trực vệ sinh', 'Lên lịch dọn dẹp, thông báo trước và phân công nhiệm vụ rõ ràng; Nội vụ theo dõi, kiểm tra sau buổi dọn. Kết quả tổng hợp cùng sheet tổng kết hoạt động.']]
+  },
+  lichHoc: {
+    nhom: 'noi-vu', ten: 'Lịch học – lịch thi', tab: 'NoV - Lịch học lịch thi', mang: ['lịch trực'], donVi: 'thành viên',
+    truong: [
+      ['hocKy', 'Học kỳ', 'text', { bb: 1, goiY: 'HK1 2026-2027', bang: 1 }], ['thanhVien', 'Thành viên', 'ban', { bb: 1, bang: 1 }],
+      ['lichHoc', 'Đã gửi link Google Calendar lịch học', 'check', { bang: 1 }], ['lichThi', 'Đã điền lịch thi', 'check', { bang: 1 }], ['ghiChu', 'Ghi chú', 'area']
+    ],
+    trangThai: ['Chưa gửi', 'Đã gửi lịch học', 'Đủ lịch học + lịch thi'],
+    can: { 'Đã gửi lịch học': ['lichHoc'], 'Đủ lịch học + lịch thi': ['lichHoc', 'lichThi'] },
+    lienKet: ['lichHocSheet'],
+    buoc: [
+      ['Lịch trực trên dashboard', 'Đăng ký mở 00:00 thứ 6, khoá 17:00 chủ nhật (tối thiểu theo Cài đặt, mặc định 2 buổi/tuần); quản lý chỉnh rồi công bố; đổi / xin vắng / thêm ca gửi yêu cầu duyệt. Ứng viên thực tập đăng ký sau thành viên, ưu tiên trực cùng nhóm.'],
+      ['Nội quy trực', '8h00–11h00, 14h00–17h00 · áo Đoàn hoặc áo VKU, quần dài / jean / váy, bảng tên, giày hoặc dép có quai (không dép lê) · không đi trễ, bận đột xuất báo sớm cho Nội vụ · chủ động chào hỏi khách, thầy cô, sinh viên · tiết kiệm điện, giữ vệ sinh; ra về đổ rác, xếp bàn ghế, tắt điện.'],
+      ['Lịch học – lịch thi', 'Thành viên tạo lịch học trên Google Calendar → Cài đặt → Cài đặt lịch của tôi → lấy link chia sẻ → dán vào sheet "LỊCH HỌC - LỊCH THI BĐV". Lịch thi: khi trường thông báo, Nội vụ nhắc mọi người điền vào cùng sheet.']
+    ]
   }
 };
 // Link của nhóm Nghiệp vụ: khai báo trong LIEN_KET (10-csvc-cong-van.gs), nhóm 'Nghiệp vụ'.
@@ -165,37 +287,46 @@ function docSoNv_(so) {
       taoBoi: chuoi_(r[cuoi[0]]), taoLuc: lucChu_(r[cuoi[1]]), boi: chuoi_(r[cuoi[2]]), luc: lucChu_(r[cuoi[3]]) };
   }).filter(function (x) { return x.id; });
 }
-function laThanhVienNv_(nd) { return nd.vaiTro === 'quanLy' || layNhom(NHOM_NV, false).thanhVien.indexOf(nd.ten) > -1; }
+function nhomSo_(so) { return so.nhom || NHOM_NV; }
+function laThanhVienNv_(nd, nhom) { return nd.vaiTro === 'quanLy' || layNhom(nhom, false).thanhVien.indexOf(nd.ten) > -1; }
+function tenCaBan_() { try { return thanhVienTaiKhoan_().map(function (t) { return t.ten; }); } catch (e) { return []; } }
 
 function nghiepVu_(nd, req) {
-  canNhom_(nd, NHOM_NV);
   const keys = (Array.isArray(req.so) ? req.so : [req.so]).filter(function (k) { return SO_NV[k]; });
   if (!keys.length) throw new Error('Không có sổ này.');
-  const lk = lienKet_(), cfg = {}, ds = {}, pt = {};
+  keys.forEach(function (k) { canNhom_(nd, nhomSo_(SO_NV[k])); });
+  const lk = lienKet_(), cfg = {}, ds = {}, pt = {}, ghi = {}, tv = {};
+  let coBan = false;
   keys.forEach(function (k) {
-    const so = SO_NV[k], ctx = mangNhom_(NHOM_NV, so.mang);
-    cfg[k] = { ten: so.ten, donVi: so.donVi, truong: so.truong, trangThai: so.trangThai, can: so.can || {}, chot: so.chot || [], buoc: so.buoc,
+    const so = SO_NV[k], nhom = nhomSo_(so), ctx = mangNhom_(nhom, so.mang);
+    if (!tv[nhom]) tv[nhom] = layNhom(nhom, false).thanhVien;
+    if (so.truong.some(function (t) { return t[2] === 'ban'; })) coBan = true;
+    ghi[k] = laThanhVienNv_(nd, nhom) && !nd.xemThu;
+    cfg[k] = { nhom: nhom, ten: so.ten, donVi: so.donVi, truong: so.truong, trangThai: so.trangThai, can: so.can || {}, chot: so.chot || [], buoc: so.buoc,
       lienKet: so.lienKet.map(function (x) { return { ten: tenLkNv_(x).replace(/^Link /, ''), url: lk[x] || '' }; }),
       phuTrach: ctx.phuTrach };
     pt[k] = laPhuTrach_(nd, ctx) && !nd.xemThu;
     ds[k] = docSoNv_(so).map(boDong_).reverse();
   });
-  return { cfg: cfg, ds: ds, pt: pt, ghi: laThanhVienNv_(nd) && !nd.xemThu, thanhVien: layNhom(NHOM_NV, false).thanhVien, toi: nd.ten, homNay: bayGio_().ngay, so: keys };
+  return { cfg: cfg, ds: ds, pt: pt, ghi: ghi, tv: tv, ban: coBan ? tenCaBan_() : [], toi: nd.ten, homNay: bayGio_().ngay, so: keys };
 }
 
 function luuNghiepVu_(nd, req) {
-  canNhom_(nd, NHOM_NV);
   const so = SO_NV[req.so];
   if (!so) throw new Error('Không có sổ này.');
-  if (!laThanhVienNv_(nd)) throw loiQuyen_('Chỉ thành viên nhóm Nghiệp vụ hoặc quản lý mới ghi được.');
-  const tv = layNhom(NHOM_NV, false).thanhVien;
+  const NH = nhomSo_(so);
+  canNhom_(nd, NH);
+  if (!laThanhVienNv_(nd, NH)) throw loiQuyen_('Chỉ thành viên nhóm ' + TEN_NHOM[NH] + ' hoặc quản lý mới ghi được.');
+  const tv = layNhom(NH, false).thanhVien;
+  let ban = null;
   const chuan = function (t, v) {
     if (t[2] === 'check') return v === true || v === 'x' ? 'x' : '';
     if (t[2] === 'num') { if (v === '' || v === null || v === undefined) return ''; const n = Number(v); if (!(n >= 0 && n <= 100000) || Math.floor(n) !== n) throw new Error(t[1] + ' phải là số nguyên từ 0.'); return n; }
     if (t[2] === 'date') { const s = chuoi_(v); if (!s) return ''; if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) throw new Error(t[1] + ': ngày không hợp lệ.'); return dmy_(s); }
     if (t[2] === 'link') { const s = chuoi_(v).slice(0, 500); if (s && !/^https:\/\//.test(s)) throw new Error(t[1] + ': cần link bắt đầu bằng https://'); return s; }
     if (t[2] === 'select') { const s = chuoi_(v); if (s && t[3].ds.indexOf(s) === -1) throw new Error(t[1] + ' không hợp lệ.'); return s; }
-    if (t[2] === 'tv') { const s = chuoi_(v); if (s && tv.indexOf(s) === -1 && s !== nd.ten) throw new Error(s + ' không có trong danh sách thành viên nhóm Nghiệp vụ.'); return s; }
+    if (t[2] === 'tv') { const s = chuoi_(v); if (s && tv.indexOf(s) === -1 && s !== nd.ten) throw new Error(s + ' không có trong danh sách thành viên nhóm ' + TEN_NHOM[NH] + '.'); return s; }
+    if (t[2] === 'ban') { const s = chuoi_(v); if (!s) return ''; if (!ban) ban = tenCaBan_(); if (ban.indexOf(s) === -1) throw new Error(s + ' không có trong danh sách thành viên Ban Đoàn vụ.'); return s; }
     return chuAnToan_(chuoi_(v).slice(0, t[2] === 'area' ? 1000 : 200));
   };
   return voiKhoa_(function () {
@@ -215,7 +346,7 @@ function luuNghiepVu_(nd, req) {
     let tt = x ? x.trangThai : so.trangThai[0];
     if (req.viec === 'huy') {
       if (!x) throw new Error('Không tìm thấy dòng này.');
-      if (nd.vaiTro !== 'quanLy' && x.taoBoi !== nd.ten && !laPhuTrach_(nd, mangNhom_(NHOM_NV, so.mang))) throw loiQuyen_('Chỉ người tạo, phụ trách chính hoặc quản lý mới huỷ được.');
+      if (nd.vaiTro !== 'quanLy' && x.taoBoi !== nd.ten && !laPhuTrach_(nd, mangNhom_(NH, so.mang))) throw loiQuyen_('Chỉ người tạo, phụ trách chính hoặc quản lý mới huỷ được.');
       tt = NV_HUY;
     } else if (req.viec === 'tao' || req.viec === 'sua') {
       if (req.viec === 'tao') so.truong.forEach(function (t) { if (t[3] && t[3].bb && (sau[t[0]] === '' || sau[t[0]] === false)) throw new Error('Nhập ' + t[1].toLowerCase() + '.'); });
@@ -226,8 +357,8 @@ function luuNghiepVu_(nd, req) {
       }
     } else throw new Error('Yêu cầu không hợp lệ.');
     if (tt !== NV_HUY && (!x || tt !== x.trangThai)) {
-      if ((so.chot || []).indexOf(tt) > -1 && !laPhuTrach_(nd, mangNhom_(NHOM_NV, so.mang)))
-        throw loiQuyen_('Chỉ phụ trách chính của mảng (' + (mangNhom_(NHOM_NV, so.mang).phuTrach.join(', ') || 'chưa có') + ') hoặc quản lý mới chốt "' + tt + '".');
+      if ((so.chot || []).indexOf(tt) > -1 && !laPhuTrach_(nd, mangNhom_(NH, so.mang)))
+        throw loiQuyen_('Chỉ phụ trách chính của mảng (' + (mangNhom_(NH, so.mang).phuTrach.join(', ') || 'chưa có') + ') hoặc quản lý mới chốt "' + tt + '".');
       const thieu = ((so.can || {})[tt] || []).filter(function (k) { return sau[k] === '' || sau[k] === false || sau[k] === null; })
         .map(function (k) { return so.truong.filter(function (t) { return t[0] === k; })[0][1]; });
       if (thieu.length) throw new Error('Để chuyển sang "' + tt + '" cần: ' + thieu.join('; ') + '.');

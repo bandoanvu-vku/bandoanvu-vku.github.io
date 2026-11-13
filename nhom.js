@@ -20,6 +20,13 @@
       ['sv5t', 'SV5T · TNTT', ['sinh viên 5 tốt', 'sv5t'], 'nvSv5t', ['Nhận hồ sơ bản mềm, bản cứng', 'Xét hồ sơ theo tiêu chí', 'Thông báo kết quả, quyết định']],
       ['thiet-ke', 'Thư mời · Giấy khen · GCN', ['thiết kế', 'thư mời', 'giấy chứng nhận'], 'nvThietKe', ['Làm trên Canva (tạo hàng loạt)', 'Gửi người phụ trách xem']],
       ['ky-nhan', 'Ký nhận', ['danh sách nhận', 'soạn thảo'], 'nvKyNhan', ['Cho ký nhận, chụp minh chứng', 'Chuyển tiền / lưu trữ']]
+    ],
+    'noi-vu': [
+      // 4 tab theo quy trình nhóm Nội vụ; sổ theo dõi dùng chung engine SO_NV (14-nghiep-vu.gs)
+      ['nhan-su', 'Nhân sự', ['nhân sự'], 'novNhanSu', ['Cập nhật thành viên mới', 'Ứng tuyển theo đợt']],
+      ['vpp', 'Văn phòng phẩm', ['văn phòng phẩm', 'vpp'], 'novVpp', ['Kiểm tra định kỳ, cập nhật tồn kho', 'Ghi nhận sử dụng / mượn', 'Đề nghị cấp VPP theo quý']],
+      ['hoat-dong', 'Hoạt động · Vệ sinh', ['hoạt động', 'vệ sinh'], 'novHoatDong', ['Theo dõi, điểm danh, chấm điểm hoạt động', 'Lịch trực vệ sinh VPĐ']],
+      ['lich', 'Lịch trực · Lịch học', ['lịch trực'], 'novLich', ['Lịch trực tuần (trang Lịch trực)', 'Lịch học – lịch thi theo học kỳ']]
     ]
   };
   var DS_MANG = MANG_RIENG[NHOM] || [];

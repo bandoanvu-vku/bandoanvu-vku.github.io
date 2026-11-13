@@ -619,7 +619,7 @@
 
 
 
-  /* ================= Nhóm Nghiệp vụ: sổ theo dõi theo quy trình (cấu hình ở máy chủ, SO_NV) ================= */
+  /* ================= Nhóm Nghiệp vụ + Nội vụ: sổ theo dõi theo quy trình (cấu hình ở máy chủ, SO_NV) ================= */
   function nvSo(el, keys, khoa) {
     var o = khoi(el, khoa, 'nghiepVu', { so: keys }, veNv);
     o.keys = keys; o.khoa = khoa;
@@ -633,6 +633,7 @@
       el.addEventListener('change', function (e) { if (e.target.dataset.nvl !== 'tt') return; locNv(o).tt = e.target.value; o.ve(); });
     }
   }
+  function ghiNv(d, k) { return d.ghi && typeof d.ghi === 'object' ? !!d.ghi[k] : !!d.ghi; }
   function locNv(o) { return o.loc[o.tab] || (o.loc[o.tab] = { q: '', tt: 'dang' }); }
   function xongNv(c, tt) { return tt === 'Đã huỷ' || tt === c.trangThai[c.trangThai.length - 1] || c.chot.indexOf(tt) > -1; }
   function lopTt(c, tt) { return tt === 'Đã huỷ' ? 'p-khoa' : /trả lại|thiếu|cần sửa|không đạt/i.test(tt) ? 'p-bad' : xongNv(c, tt) ? 'p-mo' : 'p-cho'; }
@@ -649,7 +650,7 @@
     var dem = {}; ds.forEach(function (x) { dem[x.trangThai] = (dem[x.trangThai] || 0) + 1; });
     var dang = ds.filter(function (x) { return !xongNv(c, x.trangThai); }).length, huy = dem['Đã huỷ'] || 0, tong = ds.length - huy;
     h += '<div class="khung"><div class="nv-dau"><div><b>' + tong + '</b> ' + esc(c.donVi) + ' · <b>' + dang + '</b> đang xử lý' + (c.phuTrach.length ? '<span class="vt">Phụ trách chính: ' + esc(c.phuTrach.join(', ')) + '</span>' : '') + '</div>' +
-      (d.ghi ? '<button type="button" class="b1" data-hd="nvMoi">+ Thêm ' + esc(c.donVi) + '</button>' : '') + '</div>';
+      (ghiNv(d, k) ? '<button type="button" class="b1" data-hd="nvMoi">+ Thêm ' + esc(c.donVi) + '</button>' : '') + '</div>';
     if (tong) h += '<div class="nv-thanh" role="img" aria-label="Theo trạng thái">' + c.trangThai.filter(function (t) { return dem[t]; }).map(function (t, i) {
       return '<span class="nv-ph nv-' + c.trangThai.indexOf(t) + (xongNv(c, t) ? ' xong' : '') + '" style="flex-grow:' + dem[t] + '" title="' + esc(t + ': ' + dem[t]) + '"></span>'; }).join('') + '</div>';
     h += '<div class="nv-tt">' + c.trangThai.map(function (t) {
@@ -684,7 +685,7 @@
         if (c.chot.indexOf(x.trangThai) > -1) sau = '';
         var r = '<tr><td><span class="pill ' + lopTt(c, x.trangThai) + '">' + esc(x.trangThai) + '</span>' + (x.boi ? '<span class="vt">' + esc(x.boi) + ' · ' + esc(x.luc) + '</span>' : '') + '</td>' +
           cot.map(function (t) { return '<td>' + oNv(t, x.f[t[0]]) + '</td>'; }).join('') + (ck.length ? oCk(x) : '') +
-          '<td style="white-space:nowrap">' + (d.ghi && x.trangThai !== 'Đã huỷ' ? (sau && !xongNv(c, x.trangThai) ? '<button type="button" class="b2" data-hd="nvTiep" data-t="' + esc(x.id) + '" data-s="' + esc(sau) + '" title="Chuyển sang: ' + esc(sau) + '">→ ' + esc(sau.split(' – ')[0]) + '</button> ' : '') +
+          '<td style="white-space:nowrap">' + (ghiNv(d, k) && x.trangThai !== 'Đã huỷ' ? (sau && !xongNv(c, x.trangThai) ? '<button type="button" class="b2" data-hd="nvTiep" data-t="' + esc(x.id) + '" data-s="' + esc(sau) + '" title="Chuyển sang: ' + esc(sau) + '">→ ' + esc(sau.split(' – ')[0]) + '</button> ' : '') +
             '<button type="button" class="b3" data-hd="nvSua" data-t="' + esc(x.id) + '">Sửa</button>' : '') + '</td></tr>';
         if (o.mo.sua === x.id) r += '<tr class="sua-r"><td colspan="' + n + '">' + formNv(o, x) + '</td></tr>';
         return r;
@@ -696,10 +697,10 @@
       var v = f[t[0]], op = t[3] || {}, id = 'nv_' + t[0], nhan = esc(t[1]) + (op.bb ? ' *' : '');
       if (t[2] === 'check') return '<label class="nv-ck"><input type="checkbox" data-f="' + t[0] + '"' + (v ? ' checked' : '') + '> ' + esc(t[1]) + '</label>';
       if (t[2] === 'area') return '<label class="ca">' + nhan + '<textarea data-f="' + t[0] + '" rows="2" maxlength="1000">' + esc(v || '') + '</textarea></label>';
-      if (t[2] === 'select' || t[2] === 'tv') {
-        var ds = t[2] === 'tv' ? [''].concat(d.thanhVien) : [''].concat(op.ds);
+      if (t[2] === 'select' || t[2] === 'tv' || t[2] === 'ban') {
+        var ds = t[2] === 'tv' ? [''].concat((d.tv && d.tv[c.nhom]) || d.thanhVien || []) : t[2] === 'ban' ? [''].concat(d.ban || []) : [''].concat(op.ds);
         if (v && ds.indexOf(v) === -1) ds.push(v);
-        return '<label>' + nhan + '<select data-f="' + t[0] + '">' + ds.map(function (o2) { return '<option value="' + esc(o2) + '"' + (o2 === (x ? (v || '') : (t[0] === 'phuTrach' || t[0] === 'nguoiNhan' ? d.toi : '')) ? ' selected' : '') + '>' + esc(o2 || '—') + '</option>'; }).join('') + '</select></label>';
+        return '<label>' + nhan + '<select data-f="' + t[0] + '">' + ds.map(function (o2) { return '<option value="' + esc(o2) + '"' + (o2 === (x ? (v || '') : (/^(phuTrach|nguoiNhan|nguoiKiem|nguoiTD|nguoiLap|nguoiPT|nguoiKT|nguoi|thanhVien)$/.test(t[0]) && ds.indexOf(d.toi) > -1 ? d.toi : '')) ? ' selected' : '') + '>' + esc(o2 || '—') + '</option>'; }).join('') + '</select></label>';
       }
       if (!x && t[2] === 'date' && /^ngay(Nhan|YC)?$/.test(t[0])) v = d.homNay;
       var ty = t[2] === 'num' ? 'number" min="0" step="1' : t[2] === 'date' ? 'date' : t[2] === 'link' ? 'url' : 'text';
@@ -738,6 +739,10 @@
   function nvSv5t(el) { nvSo(el, ['sv5t'], 'nvSv5t'); }
   function nvThietKe(el) { nvSo(el, ['thietKe'], 'nvThietKe'); }
   function nvKyNhan(el) { nvSo(el, ['kyNhan'], 'nvKyNhan'); }
+  function novNhanSu(el) { nvSo(el, ['thanhVienMoi', 'ungTuyen'], 'novNhanSu'); }
+  function novVpp(el) { nvSo(el, ['vppKiem', 'vppDung', 'vppDeNghi'], 'novVpp'); }
+  function novHoatDong(el) { nvSo(el, ['hoatDong', 'veSinh'], 'novHoatDong'); }
+  function novLich(el) { nvSo(el, ['lichHoc'], 'novLich'); }
 
   /* ================= Thông tin Đoàn vụ (chỉ đọc sheet Quản lý Đoàn vụ + Xe máy) ================= */
   var DV_TAB = [['hs', 'Hồ sơ thành viên'], ['tl', 'Track-log'], ['xe', 'Xe máy'], ['lk', 'Biểu mẫu & liên kết']];
@@ -1152,5 +1157,5 @@
     }
   }
 
-  window.BDVHD = { cnXanh: cnXanh, kiemKe: kiemKe, csvc: csvc, congVan: congVan, hopNhom: hopNhom, doanVu: doanVu, nvSoDoan: nvSoDoan, nvSv5t: nvSv5t, nvThietKe: nvThietKe, nvKyNhan: nvKyNhan };
+  window.BDVHD = { cnXanh: cnXanh, kiemKe: kiemKe, csvc: csvc, congVan: congVan, hopNhom: hopNhom, doanVu: doanVu, nvSoDoan: nvSoDoan, nvSv5t: nvSv5t, nvThietKe: nvThietKe, nvKyNhan: nvKyNhan, novNhanSu: novNhanSu, novVpp: novVpp, novHoatDong: novHoatDong, novLich: novLich };
 })();

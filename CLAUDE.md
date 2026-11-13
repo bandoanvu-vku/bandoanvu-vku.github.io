@@ -108,6 +108,10 @@ mỗi "sổ" = cấu hình trong `SO_NV` (trường + kiểu, trạng thái theo
 (bảng, cột "Kiểm tra" gom các ô đánh dấu, nút "→ trạng thái tiếp", form sửa). Thêm quy trình mới: thêm mục vào `SO_NV` + một tab trong MANG_RIENG gọi `nvSo(el, [khoá], ...)`.
 Không lưu STK / CCCD của người ký nhận, người nộp hồ sơ. Link nhóm Nghiệp vụ (sheet Quản lý sổ Đoàn - Đoàn phí, folder Thông tin Sổ Đoàn, mẫu DS, sheet/form/folder SV5T, mẫu thiết kế)
 khai báo trong `LIEN_KET` với phần tử thứ 3 'Nghiệp vụ' (trang Cài đặt chia nhóm theo phần tử này).
+Trang **Nội vụ** dùng chung engine (mục SO_NV có `nhom: 'noi-vu'`, tab sheet "NoV - …"): Nhân sự (thành viên mới · ứng tuyển, chốt Trúng/Không trúng tuyển = phụ trách mảng nhân sự)
+· Văn phòng phẩm (kiểm tra định kỳ · sử dụng/mượn · đề nghị cấp theo quý) · Hoạt động · Vệ sinh (theo dõi + chấm điểm hoạt động · trực vệ sinh) · Lịch trực · Lịch học (lịch học – lịch thi;
+mục Quy trình ghi nội quy trực; lịch trực vẫn ở trang Lịch trực). Kiểu trường `ban` = chọn bất kỳ ai trong sheet tài khoản. Không đưa link sheet "Hoàn cảnh gia đình" lên dashboard.
+Link Nội vụ: phần tử thứ 3 'Nội vụ' trong LIEN_KET.
 **Phản hồi hệ thống** (`/phan-hoi/`, `11-phan-hoi.gs`, actions `phanHoi` / `guiPhanHoi` / `xuLyPhanHoi`): mọi vai trò gửi góp ý (loại, trang, mức hài lòng 1–5, nội dung; tối đa 10/ngày),
 lưu tab "Phản hồi hệ thống" của sheet tài khoản KÈM họ tên/email/nhóm người gửi. Trang không có ghi chú về ẩn danh (không được hứa ẩn danh vì sheet lưu tên).
  Thành viên thấy góp ý của mình + trả lời của Ban; quản lý có tab Tổng hợp (tên ẩn mặc định, nút "Xem người gửi"), đổi trạng thái + trả lời.
