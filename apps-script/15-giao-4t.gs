@@ -59,11 +59,20 @@ function quyen4t_(nd) {
   return { ql: ql, pt: pt };
 }
 
+/** Ô "Tab" có thể bị Sheets tự đổi "11.2026" thành ngày hoặc số → đưa về dạng tên tab "MM.yyyy". */
+function tabChu_(v) {
+  if (Object.prototype.toString.call(v) === '[object Date]') return Utilities.formatDate(v, MUI_GIO, 'MM.yyyy');
+  if (typeof v === 'number') {
+    if (Math.floor(v) === v) { const t = String(v); return t.length >= 5 ? ('0' + t.slice(0, -4)).slice(-2) + '.' + t.slice(-4) : t; }
+    const p = v.toFixed(4).split('.'); return ('0' + p[0]).slice(-2) + '.' + p[1];
+  }
+  const t = chuoi_(v).replace(/^'/, ''), m = /^(\d{1,2})\.(\d{4})$/.exec(t); return m ? ('0' + m[1]).slice(-2) + '.' + m[2] : t;
+}
 function tabG4_() { return damBaoTab_(sheetTruc_(), TAB_G4, COT_G4, [130, 80, 280, 100, 90, 150, 130, 150, 130, 360]); }
 function docG4_(s) {
   if (s.getLastRow() < 2) return [];
   return s.getRange(2, 1, s.getLastRow() - 1, COT_G4.length).getValues().map(function (r, i) {
-    return { dong: i + 2, ma: chuoi_(r[0]), tab: chuoi_(r[1]), ten: chuoi_(r[2]), trangThai: chuoi_(r[4]) || 'Đang có', taoBoi: chuoi_(r[5]),
+    return { dong: i + 2, ma: chuoi_(r[0]), tab: tabChu_(r[1]), ten: chuoi_(r[2]), trangThai: chuoi_(r[4]) || 'Đang có', taoBoi: chuoi_(r[5]),
       capNhatBoi: chuoi_(r[7]), capNhatLuc: lucChu_(r[8]), du: chuoi_(r[9]) };
   }).filter(function (x) { return x.ma; });
 }
@@ -73,24 +82,14 @@ function boSungG4_(ss, s, ds, d) {
   if (!nk || nk.getLastRow() < 2) return ds;
   const co = {}; ds.forEach(function (x) { co[x.tab + '|' + x.ten] = 1; });
   const them = [];
-  // Ô Tab trong Nhật ký có thể bị Sheets tự đổi "11.2026" thành ngày hoặc số → đưa về dạng tên tab "MM.yyyy"
-  const tabChu = function (v) {
-    if (Object.prototype.toString.call(v) === '[object Date]') return Utilities.formatDate(v, ss.getSpreadsheetTimeZone(), 'MM.yyyy');
-    if (typeof v === 'number') {
-      // "11.2026" có thể thành số thập phân 11.2026 hoặc (dấu chấm = phân cách hàng nghìn) số nguyên 112026
-      if (Math.floor(v) === v) { const t = String(v); return t.length >= 5 ? ('0' + t.slice(0, -4)).slice(-2) + '.' + t.slice(-4) : t; }
-      const p = v.toFixed(4).split('.'); return ('0' + p[0]).slice(-2) + '.' + p[1];
-    }
-    const m = /^(\d{1,2})\.(\d{4})$/.exec(chuoi_(v)); return m ? ('0' + m[1]).slice(-2) + '.' + m[2] : chuoi_(v);
-  };
   nk.getRange(2, 1, nk.getLastRow() - 1, 5).getValues().forEach(function (r) {
     if (chuoi_(r[2]).indexOf('Giao việc: tạo hoạt động') !== 0) return;
-    r[3] = tabChu(r[3]);
+    r[3] = tabChu_(r[3]);
     const k = chuoi_(r[3]) + '|' + chuoi_(r[4]);
     if (co[k]) return;
     const t = d.cacThang.filter(function (x) { return x.tab === chuoi_(r[3]); })[0];
     if (!t || !t.hoatDong.some(function (h) { return h.ten === chuoi_(r[4]); })) return;
-    co[k] = 1; them.push([maMoi_('HD'), chuoi_(r[3]), chuoi_(r[4]), '', 'Đang có', chuoi_(r[1]), r[0], '', '', '']);
+    co[k] = 1; them.push([maMoi_('HD'), "'" + chuoi_(r[3]), chuoi_(r[4]), '', 'Đang có', chuoi_(r[1]), r[0], '', '', '']);
   });
   if (!them.length) return ds;
   s.getRange(s.getLastRow() + 1, 1, them.length, COT_G4.length).setValues(them);
@@ -215,7 +214,7 @@ function giao4t_(nd, req) {
         const f = sachHoatDong4t_(req, tn), nguoi = {};
         VIEC.forEach(function (v) { nguoi[v.key] = kiemNguoi((req.nguoi || {})[v.key]); });
         const dong = ghiHangMoi4t_(s, cot, f, nguoi);
-        sg.appendRow([maMoi_('HD'), tab, f.ten, f.ngay || '', 'Đang có', nd.ten, bay, '', '', '']);
+        sg.appendRow([maMoi_('HD'), "'" + tab, f.ten, f.ngay || '', 'Đang có', nd.ten, bay, '', '', '']);
         const ai = VIEC.filter(function (v) { return nguoi[v.key]; }).map(function (v) { return v.tieuDe + ': ' + nguoi[v.key]; }).join('; ');
         ghiNk = [bay, nd.ten, 'Giao việc: tạo hoạt động (hàng ' + dong + ')', tab, f.ten, ai || 'Chưa giao người'];
       } else if (req.viec === 'nguoi') {
