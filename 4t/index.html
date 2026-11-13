@@ -43,12 +43,19 @@
   .ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; min-height: 38px; }
   .ghost:hover { border-color: var(--accent); color: var(--accent); }
 
-  .months { display: flex; gap: 6px; overflow-x: auto; padding: 16px 0 4px; scrollbar-width: thin; }
-  .months button { flex: none; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; white-space: nowrap; }
-  .months button .n { color: var(--muted); font-size: 12px; margin-left: 4px; font-variant-numeric: tabular-nums; }
-  .months button[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
-  .months button[aria-pressed=true] .n { color: inherit; opacity: .8; }
-  .months button.empty { color: var(--muted); }
+  /* Thanh chọn khoảng thời gian: Tháng (xổ xuống) · Hôm nay · Hôm qua · 3 ngày · 7 ngày · Tuỳ chọn */
+  .months { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 16px 0 4px; }
+  .ky { display: inline-flex; align-items: center; gap: 2px; flex-wrap: wrap; padding: 4px; border-radius: 999px; background: var(--track); }
+  .ky button, .ky select { flex: none; border: 0; border-radius: 999px; background: none; padding: 7px 15px; font-size: 14px; color: var(--muted); white-space: nowrap; min-height: 34px; cursor: pointer; }
+  .ky button:hover, .ky select:hover { color: var(--text); }
+  .ky select { appearance: none; -webkit-appearance: none; padding-right: 30px; font-weight: 500;
+    background: no-repeat right 11px center / 11px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235b6b88' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  .ky .on { background-color: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(31, 59, 107, .16); }
+  html body .ky select, html body .ky select:focus { border: 0; box-shadow: none; }
+  html body .ky select.on { box-shadow: 0 1px 3px rgba(31, 59, 107, .16); }
+  .ky-tuy { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--muted); }
+  .ky-tuy input { border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; background: var(--card); color: var(--text); font: inherit; font-size: 13.5px; }
+  .ky-nhan { font-size: 13px; color: var(--muted); }
 
   .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0 18px; }
   .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
@@ -153,7 +160,7 @@
   <div class="kpis" id="kpis"></div>
 
   <div class="tabs" role="tablist">
-    <button type="button" role="tab" data-view="hd">Hoạt động trong tháng</button>
+    <button type="button" role="tab" data-view="hd">Hoạt động</button>
     <button type="button" role="tab" data-view="toi">Việc của tôi</button>
     <button type="button" role="tab" data-view="tv">Thành viên</button>
   </div>
@@ -172,6 +179,8 @@
   var NHAN = { ctt: 'Content Tuổi trẻ', cvp: 'Content VPĐ', dtt: 'Thiết kế Tuổi trẻ', dvp: 'Thiết kế VPĐ', photo: 'Chụp hình' };
   var LOAI = { ctt: 'Viết bài', cvp: 'Viết bài', dtt: 'Thiết kế', dvp: 'Thiết kế', photo: 'Chụp ảnh' };
   var D = null, iThang = -1, view = 'hd', loc = 'all', busy = false;
+  // Khoảng thời gian đang xem: thang (theo tab tháng) · homnay · homqua · 3 · 7 (số ngày gần nhất, tính cả hôm nay) · tuy (từ – đến)
+  var ky = { k: 'thang', tu: '', den: '' };
   var $ = function (id) { return document.getElementById(id); };
 
   function nho(k, v) {
@@ -187,6 +196,22 @@
   }
   function tenNgan(t) { var p = String(t).split(' '); return p.length > 2 ? p.slice(-2).join(' ') : t; }
   function homNay() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function iso(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function cong(n) { var d = homNay(); d.setDate(d.getDate() + n); return iso(d); }
+  function dm(s) { var p = s.split('-'); return p[2] + '/' + p[1]; }
+  /** Hoạt động trong khoảng đang chọn: { nhan, ten (cho tiêu đề), ds: [{t, h}], t (tháng, nếu xem theo tháng) } */
+  function kyHt() {
+    if (ky.k === 'thang') {
+      var t = D.cacThang[iThang];
+      return { t: t, nhan: 'tháng ' + t.thang, ten: 'Tháng ' + t.thang + '/' + t.nam, ds: t.hoatDong.map(function (h) { return { t: t, h: h }; }) };
+    }
+    var r = ky.k === 'homnay' ? [cong(0), cong(0)] : ky.k === 'homqua' ? [cong(-1), cong(-1)] : ky.k === '3' ? [cong(-2), cong(0)]
+      : ky.k === '7' ? [cong(-6), cong(0)] : [ky.tu || cong(-6), ky.den || cong(0)];
+    var nhan = { homnay: 'hôm nay', homqua: 'hôm qua', '3': '3 ngày qua', '7': '7 ngày qua' }[ky.k] || (r[0] === r[1] ? dm(r[0]) : dm(r[0]) + ' – ' + dm(r[1]));
+    var ds = [];
+    D.cacThang.forEach(function (t) { t.hoatDong.forEach(function (h) { if (h.ngay && h.ngay >= r[0] && h.ngay <= r[1]) ds.push({ t: t, h: h }); }); });
+    return { nhan: nhan, ten: nhan.charAt(0).toUpperCase() + nhan.slice(1), ds: ds, r: r };
+  }
   function ngay(iso) { if (!iso) return null; var p = iso.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function soNgay(iso) { return Math.round((ngay(iso) - homNay()) / 864e5); }
   function link(s) { return /^https?:\/\//i.test(s) ? '<a href="' + esc(s) + '" target="_blank" rel="noopener">' + esc(s) + '</a>' : esc(s); }
@@ -283,22 +308,26 @@
     else veThanhVien();
   }
   function veThang() {
-    $('months').innerHTML = D.cacThang.map(function (t, i) {
-      return '<button type="button" data-i="' + i + '" aria-pressed="' + (i === iThang) + '" class="' + (t.hoatDong.length ? '' : 'empty') + '">Tháng ' +
-        t.thang + '/' + t.nam + (t.hoatDong.length ? '<span class="n">' + t.hoatDong.length + '</span>' : '') + '</button>';
-    }).join('');
-    var b = $('months').querySelector('[aria-pressed=true]');
-    if (b && b.scrollIntoView) b.scrollIntoView({ block: 'nearest', inline: 'center' });
+    var nut = [['homnay', 'Hôm nay'], ['homqua', 'Hôm qua'], ['3', '3 ngày'], ['7', '7 ngày'], ['tuy', 'Tuỳ chọn']];
+    var K = kyHt();
+    $('months').innerHTML = '<div class="ky" role="group" aria-label="Khoảng thời gian">' +
+      '<select id="kyThang" aria-label="Chọn tháng"' + (ky.k === 'thang' ? ' class="on"' : '') + '>' + D.cacThang.map(function (t, i) {
+        return '<option value="' + i + '"' + (i === iThang ? ' selected' : '') + '>Tháng ' + t.thang + '/' + t.nam + (t.hoatDong.length ? ' (' + t.hoatDong.length + ')' : '') + '</option>';
+      }).join('') + '</select>' +
+      nut.map(function (x) { return '<button type="button" data-k="' + x[0] + '" aria-pressed="' + (ky.k === x[0]) + '"' + (ky.k === x[0] ? ' class="on"' : '') + '>' + x[1] + '</button>'; }).join('') +
+      '</div>' +
+      (ky.k === 'tuy' ? '<span class="ky-tuy"><input type="date" id="kyTu" value="' + K.r[0] + '" aria-label="Từ ngày"> – <input type="date" id="kyDen" value="' + K.r[1] + '" aria-label="Đến ngày"></span>' : '') +
+      (ky.k !== 'thang' && ky.k !== 'tuy' ? '<span class="ky-nhan">' + (K.r[0] === K.r[1] ? dm(K.r[0]) : dm(K.r[0]) + ' – ' + dm(K.r[1])) + ' · ' + K.ds.length + ' hoạt động</span>' : '');
   }
   function veKpi() {
-    var t = D.cacThang[iThang], can = 0, xong = 0, chuaNhan = 0, chuaNgay = 0, tre = 0;
-    t.hoatDong.forEach(function (h) {
+    var K = kyHt(), can = 0, xong = 0, chuaNhan = 0, chuaNgay = 0, tre = 0;
+    K.ds.forEach(function (o) { var h = o.h;
       var s = trangThai(h); can += s.can; xong += s.xong;
       if (s.ma === 'idle') chuaNhan++; if (!h.ngay && s.ma !== 'ok') chuaNgay++; if (s.tre) tre++;
     });
     var pt = can ? Math.round(xong / can * 100) : 0;
     $('kpis').innerHTML =
-      '<div class="kpi"><div class="v">' + t.hoatDong.length + '</div><div class="l">Hoạt động tháng ' + t.thang + '</div></div>' +
+      '<div class="kpi"><div class="v">' + K.ds.length + '</div><div class="l">Hoạt động ' + K.nhan + '</div></div>' +
       '<div class="kpi"><div class="v">' + xong + '<small> / ' + can + ' việc</small></div><div class="l">Đã hoàn thành (' + pt + '%)</div>' +
         '<div class="bar"><i style="width:' + pt + '%"></i></div></div>' +
       '<div class="kpi' + (chuaNhan ? ' alert' : '') + '"><div class="v">' + chuaNhan + '</div><div class="l">Hoạt động chưa có người nhận</div></div>' +
@@ -340,20 +369,20 @@
       '</div>';
   }
   function veHoatDong() {
-    var t = D.cacThang[iThang];
-    var ds = t.hoatDong.filter(function (h) {
-      var s = trangThai(h);
+    var K = kyHt();
+    var ds = K.ds.filter(function (o) {
+      var h = o.h, s = trangThai(h);
       if (loc === 'todo') return s.ma !== 'ok';
       if (loc === 'open') return s.ma === 'idle';
       if (loc === 'mine') return h.viec.some(function (v) { return toi && v.nguoi === toi; });
       return true;
-    }).sort(function (a, b) { return (a.ngay || '9999') < (b.ngay || '9999') ? -1 : (a.ngay || '9999') > (b.ngay || '9999') ? 1 : a.dong - b.dong; });
+    }).sort(function (x, y) { var a = x.h, b = y.h; return (a.ngay || '9999') < (b.ngay || '9999') ? -1 : (a.ngay || '9999') > (b.ngay || '9999') ? 1 : a.dong - b.dong; });
     var f = [['all', 'Tất cả'], ['todo', 'Chưa xong'], ['open', 'Chưa có người nhận'], ['mine', 'Có việc của tôi']];
     $('view').innerHTML = '<div class="filters">' + f.map(function (x) {
         return '<button type="button" data-loc="' + x[0] + '" aria-pressed="' + (loc === x[0]) + '">' + x[1] + '</button>';
       }).join('') + '</div>' +
-      (ds.length ? ds.map(function (h) { return theHoatDong(t, h); }).join('')
-        : '<div class="empty-box">' + (t.hoatDong.length ? 'Không có hoạt động nào khớp bộ lọc.' : 'Tháng ' + t.thang + '/' + t.nam + ' chưa có hoạt động nào trong sheet.') + '</div>');
+      (ds.length ? ds.map(function (o) { return theHoatDong(o.t, o.h); }).join('')
+        : '<div class="empty-box">' + (K.ds.length ? 'Không có hoạt động nào khớp bộ lọc.' : K.ten + ' chưa có hoạt động nào' + (K.t ? ' trong sheet.' : ' (tính theo ngày của hoạt động).')) + '</div>');
   }
   function veCuaToi() {
     if (!toi) { $('view').innerHTML = '<div class="empty-box">Đăng nhập (nút ở góc trên) để xem việc của mình.</div>'; return; }
@@ -377,16 +406,16 @@
       (roi.length ? '<h2>Đã xong (' + roi.length + ')</h2>' + roi.map(dong).join('') : '');
   }
   function veThanhVien() {
-    var t = D.cacThang[iThang];
+    var K = kyHt();
     var dem = function (cac) {
       var m = {}; D.thanhVien.forEach(function (n) { m[n] = { giao: 0, xong: 0, loai: {} }; });
       cac.forEach(function (th) { th.hoatDong.forEach(function (h) { h.viec.forEach(function (v) {
         if (!v.nguoi || !m[v.nguoi]) return; m[v.nguoi].giao++; if (v.xong) { m[v.nguoi].xong++; m[v.nguoi].loai[LOAI[v.key]] = (m[v.nguoi].loai[LOAI[v.key]] || 0) + 1; }
       }); }); }); return m;
     };
-    var th = dem([t]), nam = dem(D.cacThang), max = 1;
+    var th = dem([{ hoatDong: K.ds.map(function (o) { return o.h; }) }]), nam = dem(D.cacThang), max = 1;
     D.thanhVien.forEach(function (n) { max = Math.max(max, th[n].giao); });
-    $('view').innerHTML = '<table><thead><tr><th>Thành viên</th><th>Tháng ' + t.thang + ': xong / đã nhận</th><th class="hide-s">Loại việc đã xong (tháng)</th><th>Cả năm học</th></tr></thead><tbody>' +
+    $('view').innerHTML = '<table><thead><tr><th>Thành viên</th><th>' + esc(K.ten) + ': xong / đã nhận</th><th class="hide-s">Loại việc đã xong</th><th>Cả năm học</th></tr></thead><tbody>' +
       D.thanhVien.map(function (n) {
         var a = th[n], b = nam[n], lo = Object.keys(a.loai).map(function (k) { return k + ' ' + a.loai[k]; }).join(' · ') || '—';
         return '<tr><td><b>' + esc(n) + '</b></td>' +
@@ -404,7 +433,21 @@
     var v = h.viec.filter(function (x) { return x.key === n.dataset.key; })[0];
     return v ? { t: t, h: h, v: v, n: n } : null;
   }
-  $('months').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { iThang = +b.dataset.i; ve(); } });
+  $('months').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-k]'); if (!b) return;
+    ky.k = b.dataset.k;
+    if (ky.k === 'tuy' && !ky.tu) { ky.tu = cong(-6); ky.den = cong(0); }
+    ve();
+  });
+  $('months').addEventListener('change', function (e) {
+    if (e.target.id === 'kyThang') { iThang = +e.target.value; ky.k = 'thang'; ve(); return; }
+    if (e.target.id === 'kyTu' || e.target.id === 'kyDen') {
+      var a = $('kyTu').value, b = $('kyDen').value;
+      if (!a || !b) return;
+      if (a > b) { var x = a; a = b; b = x; }
+      ky.tu = a; ky.den = b; ve();
+    }
+  });
   document.querySelector('.tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { view = b.dataset.view; ve(); } });
   $('view').addEventListener('click', function (e) {
     var f = e.target.closest('[data-loc]'); if (f) { loc = f.dataset.loc; ve(); return; }
