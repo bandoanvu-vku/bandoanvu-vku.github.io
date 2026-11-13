@@ -6,11 +6,29 @@
  *   - cột Nhóm trong sheet tài khoản chỉ còn Nghiệp vụ
  * 20261014_qldv: mảng "Cập nhật Hệ thống quản lý Đoàn viên" chuyển sang nhóm Nghiệp vụ (Tân phụ trách, đã có dòng
  *   "Phần mềm Quản lý Đoàn viên" ở sheet Nghiệp vụ) → xoá dòng mảng này ở tab Mảng công việc của CSDL - CSVC.
+ * 20261113_vitri: đặt vị trí điểm danh văn phòng = 15.975518, 108.252674 (điểm Trâm gửi trên Google Maps), bán kính 80 m.
  */
 const CAP_NHAT = [
   { ma: '20261014_tan', chay: function () { boNguoiKhoiNhom_('csdl-csvc', 'Lê Hoàng Tân'); } },
-  { ma: '20261014_qldv', chay: function () { boMangKhoiNhom_('csdl-csvc', /hệ thống quản lý đoàn viên/i); } }
+  { ma: '20261014_qldv', chay: function () { boMangKhoiNhom_('csdl-csvc', /hệ thống quản lý đoàn viên/i); } },
+  { ma: '20261113_vitri', chay: function () { ghiViTriVanPhong_(15.975518, 108.252674, 80); } }
 ];
+
+/** Ghi vĩ độ / kinh độ / bán kính vào tab Cài đặt của sheet lịch trực (thiếu dòng thì thêm). */
+function ghiViTriVanPhong_(lat, lng, banKinh) {
+  const s = sheetTruc_().getSheetByName('Cài đặt');
+  const ghi = function (nhan, ten, giaTri) {
+    const v = s.getRange(1, 1, Math.max(1, s.getLastRow()), 1).getValues().map(function (r) { return chuanHoa_(r[0]); });
+    const i = v.findIndex(function (x) { return x.indexOf(chuanHoa_(nhan)) === 0; });
+    if (i > -1) s.getRange(i + 1, 2).setValue(giaTri);
+    else s.appendRow([ten, giaTri, '']);
+  };
+  ghi('Vĩ độ', 'Vĩ độ văn phòng', lat);
+  ghi('Kinh độ', 'Kinh độ văn phòng', lng);
+  ghi('Bán kính', 'Bán kính điểm danh (m)', banKinh);
+  SpreadsheetApp.flush();
+  xoaCaiDatNho_();
+}
 
 function chayCapNhat_() {
   const p = PropertiesService.getScriptProperties();
