@@ -214,6 +214,106 @@
   document.addEventListener('bdv-duyetviec', function (e) { soViec = e.detail; try { sessionStorage.removeItem('bdv.pd'); } catch (er) {} ve(); });
   ve();
   document.addEventListener('bdv-nguoi', function () { soCho = null; ve(); });
+
+  /* ---------- Thanh tab quá dài: tab không vừa một hàng chuyển vào nút "Xem thêm ▾" ở cuối ----------
+     Không di chuyển tab gốc (trang vẫn bắt sự kiện như cũ): tab thừa chỉ bị ẩn, mục trong menu bấm hộ tab gốc. */
+  var stTab = document.createElement('style');
+  stTab.textContent =
+    'html body .tabs{flex-wrap:nowrap!important;overflow:hidden!important}' +
+    'html body .tabs>.bdv-an{display:none!important}' +
+    'html body .tabs>.bdv-them{flex:none;display:inline-flex;align-items:center;gap:6px;margin:0;padding:8px 14px;border:0;border-radius:999px;background:none;color:var(--muted);font:inherit;font-size:14px;font-weight:500;white-space:nowrap;cursor:pointer}' +
+    'html body .tabs>.bdv-them:hover{color:var(--navy,#1f3b6b);background:var(--accent-soft,#eef4fe)}' +
+    'html body .tabs>.bdv-them.on{background:var(--navy,#1f3b6b);color:#fff;font-weight:600}' +
+    '@media (prefers-color-scheme:dark){html body .tabs>.bdv-them.on{background:var(--hi,#6fa0f0);color:#0d1526}}' +
+    '.bdv-them svg{width:12px;height:12px;transition:transform .15s}.bdv-them[aria-expanded=true] svg{transform:rotate(180deg)}' +
+    '.bdv-them-ds{position:fixed;z-index:20;min-width:200px;max-width:min(320px,calc(100vw - 16px));max-height:60vh;overflow:auto;padding:6px;background:var(--card,#fff);border:1px solid var(--line,#e3eaf5);border-radius:14px;box-shadow:0 12px 40px rgba(21,41,77,.18);display:none}' +
+    '.bdv-them-ds.mo{display:block}' +
+    '.bdv-them-ds button{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 12px;border-radius:9px;font:inherit;font-size:14px;color:var(--text,#1a2b4a);cursor:pointer}' +
+    '.bdv-them-ds button:hover{background:var(--accent-soft,#eef4fe)}.bdv-them-ds button.on{color:var(--navy,#1f3b6b);font-weight:600;background:var(--accent-soft,#eef4fe)}' +
+    '@media (prefers-color-scheme:dark){.bdv-them-ds button.on{color:var(--text)}}';
+  document.head.appendChild(stTab);
+  var dsThem = document.createElement('div'); dsThem.className = 'bdv-them-ds'; dsThem.setAttribute('role', 'menu');
+  document.body.appendChild(dsThem);
+  var tabMo = null; // .tabs đang mở menu
+  var MUI = '<svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function laChon(x) { return x.getAttribute('aria-selected') === 'true' || x.getAttribute('aria-pressed') === 'true' || x.hasAttribute('aria-current'); }
+  function dongThem() { dsThem.classList.remove('mo'); if (tabMo && tabMo._them) tabMo._them.setAttribute('aria-expanded', 'false'); tabMo = null; }
+  function xepTab(el) {
+    if (el._dangXep || !el.isConnected) return;
+    el._dangXep = true;
+    var them = el._them;
+    if (!them || them.parentNode !== el) {
+      them = el._them = document.createElement('button'); them.type = 'button'; them.className = 'bdv-them';
+      them.setAttribute('aria-haspopup', 'menu'); them.setAttribute('aria-expanded', 'false');
+    }
+    var cac = [].filter.call(el.children, function (x) { return x !== them; });
+    cac.forEach(function (x) { x.classList.remove('bdv-an'); });
+    if (them.parentNode === el) el.removeChild(them);
+    var an = [];
+    if (cac.length > 1 && el.scrollWidth > el.clientWidth + 1) {
+      them.innerHTML = 'Xem thêm ' + MUI; el.appendChild(them);
+      for (var i = cac.length - 1; i > 0 && el.scrollWidth > el.clientWidth + 1; i--) { cac[i].classList.add('bdv-an'); an.unshift(cac[i]); }
+      var chon = an.filter(laChon)[0];
+      if (chon) { them.innerHTML = esc(chon.textContent.trim()) + ' ' + MUI; them.classList.add('on'); } else them.classList.remove('on');
+      // Nhãn dài hơn "Xem thêm" có thể làm tràn lại: ẩn thêm tab
+      for (var j = cac.length - an.length - 1; j > 0 && el.scrollWidth > el.clientWidth + 1; j--) { cac[j].classList.add('bdv-an'); an.unshift(cac[j]); }
+    }
+    el._an = an;
+    el._dangXep = false;
+    if (tabMo === el) dongThem();
+  }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  var hen = 0;
+  function xepTatCa() {
+    cancelAnimationFrame(hen);
+    hen = requestAnimationFrame(function () {
+      [].forEach.call(document.querySelectorAll('.tabs'), function (el) {
+        if (!el._theoDoi) {
+          el._theoDoi = true;
+          new MutationObserver(function (ms) {
+            // Bỏ qua thay đổi do chính nút "Xem thêm" (thêm / gỡ / đổi nhãn), tránh vòng lặp
+            var that = ms.some(function (m) {
+              if (m.type === 'attributes') return m.target !== el._them;
+              if (el._them && (m.target === el._them || el._them.contains(m.target))) return false;
+              return [].some.call(m.addedNodes, function (n) { return n !== el._them; }) || [].some.call(m.removedNodes, function (n) { return n !== el._them; });
+            });
+            if (that && !el._dangXep) xepTab(el);
+          }).observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-selected', 'aria-pressed', 'aria-current'] });
+          el.addEventListener('click', function (e) {
+            if (!e.target.closest('.bdv-them')) return;
+            e.preventDefault(); e.stopPropagation();
+            if (tabMo === el) { dongThem(); return; }
+            dongThem();
+            dsThem.innerHTML = (el._an || []).map(function (x, i) { return '<button type="button" role="menuitem" data-i="' + i + '"' + (laChon(x) ? ' class="on"' : '') + '>' + esc(x.textContent.trim()) + '</button>'; }).join('');
+            var r = el._them.getBoundingClientRect();
+            dsThem.classList.add('mo');
+            var w = dsThem.offsetWidth;
+            dsThem.style.top = (r.bottom + 6) + 'px';
+            dsThem.style.left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8)) + 'px';
+            el._them.setAttribute('aria-expanded', 'true'); tabMo = el;
+          }, true);
+        }
+        xepTab(el);
+      });
+    });
+  }
+  dsThem.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-i]'); if (!b || !tabMo) return;
+    var goc = (tabMo._an || [])[+b.dataset.i]; dongThem();
+    if (goc) goc.click();
+  });
+  document.addEventListener('click', function (e) { if (tabMo && !dsThem.contains(e.target) && !e.target.closest('.bdv-them')) dongThem(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') dongThem(); });
+  window.addEventListener('resize', xepTatCa);
+  window.addEventListener('scroll', function () { if (tabMo) dongThem(); }, { passive: true });
+  new MutationObserver(function (ms) {
+    for (var i = 0; i < ms.length; i++) for (var j = 0; j < ms[i].addedNodes.length; j++) {
+      var n = ms[i].addedNodes[j];
+      if (n.nodeType === 1 && (n.classList.contains('tabs') || n.querySelector('.tabs'))) { xepTatCa(); return; }
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(xepTatCa);
+  xepTatCa();
   if (!window.BDV && !document.querySelector('script[src="/dangnhap.js"]')) {
     var dn = document.createElement('script'); dn.src = '/dangnhap.js'; dn.onload = ve; document.body.appendChild(dn);
   }

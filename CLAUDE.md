@@ -54,6 +54,7 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 Thêm trang: thêm một mục vào `cauHinh()` trong `menu.js`. Trang mới dùng chung `/chung.css` + `/chung.js` (T.$, T.esc, T.toast, T.khoi).
 **Giao diện chung** `/giao-dien.css` (tông navy #1F3B6B / nền #F5F8FD / nhấn #4C86E8, tham khảo masify.eu; phông Be Vietnam Pro tự lưu trong `/fonts/`, OFL): mọi trang có `<link rel="stylesheet" href="/giao-dien.css">` cuối `<head>` (trang mới nhớ thêm).
 Quy tắc dùng tiền tố `html body` để thắng CSS trang + CSS chèn lúc chạy; biến màu của nhom.js đặt trong `:where(:root)` để không đè. Menu trái nền navy, tab dạng viên thuốc, tab con `.seg` dạng thanh trượt.
+Thanh `.tabs` luôn một hàng: tab không vừa bị ẩn (`bdv-an`) và vào nút "Xem thêm ▾" cuối thanh (menu.js `xepTab`, tự xếp lại khi đổi cỡ / vẽ lại; mục trong menu bấm hộ tab gốc; tab đang chọn nằm trong menu thì nút mang tên tab đó).
 Server `6-ho-so-noi-dung.gs`: hồ sơ (cột Chức vụ/MSSV/Lớp/Số điện thoại tự thêm vào sheet tài khoản; thành viên sửa MSSV/Lớp/SĐT,
 chức vụ do quản lý), tab "Tài liệu" (cột Nhóm: chung/4t/…; trang chia tab Chung + 4 nhóm, thành viên thấy Chung + nhóm mình) + "Cẩm nang" trong sheet tài khoản (quản lý sửa), cài đặt lịch trực (`caiDat`/`luuCaiDat`).
 Server `7-hoat-dong-nhom.gs` + giao diện `/hoat-dong.js` (BDVHD.cnXanh / kiemKe / hopNhom), lưu ở các tab "CN xanh", "CN xanh - xin vắng",
