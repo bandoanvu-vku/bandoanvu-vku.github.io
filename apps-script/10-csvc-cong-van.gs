@@ -22,7 +22,9 @@ const LIEN_KET = [
   ['ttThanhVien', 'Link sheet THÔNG TIN THÀNH VIÊN BĐV', 'Nội vụ'], ['folderUngTuyen', 'Link folder ứng tuyển các đợt', 'Nội vụ'],
   ['tonKhoVpp', 'Link sheet Tồn kho VPP - VPĐ', 'Nội vụ'], ['folderDeNghiVpp', 'Link folder giấy đề nghị VPP', 'Nội vụ'],
   ['theoDoiHoatDong', 'Link sheet Theo dõi hoạt động BĐV', 'Nội vụ'], ['tongKetHoatDong', 'Link sheet tổng kết hoạt động, trực VPĐ, trực vệ sinh', 'Nội vụ'],
-  ['folderHoatDong', 'Link folder quản lý hoạt động', 'Nội vụ'], ['lichHocSheet', 'Link sheet LỊCH HỌC - LỊCH THI BĐV', 'Nội vụ']
+  ['folderHoatDong', 'Link folder quản lý hoạt động', 'Nội vụ'], ['lichHocSheet', 'Link sheet LỊCH HỌC - LỊCH THI BĐV', 'Nội vụ'],
+  // liên kết quản lý chung, không thuộc nhóm nào
+  ['phanCong', 'Link sheet BẢNG PHÂN CÔNG NHIỆM VỤ BĐV', 'Chung'], ['folderChung', 'Link folder chung của Ban Đoàn vụ', 'Chung']
 ];
 const TT2 = { CHO_TN: 'Chờ phụ trách duyệt', CU_CHO_TN: 'Chờ trưởng nhóm duyệt', CHO_QL: 'Chờ quản lý duyệt', DUYET: 'Đã duyệt', TRA_TN: 'Trả lại', TRA_QL: 'Quản lý trả lại', HUY: 'Đã huỷ' };
 const NHOM_CSVC = 'csdl-csvc';

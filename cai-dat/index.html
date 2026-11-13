@@ -14,6 +14,20 @@
   .nhap { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .nhap input { width: auto !important; }
   .hint { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .lk-ds { margin-top: 14px; display: grid; gap: 10px; }
+  .lk-nhom { border: 1px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden; }
+  .lk-nhom > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 13px 16px; cursor: pointer; color: var(--text); }
+  .lk-nhom > summary::-webkit-details-marker { display: none; }
+  .lk-nhom > summary b { font-size: 14.5px; }
+  .lk-nhom > summary svg { width: 12px; height: 12px; margin-left: auto; color: var(--muted); transition: transform .15s; flex: none; }
+  .lk-nhom[open] > summary svg { transform: rotate(180deg); }
+  .lk-nhom[open] > summary { border-bottom: 1px solid var(--line); background: var(--bg); }
+  .lk-nhom > summary:hover { background: var(--bg); }
+  .lk-dem { font-size: 12.5px; color: var(--muted); }
+  .lk-dem.thieu { color: var(--warn); }
+  .lk-than { padding: 2px 16px 16px; }
+  .lk-ht { margin-top: 14px; display: grid; gap: 4px; }
+  .lk-ht a { font-size: 13.5px; }
 </style>
 <link rel="stylesheet" href="/giao-dien.css">
 </head>
@@ -52,17 +66,36 @@
       '<div class="nhap" style="margin-top:10px"><input type="date" id="ngay" aria-label="Chọn ngày nghỉ"><button type="button" class="ghost sm" id="themNgay">+ Thêm ngày</button></div>' +
       '<div class="chips" id="dsNghi"></div>' +
       '<div class="acts"><button class="btn" type="submit">Lưu ngày nghỉ</button></div></form>' +
-      '<form class="panel form" id="f4"><h2>Liên kết của các nhóm</h2><div class="sub">Dashboard chỉ đọc các sheet của Văn phòng Đoàn (công văn, biên bản, Quản lý Đoàn vụ, sổ Đoàn…); riêng sheet mượn trả và hiện trạng tài sản thì dashboard ghi. Mỗi sheet cần chia sẻ quyền cho tài khoản chạy dashboard (vanborapper@gmail.com).</div>' +
-      (D.dsLienKet || []).map(function (k, i, a) { var v = (D.lienKet || {})[k[0]] || '', g = k[2] || 'CSDL - CSVC', gTruoc = i ? (a[i - 1][2] || 'CSDL - CSVC') : '';
-        return (g !== gTruoc ? '<h3 style="margin:16px 0 4px;font-size:14px">Nhóm ' + esc(g) + '</h3>' : '') + '<label for="lk_' + k[0] + '">' + esc(k[1].replace(/^Link /, '').replace(/^./, function (c) { return c.toUpperCase(); })) + '</label>' +
-          '<div class="nhap"><input id="lk_' + k[0] + '" data-lk="' + k[0] + '" type="url" style="flex:1 1 320px" placeholder="https://docs.google.com/… hoặc https://drive.google.com/…" value="' + esc(v) + '">' +
-          (v ? '<a class="note" href="' + esc(v) + '" target="_blank" rel="noopener">Mở</a>' : '') + '</div>' +
-          (v && /rtpof=true/.test(v) ? '<div class="hint">File Excel (.xlsx): dashboard chỉ hiện nút mở file, không đọc nội dung.</div>' : '');
-      }).join('') +
+      '<form class="panel form" id="f4"><h2>Liên kết</h2><div class="sub">Chia theo Chung (quản lý chung, không thuộc nhóm nào) và từng nhóm; bấm tên mục để mở. Dashboard chỉ đọc các sheet của Văn phòng Đoàn (công văn, biên bản, Quản lý Đoàn vụ, sổ Đoàn…); riêng sheet mượn trả và hiện trạng tài sản thì dashboard ghi. Mỗi sheet cần chia sẻ quyền cho tài khoản chạy dashboard (vanborapper@gmail.com).</div>' +
+      veLienKet() +
       '<div class="acts"><button class="btn" type="submit">Lưu liên kết</button></div></form>' +
       '<div class="note">Muốn thêm thành viên hoặc đổi quyền: sửa sheet "Tài khoản dashboard - Ban Đoàn vụ" (cột Vai trò, Chức vụ).</div>';
     veNghi();
   }
+  // Mục liên kết: mỗi nhóm một khung xổ xuống (nhớ khung nào đang mở khi vẽ lại)
+  var NHOM_LK = ['Chung', 'Truyền thông - Thông tin', 'Nghiệp vụ', 'CSDL - CSVC', 'Nội vụ'], moLk = {};
+  function veLienKet() {
+    var ds = D.dsLienKet || [], ht = D.heThong || [];
+    return '<div class="lk-ds">' + NHOM_LK.map(function (g) {
+      var cua = ds.filter(function (k) { return (k[2] || 'CSDL - CSVC') === g; }), htG = ht.filter(function (x) { return x[0] === g; });
+      if (!cua.length && !htG.length) return '';
+      var co = cua.filter(function (k) { return (D.lienKet || {})[k[0]]; }).length;
+      return '<details class="lk-nhom" data-g="' + esc(g) + '"' + (moLk[g] ? ' open' : '') + '><summary><b>' + (g === 'Chung' ? 'Chung' : 'Nhóm ' + esc(g)) + '</b>' +
+        '<span class="lk-dem' + (cua.length && co < cua.length ? ' thieu' : '') + '">' + (cua.length ? co + '/' + cua.length + ' liên kết' : '') + (htG.length ? (cua.length ? ' · ' : '') + htG.length + ' sheet hệ thống' : '') + '</span>' +
+        '<svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div class="lk-than">' +
+        cua.map(function (k) {
+          var v = (D.lienKet || {})[k[0]] || '';
+          return '<label for="lk_' + k[0] + '">' + esc(k[1].replace(/^Link /, '').replace(/^./, function (c) { return c.toUpperCase(); })) + '</label>' +
+            '<div class="nhap"><input id="lk_' + k[0] + '" data-lk="' + k[0] + '" type="url" style="flex:1 1 320px" placeholder="https://docs.google.com/… hoặc https://drive.google.com/…" value="' + esc(v) + '">' +
+            (v ? '<a class="note" href="' + esc(v) + '" target="_blank" rel="noopener">Mở</a>' : '') + '</div>' +
+            (v && /rtpof=true/.test(v) ? '<div class="hint">File Excel (.xlsx): dashboard chỉ hiện nút mở file, không đọc nội dung.</div>' : '');
+        }).join('') +
+        (htG.length ? '<div class="lk-ht"><div class="hint">Sheet hệ thống của dashboard (đổi trong Script Properties, không sửa ở đây):</div>' +
+          htG.map(function (x) { return '<a href="' + esc(x[2]) + '" target="_blank" rel="noopener">' + esc(x[1]) + ' ↗</a>'; }).join('') + '</div>' : '') +
+        '</div></details>';
+    }).join('') + '</div>';
+  }
+  app.addEventListener('toggle', function (e) { var d = e.target; if (d.classList && d.classList.contains('lk-nhom')) moLk[d.dataset.g] = d.open; }, true);
   function luu(req, f, tb) {
     var b = f.querySelector('button[type=submit]'); b.disabled = true;
     return BDV.goi('luuCaiDat', req).then(function (d) { nhan(d); T.toast(tb); }).catch(function (er) { b.disabled = false; T.toast(er.message || String(er), true); });

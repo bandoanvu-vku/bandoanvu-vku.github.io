@@ -182,7 +182,22 @@ function luuCamNang_(nd, req) {
 function caiDat_(nd) {
   canQuanLy_(nd, 'xem được cài đặt');
   const cd = caiDatTruc_(sheetTruc_());
-  return { lat: cd.lat, lng: cd.lng, banKinh: cd.banKinh, soBuoi: cd.toiThieuGio / 3, ngayNghi: cd.ngayNghi.slice().sort(), homNay: bayGio_().ngay, lienKet: lienKet_(), dsLienKet: LIEN_KET };
+  return { lat: cd.lat, lng: cd.lng, banKinh: cd.banKinh, soBuoi: cd.toiThieuGio / 3, ngayNghi: cd.ngayNghi.slice().sort(), homNay: bayGio_().ngay, lienKet: lienKet_(), dsLienKet: LIEN_KET,
+    heThong: sheetHeThong_() };
+}
+/** Các sheet dashboard dùng (ID trong Script Properties) — chỉ để quản lý mở nhanh ở trang Cài đặt, không sửa ở đây. [nhóm, tên, url] */
+function sheetHeThong_() {
+  const url = function (id) { return id ? 'https://docs.google.com/spreadsheets/d/' + id + '/edit' : ''; };
+  const o = [['Chung', 'Sheet Tài khoản dashboard - Ban Đoàn vụ', url(prop_('SHEET_TAI_KHOAN'))],
+    ['Chung', 'Sheet Lịch trực văn phòng (kèm dữ liệu CN xanh, kiểm kê, Nghiệp vụ, Nội vụ…)', url(prop_('SHEET_TRUC'))],
+    ['Truyền thông - Thông tin', 'Sheet Timeline 2026 - 2027', url(prop_('SHEET_TIMELINE') || CONFIG.SPREADSHEET_ID)]];
+  let nhom = {};
+  try { nhom = JSON.parse(prop_('SHEET_NHOM') || '{}'); } catch (e) {}
+  Object.keys(nhom).forEach(function (ma) {
+    const g = ma === 'nghiep-vu' ? 'Nghiệp vụ' : ma === 'noi-vu' ? 'Nội vụ' : ma === 'csdl-csvc' ? 'CSDL - CSVC' : (TEN_NHOM[ma] || ma);
+    o.push([g, 'Sheet theo dõi nhiệm vụ - ' + (nhom[ma].ten || TEN_NHOM[ma] || ma), url(nhom[ma].id)]);
+  });
+  return o.filter(function (x) { return x[2]; });
 }
 function luuCaiDat_(nd, req) {
   canQuanLy_(nd, 'sửa được cài đặt');

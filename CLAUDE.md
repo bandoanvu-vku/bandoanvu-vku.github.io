@@ -112,6 +112,8 @@ mỗi "sổ" = cấu hình trong `SO_NV` (trường + kiểu, trạng thái theo
 (bảng, cột "Kiểm tra" gom các ô đánh dấu, nút "→ trạng thái tiếp", form sửa). Thêm quy trình mới: thêm mục vào `SO_NV` + một tab trong MANG_RIENG gọi `nvSo(el, [khoá], ...)`.
 Không lưu STK / CCCD của người ký nhận, người nộp hồ sơ. Link nhóm Nghiệp vụ (sheet Quản lý sổ Đoàn - Đoàn phí, folder Thông tin Sổ Đoàn, mẫu DS, sheet/form/folder SV5T, mẫu thiết kế)
 khai báo trong `LIEN_KET` với phần tử thứ 3 'Nghiệp vụ' (trang Cài đặt chia nhóm theo phần tử này).
+Trang Cài đặt → mục **Liên kết**: mỗi nhóm một khung xổ xuống (Chung · 4T · Nghiệp vụ · CSDL - CSVC · Nội vụ); phần tử thứ 3 'Chung' = liên kết quản lý chung (phanCong, folderChung).
+Mỗi khung kèm link mở nhanh các sheet hệ thống lấy từ Script Properties (`sheetHeThong_` trong caiDat, chỉ quản lý).
 Trang **Nội vụ** dùng chung engine (mục SO_NV có `nhom: 'noi-vu'`, tab sheet "NoV - …"): Nhân sự (thành viên mới · ứng tuyển, chốt Trúng/Không trúng tuyển = phụ trách mảng nhân sự)
 · Văn phòng phẩm (kiểm tra định kỳ · sử dụng/mượn · đề nghị cấp theo quý) · Hoạt động · Vệ sinh (theo dõi + chấm điểm hoạt động · trực vệ sinh) · Lịch trực · Lịch học (lịch học – lịch thi;
 mục Quy trình ghi nội quy trực; lịch trực vẫn ở trang Lịch trực). Kiểu trường `ban` = chọn bất kỳ ai trong sheet tài khoản. Không đưa link sheet "Hoàn cảnh gia đình" lên dashboard.
