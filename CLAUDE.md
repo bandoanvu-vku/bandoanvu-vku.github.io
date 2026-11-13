@@ -117,6 +117,17 @@ lưu tab "Phản hồi hệ thống" của sheet tài khoản KÈM họ tên/ema
  Thành viên thấy góp ý của mình + trả lời của Ban; quản lý có tab Tổng hợp (tên ẩn mặc định, nút "Xem người gửi"), đổi trạng thái + trả lời.
 Lộ trình còn lại: Đơn từ & xin nghỉ → duyệt ở Phê duyệt; Nhắc việc tự động (email, cần cấp quyền).
 
+## Tốc độ (11/2026)
+
+- Mỗi lần gọi Apps Script mất sẵn ~2 giây ngoài mã của mình (khởi động + chuyển hướng) — không bớt được nếu còn dùng Apps Script.
+- Trình duyệt: `BDV.tai(action, req, ve)` (dangnhap.js) vẽ ngay bản lưu `bdv.c.*` trong localStorage rồi vẽ lại khi có bản mới;
+  `T.tai(app, …)` (chung.js) bọc thêm xử lý lỗi; `khoi()` trong hoat-dong.js dùng nó cho mọi tab con. Chỉ action trong mảng `DOC` được lưu;
+  mọi thao tác ghi thành công xoá toàn bộ `bdv.c.*`. Trang mới: dùng `T.tai` thay `BDV.goi` cho lần tải đầu. Tải sẵn ngầm lichTruc (+ pheDuyet cho quản lý).
+- Máy chủ: `moId_` (mở mỗi file một lần/yêu cầu), `prop_`, `sheetTruc_` nhớ trong yêu cầu + kiểm tra tiêu đề 6 giờ/lần (`truc:dambao1`),
+  `giaTriCaiDat_` (tab Cài đặt, 10 phút — sửa tay trên sheet thì tối đa 10 phút mới thấy; chỗ ghi gọi `xoaCaiDatNho_()`), `hoSo_` 2 phút theo email,
+  `thanhVienTaiKhoan_` 2 phút (`tvtk1`), `nhoDat_/nhoDoc_` chia phần >100 KB (công văn 10 phút, đoàn vụ 30 phút).
+- Đo: mọi phản hồi có `ms` {tong, nd, mo, msMo}; quản lý gửi `req._tg: 1` để nhận `ms.tg` = thời gian từng hàm (gộp hàm con).
+
 ## Cách làm việc (để tiết kiệm thời gian/token)
 
 - Sửa giao diện: sửa file trong repo → commit → push `main`. Không cần trình duyệt.

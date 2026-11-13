@@ -264,6 +264,13 @@
       if (JSON.stringify(nd) !== JSON.stringify(nguoi)) { nguoi = nd; ghi(K_NG, nguoi); bao(); }
     }).catch(function () {});
   }
+  // Tải sẵn ngầm dữ liệu trang hay mở (Lịch trực; quản lý thêm Phê duyệt) để lần đầu mở trang đó cũng hiện ngay
+  setTimeout(function () {
+    if (!nguoi || document.hidden) return;
+    var ds = location.pathname === '/lich-truc/' ? [] : ['lichTruc'];
+    if (nguoi.vaiTro === 'quanLy' && !xemNhu && location.pathname !== '/phe-duyet/') ds.push('pheDuyet');
+    ds.forEach(function (a) { var o = docC(khoaC(a, {})); if (!o || Date.now() - o.luc > 300000) tai(a, {}).catch(function () {}); });
+  }, 6000);
   var nap = function () { setTimeout(sanSang, nguoi ? 2500 : 300); };
   if (document.readyState === 'complete') nap(); else window.addEventListener('load', nap);
 })();
