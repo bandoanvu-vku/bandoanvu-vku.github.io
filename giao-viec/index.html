@@ -125,11 +125,11 @@
     if (!t) { el.innerHTML = '<div class="panel empty">Sheet Timeline chưa có tab tháng nào.</div>'; return; }
     var p = tab4.split('.'), dau = p[1] + '-' + p[0] + '-01', cuoi = p[1] + '-' + p[0] + '-' + ('0' + new Date(+p[1], +p[0], 0).getDate()).slice(-2);
     var viecCo = G.tenViec.filter(function (x) { return !tc.viec || tc.viec.indexOf(x.key) > -1; });
-    var form = '<form class="panel form" id="f4"><h2>Giao hoạt động mới</h2><div class="sub">Ghi vào tab <b>' + esc(tab4) + '</b> của sheet Timeline, ở hàng trống ngay sau hoạt động cuối cùng</div>' +
+    var form = '<form class="panel form" id="f4"><h2>Giao hoạt động mới</h2><div class="sub">Ghi vào tab <b>' + esc(tab4) + '</b> của sheet Timeline, ở hàng trống ngay sau hoạt động cuối cùng. Chỉ <b>Tên hoạt động</b> là bắt buộc, các ô khác để trống cũng được.</div>' +
       (tc.loi ? '<div class="err">' + esc(tc.loi) + '</div>' : '') +
       '<div class="row2"><div><label for="g4Thang">Tháng</label><select id="g4Thang">' + G.cacThang.map(function (x) { return '<option value="' + esc(x.tab) + '"' + (x.tab === tab4 ? ' selected' : '') + '>Tháng ' + x.thang + '/' + x.nam + '</option>'; }).join('') + '</select></div>' +
       '<div><label for="g4Ngay">Thời gian</label><input type="date" id="g4Ngay" min="' + dau + '" max="' + cuoi + '" value="' + esc(v.ngay && v.ngay >= dau && v.ngay <= cuoi ? v.ngay : '') + '"></div></div>' +
-      '<label for="g4Ten">Tên hoạt động</label><input id="g4Ten" required maxlength="300" value="' + esc(v.ten || '') + '">' +
+      '<label for="g4Ten">Tên hoạt động <span style="color:var(--bad)">*</span></label><input id="g4Ten" required maxlength="300" value="' + esc(v.ten || '') + '">' +
       '<div class="row2"><div>' + o4('g4Muc', 'Mức độ', tc.mucDo, G.daDung.mucDo, v.mucDo) + '</div><div>' + o4('g4Vt', 'Vị trí đăng', tc.viTri, G.daDung.viTri, v.viTri) + '</div></div>' +
       o4('g4Tm', 'Thư mục', tc.thuMuc, null, v.thuMuc) +
       '<label for="g4MoTa">Mô tả</label><textarea id="g4MoTa" rows="3">' + esc(v.moTa || '') + '</textarea>' +
