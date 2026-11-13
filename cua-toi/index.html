@@ -109,6 +109,7 @@
 </div>
 
 <script src="/dangnhap.js"></script>
+<script src="/xep-hang.js"></script>
 <script>
 (function () {
   var TEN = { '4t': 'Truyền thông - Thông tin', 'nghiep-vu': 'Nghiệp vụ', 'csdl-csvc': 'CSDL - CSVC', 'noi-vu': 'Nội vụ' };
@@ -146,6 +147,7 @@
       (sap ? '<h2 style="margin-top:16px">Việc của nhóm quá hạn hoặc sắp đến hạn</h2><div style="margin-top:4px">' + sap + '</div>' +
         ((TQ.soSapToi || 0) > 6 ? '<div class="note" style="padding-top:8px">Còn ' + (TQ.soSapToi - 6) + ' việc nữa, xem trong trang nhóm.</div>' : '') : '') + '</div>';
   }
+  BDVXH.khiDoi = function () { if (D) ve(); };
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -214,7 +216,9 @@
     var dx = xong.length ? '<div class="panel"><h2>Đã hoàn thành (' + xong.length + ')</h2><div style="margin-top:8px">' +
       (hetXong ? xong : xong.slice(0, 5)).map(function (v) { return dong(v, hn); }).join('') +
       (xong.length > 5 ? '<button type="button" class="ghost" id="more" style="margin-top:8px">' + (hetXong ? 'Thu gọn' : 'Xem cả ' + xong.length + ' việc') + '</button>' : '') + '</div></div>' : '';
-    $('app').innerHTML = ho + tr + kpi + ds + veTQ(hn) + dx;
+    var xhHtml = TQ && TQ.xepHang && D.nguoi.vaiTro !== 'quanLy'
+      ? BDVXH.ve(TQ.xepHang.nguoi, TQ.xepHang.nhom, { coNhom: true, toi: D.nguoi.ten, nhomToi: D.nguoi.nhom, phamVi: 'toàn Ban', ghiChu4t: true }) : '';
+    $('app').innerHTML = ho + tr + kpi + xhHtml + ds + veTQ(hn) + dx;
     var t = new Date();
     $('foot').textContent = 'Cập nhật lúc ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '. Nhóm Truyền thông tính theo từng việc con (viết bài, thiết kế, chụp hình).';
   }

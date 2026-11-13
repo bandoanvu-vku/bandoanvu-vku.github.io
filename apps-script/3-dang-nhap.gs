@@ -184,7 +184,12 @@ function locTongQuan_(kq, nd) {
     sapToi: sapToi.slice(0, tatCa ? 300 : 20), // quản lý lọc theo từng nhóm ở trang Tổng quan nên cần đủ danh sách
     soSapToi: sapToi.length,
     thang: duoc('4t') ? kq.thang : [],
-    tuoi: kq.tuoi
+    tuoi: kq.tuoi,
+    // Bảng xếp hạng công khai cho mọi thành viên: chỉ tên, nhóm và số đếm (không có nội dung việc)
+    xepHang: tatCa ? null : {
+      nguoi: kq.nguoi.filter(function (p) { return p.giao > 0; }).map(function (p) { return { ten: p.ten, nhom: p.nhom, giao: p.giao, xong: p.xong, quaHan: p.quaHan }; }),
+      nhom: kq.nhom.map(function (n) { return { ma: n.ma, ten: n.ten, thanhVien: n.thanhVien, xong: n.xong, dangLam: n.dangLam, chuaLam: n.chuaLam, chuaNhan: n.chuaNhan, quaHan: n.quaHan, loi: n.loi }; })
+    }
   };
 }
 
