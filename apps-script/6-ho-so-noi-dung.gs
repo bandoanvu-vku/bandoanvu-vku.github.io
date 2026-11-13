@@ -71,6 +71,7 @@ function luuHoSo_(nd, req) {
     ghi('MSSV', mssv); ghi('Lớp', sach(req.lop, 40)); ghi('Số điện thoại', sdt);
     if (nd.vaiTro === 'quanLy' && req.chucVu !== undefined) ghi('Chức vụ', sach(req.chucVu, 60));
     SpreadsheetApp.flush();
+    try { CacheService.getScriptCache().remove('tvtk1'); } catch (e) {}
     return hoSoCuaToi_(nd);
   });
 }

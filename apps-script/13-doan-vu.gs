@@ -106,7 +106,15 @@ function docXeMay_(ss) {
 }
 
 /** Thành viên hiện tại = sheet tài khoản dashboard (họ tên, nhóm, MSSV, chức vụ, vai trò). */
+/** Danh sách tài khoản (nhớ tạm 2 phút; luuHoSo_ xoá bản nhớ). */
 function thanhVienTaiKhoan_() {
+  const c = CacheService.getScriptCache(), co = c.get('tvtk1');
+  if (co) return JSON.parse(co);
+  const o = thanhVienTaiKhoanDoc_();
+  try { c.put('tvtk1', JSON.stringify(o), 120); } catch (e) {}
+  return o;
+}
+function thanhVienTaiKhoanDoc_() {
   const s = ssTaiKhoan_().getSheets()[0];
   if (s.getLastRow() < 2) return [];
   const v = s.getRange(1, 1, s.getLastRow(), s.getLastColumn()).getValues(), td = v[0].map(chuanHoa_);

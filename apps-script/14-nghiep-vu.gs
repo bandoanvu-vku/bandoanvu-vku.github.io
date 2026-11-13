@@ -263,9 +263,13 @@ function tabSoNv_(so) {
     s.setFrozenRows(1);
     return s;
   }
+  // Đã kiểm tra đủ cột trong 6 giờ qua thì bỏ qua (đỡ 2 lần gọi sheet mỗi sổ)
+  const nho = CacheService.getScriptCache(), k = 'nvtab1:' + so.tab + ':' + cot.length;
+  if (nho.get(k)) return s;
   const td = s.getRange(1, 1, 1, Math.max(s.getLastColumn(), 1)).getValues()[0].map(chuanHoa_);
   const thieu = cot.filter(function (c) { return td.indexOf(chuanHoa_(c)) === -1; });
   if (thieu.length) s.getRange(1, s.getLastColumn() + 1, 1, thieu.length).setValues([thieu]).setFontWeight('bold');
+  try { nho.put(k, '1', 21600); } catch (e) {}
   return s;
 }
 function giaTriNv_(t, v) {
@@ -275,12 +279,12 @@ function giaTriNv_(t, v) {
   return chuoi_(v);
 }
 function docSoNv_(so) {
-  const s = tabSoNv_(so);
-  if (s.getLastRow() < 2) return [];
-  const w = s.getLastColumn(), td = s.getRange(1, 1, 1, w).getValues()[0].map(chuanHoa_);
+  const tat = tabSoNv_(so).getDataRange().getValues(); // một lần đọc cả tiêu đề lẫn dữ liệu
+  if (tat.length < 2) return [];
+  const td = tat[0].map(chuanHoa_);
   const ci = function (ten) { return td.indexOf(chuanHoa_(ten)); };
   const cMa = ci('Mã'), cTT = ci('Trạng thái'), cuoi = NV_COT_CUOI.map(ci);
-  return s.getRange(2, 1, s.getLastRow() - 1, w).getValues().map(function (r, i) {
+  return tat.slice(1).map(function (r, i) {
     const f = {};
     so.truong.forEach(function (t) { const c = ci(t[1]); f[t[0]] = giaTriNv_(t, c > -1 ? r[c] : ''); });
     return { dong: i + 2, id: chuoi_(r[cMa]), trangThai: chuoi_(r[cTT]), f: f,

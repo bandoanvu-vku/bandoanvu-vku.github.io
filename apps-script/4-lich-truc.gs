@@ -40,7 +40,13 @@ const LOAI_YC = { doi: 'Đổi ca', huy: 'Huỷ ca', them: 'Thêm ca', vang: 'Xi
 
 /* ---------------- sheet */
 
+let TRUC_SS_ = null;
 function sheetTruc_() {
+  if (TRUC_SS_) return TRUC_SS_; // mỗi yêu cầu chỉ mở + kiểm tra một lần
+  TRUC_SS_ = sheetTrucMo_();
+  return TRUC_SS_;
+}
+function sheetTrucMo_() {
   const p = PropertiesService.getScriptProperties();
   let id = prop_('SHEET_TRUC');
   let ss;
@@ -72,9 +78,13 @@ function sheetTruc_() {
       khoa.releaseLock();
     }
   }
+  // Kiểm tra tiêu đề 3 tab chính tốn ~1 giây: chỉ làm lại sau 6 giờ (hoặc khi thiếu tab)
+  const c = CacheService.getScriptCache(), kDb = 'truc:dambao1';
+  if (c.get(kDb) && ss.getSheetByName('Đăng ký') && ss.getSheetByName('Yêu cầu') && ss.getSheetByName('Công bố')) return ss;
   damBaoTab_(ss, 'Đăng ký', COT_TRUC, [110, 70, 190, 220, 140, 140, 90, 90, 120, 220, 60, 60, 90, 100]);
   damBaoTab_(ss, 'Yêu cầu', COT_YC, [90, 140, 190, 220, 80, 200, 100, 80, 60, 60, 260, 100, 190, 140, 220]);
   damBaoTab_(ss, 'Công bố', ['Tuần (thứ 2)', 'Công bố lúc', 'Người công bố'], [120, 160, 220]);
+  try { c.put(kDb, '1', 21600); } catch (e) {}
   return ss;
 }
 
