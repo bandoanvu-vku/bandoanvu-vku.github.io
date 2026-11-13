@@ -314,6 +314,50 @@
   }).observe(document.body, { childList: true, subtree: true });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(xepTatCa);
   xepTatCa();
+
+  /* ---------- Ô ngày luôn hiện dd/mm/yyyy (ô ngày của trình duyệt theo ngôn ngữ máy, có thể ra mm/dd/yyyy) ----------
+     Giữ nguyên <input type="date"> (giá trị vẫn là yyyy-mm-dd cho trang dùng), chỉ ẩn chữ gốc và đè chữ dd/mm/yyyy lên trên. */
+  var stNgay = document.createElement('style');
+  stNgay.textContent =
+    '.bdv-ngay{position:relative;display:inline-block;vertical-align:middle;max-width:100%}.bdv-ngay.khoi{display:block}' +
+    '.bdv-ngay>input[type=date]{color:transparent!important}.bdv-ngay>input[type=date]::-webkit-datetime-edit{color:transparent}' +
+    '.bdv-ngay>input[type=date]:focus::-webkit-datetime-edit{color:transparent}' +
+    '.bdv-ngay>.bdv-ngay-chu{position:absolute;top:0;bottom:0;display:flex;align-items:center;pointer-events:none;color:var(--text,#1a2b4a);white-space:nowrap;font-variant-numeric:tabular-nums}' +
+    '.bdv-ngay>.bdv-ngay-chu.trong{color:var(--muted,#5b6b88)}';
+  document.head.appendChild(stNgay);
+  var MO_TA_GIA_TRI = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  function boNgay(inp) {
+    if (inp._bdvNgay || !inp.parentNode) return;
+    inp._bdvNgay = true;
+    var cs = getComputedStyle(inp), cha = inp.parentNode;
+    var w = document.createElement('span'); w.className = 'bdv-ngay';
+    if (cs.display === 'block' || /100%/.test(inp.style.width) || (cha.clientWidth && inp.offsetWidth >= cha.clientWidth - 2)) w.className += ' khoi';
+    cha.insertBefore(w, inp); w.appendChild(inp);
+    if (/\bkhoi\b/.test(w.className)) inp.style.width = '100%';
+    var chu = document.createElement('span'); chu.className = 'bdv-ngay-chu';
+    chu.style.left = (parseFloat(cs.borderLeftWidth) + parseFloat(cs.paddingLeft)) + 'px';
+    chu.style.font = cs.font; chu.style.fontSize = cs.fontSize;
+    w.appendChild(chu);
+    var cap = function () {
+      var v = MO_TA_GIA_TRI.get.call(inp), m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+      chu.textContent = m ? m[3] + '/' + m[2] + '/' + m[1] : 'dd/mm/yyyy';
+      chu.classList.toggle('trong', !m);
+      chu.style.opacity = inp.disabled ? '.55' : '';
+    };
+    // Trang gán .value bằng mã thì vẫn cập nhật chữ hiển thị
+    try { Object.defineProperty(inp, 'value', { configurable: true, get: function () { return MO_TA_GIA_TRI.get.call(this); }, set: function (v) { MO_TA_GIA_TRI.set.call(this, v); cap(); } }); } catch (e) {}
+    inp.addEventListener('input', cap); inp.addEventListener('change', cap);
+    inp.addEventListener('click', function () { if (inp.showPicker && !inp.disabled && !inp.readOnly) { try { inp.showPicker(); } catch (e) {} } });
+    cap();
+  }
+  function boNgayTatCa(goc) { [].forEach.call((goc || document).querySelectorAll('input[type=date]'), boNgay); }
+  new MutationObserver(function (ms) {
+    for (var i = 0; i < ms.length; i++) for (var j = 0; j < ms[i].addedNodes.length; j++) {
+      var n = ms[i].addedNodes[j]; if (n.nodeType !== 1) continue;
+      if (n.matches && n.matches('input[type=date]')) boNgay(n); else if (n.querySelector && n.querySelector('input[type=date]')) boNgayTatCa(n);
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+  boNgayTatCa();
   if (!window.BDV && !document.querySelector('script[src="/dangnhap.js"]')) {
     var dn = document.createElement('script'); dn.src = '/dangnhap.js'; dn.onload = ve; document.body.appendChild(dn);
   }

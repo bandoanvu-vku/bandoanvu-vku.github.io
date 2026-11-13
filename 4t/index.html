@@ -312,7 +312,7 @@
     var K = kyHt();
     $('months').innerHTML = '<div class="ky" role="group" aria-label="Khoảng thời gian">' +
       '<select id="kyThang" aria-label="Chọn tháng"' + (ky.k === 'thang' ? ' class="on"' : '') + '>' + D.cacThang.map(function (t, i) {
-        return '<option value="' + i + '"' + (i === iThang ? ' selected' : '') + '>Tháng ' + t.thang + '/' + t.nam + (t.hoatDong.length ? ' (' + t.hoatDong.length + ')' : '') + '</option>';
+        return '<option value="' + i + '"' + (i === iThang ? ' selected' : '') + '>Tháng ' + t.thang + '/' + t.nam + '</option>';
       }).join('') + '</select>' +
       nut.map(function (x) { return '<button type="button" data-k="' + x[0] + '" aria-pressed="' + (ky.k === x[0]) + '"' + (ky.k === x[0] ? ' class="on"' : '') + '>' + x[1] + '</button>'; }).join('') +
       '</div>' +
