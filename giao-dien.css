@@ -82,12 +82,13 @@ html body .tabs { display: flex; flex-wrap: wrap; gap: 4px; width: fit-content; 
 html body .tabs::-webkit-scrollbar { display: none; }
 html body .tabs a, html body .tabs button { flex: none; margin: 0; padding: 8px 16px; border: 0; border-radius: 999px; background: none; color: var(--muted); font-size: 14px; font-weight: 500; text-decoration: none; white-space: nowrap; }
 html body .tabs a:hover, html body .tabs button:hover { color: var(--navy); background: var(--accent-soft); }
-html body .tabs a[aria-selected=true], html body .tabs button[aria-selected=true] { background: var(--navy); color: #fff; font-weight: 600; border: 0; }
+/* Tab đang chọn: nền xanh nhạt + chữ navy (chấm đỏ đếm số vẫn nổi rõ) */
+html body .tabs a[aria-selected=true], html body .tabs button[aria-selected=true] { background: #dbe7fb; color: var(--navy); font-weight: 600; border: 0; box-shadow: inset 0 0 0 1px #c3d6f7; }
 @media (prefers-color-scheme: dark) {
   html body .tabs a:hover, html body .tabs button:hover { color: var(--text); }
-  html body .tabs a[aria-selected=true], html body .tabs button[aria-selected=true] { background: var(--hi); color: #0d1526; }
+  html body .tabs a[aria-selected=true], html body .tabs button[aria-selected=true] { background: rgba(111, 160, 240, .22); color: #e6edf8; box-shadow: inset 0 0 0 1px rgba(111, 160, 240, .35); }
 }
-html body .tabs .so { background: var(--bad); color: #fff; }
+html body .tabs .so { background: #e5484d; color: #fff; box-shadow: 0 0 0 2px var(--card); }
 /* tab con (seg) */
 html body .seg, html body .hd .seg { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; border: 0; border-radius: 12px; background: var(--track); overflow: visible; }
 html body .seg button, html body .hd .seg button { border: 0; border-radius: 9px; background: none; padding: 6px 14px; min-height: 32px; font-size: 13.5px; font-weight: 500; color: var(--muted); }

@@ -223,8 +223,8 @@
     'html body .tabs>.bdv-an{display:none!important}' +
     'html body .tabs>.bdv-them{flex:none;display:inline-flex;align-items:center;gap:6px;margin:0;padding:8px 14px;border:0;border-radius:999px;background:none;color:var(--muted);font:inherit;font-size:14px;font-weight:500;white-space:nowrap;cursor:pointer}' +
     'html body .tabs>.bdv-them:hover{color:var(--navy,#1f3b6b);background:var(--accent-soft,#eef4fe)}' +
-    'html body .tabs>.bdv-them.on{background:var(--navy,#1f3b6b);color:#fff;font-weight:600}' +
-    '@media (prefers-color-scheme:dark){html body .tabs>.bdv-them.on{background:var(--hi,#6fa0f0);color:#0d1526}}' +
+    'html body .tabs>.bdv-them.on{background:#dbe7fb;color:var(--navy,#1f3b6b);font-weight:600;box-shadow:inset 0 0 0 1px #c3d6f7}' +
+    '@media (prefers-color-scheme:dark){html body .tabs>.bdv-them.on{background:rgba(111,160,240,.22);color:#e6edf8;box-shadow:inset 0 0 0 1px rgba(111,160,240,.35)}}' +
     '.bdv-them svg{width:12px;height:12px;transition:transform .15s}.bdv-them[aria-expanded=true] svg{transform:rotate(180deg)}' +
     '.bdv-them-ds{position:fixed;z-index:20;min-width:200px;max-width:min(320px,calc(100vw - 16px));max-height:60vh;overflow:auto;padding:6px;background:var(--card,#fff);border:1px solid var(--line,#e3eaf5);border-radius:14px;box-shadow:0 12px 40px rgba(21,41,77,.18);display:none}' +
     '.bdv-them-ds.mo{display:block}' +
