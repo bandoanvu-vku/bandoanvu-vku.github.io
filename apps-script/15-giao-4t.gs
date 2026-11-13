@@ -124,7 +124,13 @@ function giao4tDs_(nd, req) {
   });
   const daXoa = g4.filter(function (x) { return x.trangThai === 'Đã xoá'; }).slice(-15).reverse()
     .map(function (x) { return { ma: x.ma, tab: x.tab, ten: x.ten, boi: x.capNhatBoi, luc: x.capNhatLuc }; });
-  return { homNay: bayGio_().ngay, tab: tab, thanhVien: d.thanhVien, cacThang: d.cacThang, tieuChi: tc, daDung: daDung, dash: dash, daXoa: daXoa,
+  // Kiểm tra lỗi (quản lý gửi req._nk): vài dòng cuối Nhật ký + sổ theo dõi, kèm kiểu dữ liệu ô
+  let nkDebug;
+  if (req && req._nk && q.ql) {
+    const nk = ss.getSheetByName(CONFIG.TAB_NHAT_KY);
+    nkDebug = { nk: nk && nk.getLastRow() > 1 ? nk.getRange(Math.max(2, nk.getLastRow() - 5), 1, Math.min(6, nk.getLastRow() - 1), 6).getValues().map(function (r) { return r.map(function (x) { return [Object.prototype.toString.call(x).slice(8, -1), String(x)]; }); }) : [], g4: g4 };
+  }
+  return { nkDebug: nkDebug, homNay: bayGio_().ngay, tab: tab, thanhVien: d.thanhVien, cacThang: d.cacThang, tieuChi: tc, daDung: daDung, dash: dash, daXoa: daXoa,
     quyen: q, phuTrach: phuTrach4t_(), tenViec: VIEC.map(function (v) { return { key: v.key, ten: v.tieuDe, loai: v.loai }; }) };
 }
 
