@@ -25,6 +25,11 @@
     });
   }
 
+  // Mở sẵn kết nối tới máy chủ Apps Script (và nơi nó chuyển hướng) để lần gọi đầu nhanh hơn
+  ['https://script.google.com', 'https://script.googleusercontent.com'].forEach(function (h) {
+    var l = document.createElement('link'); l.rel = 'preconnect'; l.href = h; l.crossOrigin = 'anonymous'; document.head.appendChild(l);
+  });
+
   var nguoi = doc(K_NG), phien = doc(K_PH);
   // Quản lý xem thử giao diện thành viên của một nhóm (chỉ xem): nhớ trong trình duyệt
   var K_XN = 'bdv.xemNhu', xemNhu = doc(K_XN) || '';
@@ -174,6 +179,42 @@
     bao();
   }
 
+  /* ---------- bộ nhớ đệm trên trình duyệt (hiện ngay dữ liệu lần trước, cập nhật ngầm) ---------- */
+  // Chỉ các thao tác đọc mới được lưu; mọi thao tác ghi thành công sẽ xoá toàn bộ bộ đệm. Đăng xuất / đổi tài khoản cũng xoá (xoaBanLuu).
+  var DOC = ['data', 'nhom', 'tongquan', 'cuaToi', 'lichTruc', 'thongKe', 'hoSo', 'taiLieu', 'camNang', 'cnXanh', 'kiemKe', 'hopNhom', 'hopThang',
+    'congVan', 'muonTra', 'phanHoi', 'hienTrang', 'doanVu', 'nghiepVu', 'pheDuyet', 'caiDat', 'giaoViecDs', 'duyetViecDs'];
+  var K_C = 'bdv.c.', HAN_C = 3 * 86400000;
+  function khoaC(action, req) {
+    var r = {}; Object.keys(req || {}).sort().forEach(function (k) { if (k !== 'moi') r[k] = req[k]; });
+    return K_C + action + '|' + (window.BDV_NAM_HOC || '') + '|' + (nguoi && nguoi.vaiTro === 'quanLy' ? xemNhu : '') + '|' + JSON.stringify(r);
+  }
+  function xoaC() { try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf(K_C) === 0) localStorage.removeItem(k); }); } catch (e) {} }
+  function docC(k) { var o = doc(k); return o && o.luc && Date.now() - o.luc < HAN_C ? o : null; }
+  function ghiC(k, d) {
+    var v = JSON.stringify({ luc: Date.now(), d: d });
+    try { localStorage.setItem(k, v); } catch (e) {
+      // Đầy bộ nhớ: bỏ các bản cũ nhất rồi thử lại một lần
+      try {
+        Object.keys(localStorage).filter(function (x) { return x.indexOf(K_C) === 0; })
+          .map(function (x) { var o = doc(x); return [x, o && o.luc || 0]; }).sort(function (a, b) { return a[1] - b[1]; })
+          .slice(0, 8).forEach(function (x) { localStorage.removeItem(x[0]); });
+        localStorage.setItem(k, v);
+      } catch (e2) {}
+    }
+  }
+  /* BDV.tai(action, req, ve): gọi ve(duLieu, true) ngay nếu có bản lưu lần trước, rồi gọi ve(duLieu, false) khi máy chủ trả bản mới
+     (bỏ qua nếu giống hệt bản đã hiện). Trả Promise dữ liệu mới. */
+  function tai(action, req, ve) {
+    var k = DOC.indexOf(action) > -1 && nguoi ? khoaC(action, req) : null, cu = k && !(req && req.moi) ? docC(k) : null, chuoiCu = '';
+    if (cu && ve) { chuoiCu = JSON.stringify(cu.d); try { ve(cu.d, true); } catch (e) { setTimeout(function () { throw e; }); } }
+    return goi(action, req).then(function (d) {
+      var s = JSON.stringify(d);
+      if (k) ghiC(k, d);
+      if (ve && s !== chuoiCu) ve(d, false);
+      return d;
+    });
+  }
+
   function goi(action, req) {
     if (!phien || !(phien.het * 1000 > Date.now())) {
       var e0 = new Error('Bạn cần đăng nhập để xem dashboard.'); e0.canDangNhap = true;
@@ -183,7 +224,10 @@
     req = req || {};
     if (action !== 'toi' && nguoi && nguoi.vaiTro === 'quanLy' && xemNhu) req = Object.assign({}, req, { xemNhu: xemNhu });
     return guiLen({ action: action, req: req, token: phien.t }).then(function (o) {
-      if (o.ok) return o.data;
+      if (o.ok) {
+        if (DOC.indexOf(action) === -1 && action !== 'toi') xoaC(); // vừa ghi: bộ đệm có thể đã cũ
+        return o.data;
+      }
       var e = new Error(o.error || 'Có lỗi xảy ra.');
       e.canDangNhap = !!o.canDangNhap; e.khongQuyen = !!o.khongQuyen;
       if (e.canDangNhap) { nguoi = null; phien = null; ghi(K_NG, null); ghi(K_PH, null); bao(); }
@@ -205,6 +249,8 @@
     laQuanLy: function () { var n = hieuLuc(); return !!n && n.vaiTro === 'quanLy'; },
     duocXem: function (ma) { var n = hieuLuc(); return !!n && (n.vaiTro === 'quanLy' || (n.nhom || []).indexOf(ma) > -1); },
     goi: goi,
+    tai: tai,
+    xoaBoDem: xoaC,
     veCong: veCong,
     moDangNhap: moHop,
     dangXuat: dangXuat,

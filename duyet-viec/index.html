@@ -33,7 +33,7 @@
 <script>
 (function () {
   var app = T.$('app'), esc = T.esc, D = null, busy = false;
-  function tai() { BDV.goi('duyetViecDs', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function tai() { T.tai(app, 'duyetViecDs', {}, nhan); }
   function nhan(d) { D = d; ve(); try { document.dispatchEvent(new CustomEvent('bdv-duyetviec', { detail: d.ds.length })); } catch (e) {} }
   function dm(iso) { var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
   function dong(v, i, ds) {

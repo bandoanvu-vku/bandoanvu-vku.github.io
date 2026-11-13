@@ -16,7 +16,7 @@ function chayCapNhat_() {
   const p = PropertiesService.getScriptProperties();
   CAP_NHAT.forEach(function (c) {
     const k = 'DA_CAP_NHAT_' + c.ma;
-    if (p.getProperty(k)) return;
+    if (prop_(k)) return;
     const khoa = LockService.getScriptLock();
     if (!khoa.tryLock(15000)) return;
     try {
@@ -30,7 +30,7 @@ function chayCapNhat_() {
 }
 
 function boNguoiKhoiNhom_(ma, ten) {
-  const ss = SpreadsheetApp.openById(sheetNhom_(ma).id);
+  const ss = moId_(sheetNhom_(ma).id);
   // Tab Thành viên: xoá dòng có tên, đánh lại số TT
   const tv = ss.getSheetByName('Thành viên');
   if (tv && tv.getLastRow() >= 2) {
@@ -68,7 +68,7 @@ function boNguoiKhoiNhom_(ma, ten) {
 
 /** Xoá (các) dòng mảng có tên khớp mẫu ở tab Mảng công việc của nhóm, đánh lại số TT. */
 function boMangKhoiNhom_(ma, mau) {
-  const ss = SpreadsheetApp.openById(sheetNhom_(ma).id), mg = ss.getSheetByName('Mảng công việc');
+  const ss = moId_(sheetNhom_(ma).id), mg = ss.getSheetByName('Mảng công việc');
   if (!mg || mg.getLastRow() < 2) return;
   const v = mg.getRange(2, 1, mg.getLastRow() - 1, 2).getValues(), bo = [];
   for (let i = v.length - 1; i >= 0; i--) if (mau.test(chuoi_(v[i][1]))) { bo.push(chuoi_(v[i][1])); mg.deleteRow(i + 2); }

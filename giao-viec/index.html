@@ -38,7 +38,7 @@
 <script>
 (function () {
   var app = T.$('app'), esc = T.esc, D = null, nhom = '', sua = null, loc = 'mo', tim = '';
-  function tai() { BDV.goi('giaoViecDs', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function tai() { T.tai(app, 'giaoViecDs', {}, nhan); }
   function nhan(d) { D = d; var h = location.hash.slice(1); nhom = d.nhom.some(function (n) { return n.ma === h; }) ? h : (nhom || d.nhom[0].ma); ve(); }
   function N() { return D.nhom.filter(function (n) { return n.ma === nhom; })[0]; }
   function dm(iso) { var p = iso.split('-'); return p[2] + '/' + p[1]; }

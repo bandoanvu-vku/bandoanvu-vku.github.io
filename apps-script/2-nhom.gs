@@ -16,7 +16,7 @@ const NHOM_MOI = [
 ];
 
 function sheetNhom_(ma) {
-  const ds = JSON.parse(PropertiesService.getScriptProperties().getProperty('SHEET_NHOM') || '{}');
+  const ds = JSON.parse(prop_('SHEET_NHOM') || '{}');
   if (!Object.prototype.hasOwnProperty.call(ds, ma)) throw new Error('Không có nhóm này.');
   return ds[ma];
 }
@@ -28,7 +28,7 @@ function layNhom(ma, moi) {
     const nho = nhoLay_(khoaNho);
     if (nho) { nho.thanhVien = hopNhat_(nho.thanhVien, themTuTaiKhoan_(ma)); return nho; }
   }
-  const d = docNhom_(ma, SpreadsheetApp.openById(sheetNhom_(ma).id));
+  const d = docNhom_(ma, moId_(sheetNhom_(ma).id));
   nhoNhom_(d);
   return d;
 }
@@ -71,7 +71,7 @@ function nhomGhi(req) {
   khoa.waitLock(20000);
   try {
     const maNhom = String(req.nhom || '');
-    const ss = SpreadsheetApp.openById(sheetNhom_(maNhom).id);
+    const ss = moId_(sheetNhom_(maNhom).id);
     const ten = chuoi_(req.ten);
     if (docNhom_(maNhom, ss).thanhVien.indexOf(ten) === -1) throw new Error('Hãy chọn tên của bạn trước.');
     const sheet = ss.getSheetByName('Nhiệm vụ');

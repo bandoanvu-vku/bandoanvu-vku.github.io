@@ -49,7 +49,7 @@
   var tab = (function () { try { return sessionStorage.getItem('bdv.phTab') || 'gui'; } catch (e) { return 'gui'; } })();
   var F = { loai: 'Góp ý cải thiện', trang: TRANG[0], mucDo: 0, noiDung: '' }, hien = {}, loc = { tt: 'chua', loai: '' };
 
-  function tai() { BDV.goi('phanHoi', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function tai() { T.tai(app, 'phanHoi', {}, nhan); }
   function nhan(d) { D = d; if (!d.quanLy && tab === 'tong') tab = 'gui'; ve(); }
   function lop(tt) { return 't-' + (tt === 'Mới' ? 'Moi' : tt === 'Đang xử lý' ? 'Dang' : tt === 'Đã xử lý' ? 'Da' : tt === 'Không xử lý' ? 'Khong' : 'Moi'); }
   function pill(tt) { return '<span class="pill ' + lop(tt) + '">' + esc(tt) + '</span>'; }

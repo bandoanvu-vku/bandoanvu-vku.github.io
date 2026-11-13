@@ -212,7 +212,7 @@
   var tT;
   function toast(m, err) { var t = $('toast'); t.textContent = m; t.className = err ? 'err' : ''; t.style.display = 'block'; clearTimeout(tT); tT = setTimeout(function () { t.style.display = 'none'; }, err ? 7000 : 3000); }
 
-  function tai(t) { return BDV.goi('lichTruc', { tuan: t || (D && D.tuan) }).then(nhan).catch(loi); }
+  function tai(t) { return BDV.tai('lichTruc', { tuan: t || (D && D.tuan) }, function (d, cu) { if (!busy) nhan(d); }).catch(loi); }
   function nhan(d) { D = d; ve(); }
   function loi(e) {
     if (e && e.canDangNhap) { chan(); return; }

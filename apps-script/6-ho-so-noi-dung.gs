@@ -13,9 +13,9 @@ const COT_TL = ['Mã', 'Tiêu đề', 'Link', 'Danh mục', 'Mô tả', 'Cập n
 const COT_CN = ['Mã', 'Thứ tự', 'Tiêu đề', 'Nội dung', 'Cập nhật bởi', 'Cập nhật lúc'];
 
 function ssTaiKhoan_() {
-  const id = PropertiesService.getScriptProperties().getProperty('SHEET_TAI_KHOAN');
+  const id = prop_('SHEET_TAI_KHOAN');
   if (!id) throw new Error('Chưa có sheet tài khoản dashboard.');
-  return SpreadsheetApp.openById(id);
+  return moId_(id);
 }
 function canQuanLy_(nd, viec) { if (nd.vaiTro !== 'quanLy') throw loiQuyen_('Chỉ quản lý mới ' + viec + '.'); }
 function lucChu_(v) { return Object.prototype.toString.call(v) === '[object Date]' ? Utilities.formatDate(v, MUI_GIO, 'dd/MM/yyyy HH:mm') : chuoi_(v); }
@@ -215,7 +215,7 @@ function luuCaiDat_(nd, req) {
       const oNghi = o('Ngày nghỉ', 'Ngày nghỉ (không trực)'); oNghi.setNumberFormat('@');
       oNghi.setValue(ds.map(function (x) { const p = x.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }).join(', '));
     }
-    SpreadsheetApp.flush();
+    SpreadsheetApp.flush(); xoaCaiDatNho_();
     return caiDat_(nd);
   });
 }

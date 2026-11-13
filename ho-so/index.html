@@ -26,7 +26,7 @@
 (function () {
   var TEN = { '4t': 'Truyền thông - Thông tin', 'nghiep-vu': 'Nghiệp vụ', 'csdl-csvc': 'CSDL - CSVC', 'noi-vu': 'Nội vụ' };
   var app = T.$('app'), D = null, esc = T.esc;
-  function tai() { BDV.goi('hoSo', {}).then(function (d) { D = d; ve(); }).catch(function (e) { T.loi(app, e); }); }
+  function tai() { T.tai(app, 'hoSo', {}, function (d) { D = d; ve(); }); }
   function ve(loi) {
     var chu = D.ten.split(' ').pop().charAt(0).toUpperCase();
     app.innerHTML = '<div class="panel"><div class="the"><div class="av" aria-hidden="true">' + esc(chu) + '</div><div><h2>' + esc(D.ten) + '</h2>' +

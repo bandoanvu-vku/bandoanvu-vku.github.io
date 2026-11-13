@@ -34,7 +34,7 @@
 <script>
 (function () {
   var app = T.$('app'), D = null, esc = T.esc, F = null;
-  function tai() { BDV.goi('camNang', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function tai() { T.tai(app, 'camNang', {}, nhan); }
   function nhan(d) { D = d; T.$('them').style.display = d.quanLy ? '' : 'none'; ve(); }
   // Định dạng đơn giản: dòng bắt đầu "- " thành gạch đầu dòng, **chữ đậm**, link https tự bấm được
   function dinhDang(s) {

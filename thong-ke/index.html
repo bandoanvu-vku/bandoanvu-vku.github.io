@@ -140,8 +140,10 @@
   function tai() {
     var r = khoang === 'tuy' ? [$('tu').value, $('den').value] : khoangNgay(khoang);
     $('foot').textContent = 'Đang tính…';
-    return BDV.goi('thongKe', { tu: r[0], den: r[1] }).then(function (d) { D = d; ve(); }).catch(function (e) {
+    var daVe = false;
+    return BDV.tai('thongKe', { tu: r[0], den: r[1] }, function (d, cu) { daVe = true; D = d; ve(); }).catch(function (e) {
       if (e && e.canDangNhap) { chan(); return; }
+      if (daVe) { $('foot').textContent = 'Chưa cập nhật được: ' + (e && e.message ? e.message : e); return; }
       $('app').innerHTML = '<div class="panel empty" style="margin-top:14px">Không tải được: ' + esc(e && e.message ? e.message : e) + '</div>';
       $('foot').textContent = '';
     });

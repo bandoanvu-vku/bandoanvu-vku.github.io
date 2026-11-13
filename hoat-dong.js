@@ -123,13 +123,17 @@
 
   // Khung chung: nhớ dữ liệu theo khoá, vẽ ngay nếu có, làm mới khi cũ
   var NHO = {};
+  // Đang gõ trong ô nhập của khung này thì không vẽ lại (tránh mất chữ đang gõ); dữ liệu mới dùng ở lần vẽ sau
+  function dangNhap(el) { var a = document.activeElement; return !!(a && el.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)); }
   function khoi(el, khoa, action, req, ve) {
     var o = NHO[khoa] || (NHO[khoa] = { d: null, luc: 0, mo: {}, dang: false });
     o.el = el; o.ve = function () { if (o.d) ve(o); };
     if (o.d) ve(o); else el.innerHTML = '<div class="hd"><div class="khung trong-k">Đang tải…</div></div>';
     if (!o.dang && (!o.d || Date.now() - o.luc > 60000)) {
       o.dang = true;
-      BDV.goi(action, req).then(function (d) { o.dang = false; o.d = d; o.luc = Date.now(); if (o.el.isConnected) ve(o); })
+      // Có bản lưu trên trình duyệt thì vẽ ngay, máy chủ trả bản mới (khác) thì vẽ lại
+      BDV.tai(action, req, function (d, cu) { if (cu && o.d) return; o.d = d; if (!cu) o.luc = Date.now(); if (o.el.isConnected && !(o.d && !cu && dangNhap(o.el))) ve(o); })
+        .then(function () { o.dang = false; o.luc = Date.now(); })
         .catch(function (e) { o.dang = false; if (o.el.isConnected && !o.d) o.el.innerHTML = '<div class="hd"><div class="khung trong-k">Không tải được: ' + esc(e && e.message ? e.message : e) + '</div></div>'; });
     }
     return o;

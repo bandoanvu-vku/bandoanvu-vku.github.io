@@ -46,7 +46,7 @@
   docTab();
   window.addEventListener('hashchange', function () { docTab(); dm = ''; if (D) ve(); });
   var IC = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>';
-  function tai() { BDV.goi('taiLieu', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function tai() { T.tai(app, 'taiLieu', {}, nhan); }
   function nhan(d) { D = d; T.$('them').style.display = d.quanLy ? '' : 'none'; ve(); }
   function ve() {
     if (!cacTab().some(function (n) { return n[0] === tab; })) tab = 'chung';

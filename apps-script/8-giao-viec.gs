@@ -31,7 +31,7 @@ function giaoViec_(nd, req) {
   const ma = String(req.nhom || '');
   nhomMoiHopLe_(ma);
   return voiKhoa_(function () {
-    const ss = SpreadsheetApp.openById(sheetNhom_(ma).id), d = docNhom_(ma, ss), s = ss.getSheetByName('Nhiệm vụ');
+    const ss = moId_(sheetNhom_(ma).id), d = docNhom_(ma, ss), s = ss.getSheetByName('Nhiệm vụ');
     const ten = chuoi_(req.ten).slice(0, 200);
     if (!ten) throw new Error('Nhập tên nhiệm vụ.');
     const chinh = chuoi_(req.chinh), hoTro = (req.hoTro || []).map(chuoi_).filter(function (t, i, a) { return t && t !== chinh && a.indexOf(t) === i; });
@@ -92,7 +92,7 @@ function duyetViec_(nd, req) {
   nhomMoiHopLe_(ma);
   const laQL = nd.vaiTro === 'quanLy';
   return voiKhoa_(function () {
-    const ss = SpreadsheetApp.openById(sheetNhom_(ma).id), s = ss.getSheetByName('Nhiệm vụ'), dong = Number(req.dong);
+    const ss = moId_(sheetNhom_(ma).id), s = ss.getSheetByName('Nhiệm vụ'), dong = Number(req.dong);
     if (!(dong >= 3)) throw new Error('Việc không hợp lệ.');
     const r = s.getRange(dong, 1, 1, 12).getValues()[0], tt = chuoi_(r[9]);
     const tn = phuTrachMang_(ma, chuoi_(r[1])), laTN = tn.indexOf(nd.ten) > -1;

@@ -30,8 +30,7 @@ const NHOM_CSVC = 'csdl-csvc';
 /* ---------------- liên kết */
 
 function lienKet_() {
-  const s = sheetTruc_().getSheetByName('Cài đặt');
-  const v = s && s.getLastRow() ? s.getRange(1, 1, s.getLastRow(), 2).getValues() : [];
+  const v = giaTriCaiDat_();
   const o = {};
   LIEN_KET.forEach(function (k) {
     const r = v.filter(function (x) { return chuanHoa_(x[0]) === chuanHoa_(k[1]); })[0];
@@ -49,7 +48,7 @@ function moSheetLienKet_(khoa, ten) {
   const url = lienKet_()[khoa];
   if (!url) throw new Error('Chưa có ' + ten + '. Quản lý dán link ở trang Cài đặt → Liên kết nhóm CSDL - CSVC.');
   if (!laSheetGoogle_(url)) throw new Error(ten + ' không phải Google Sheet (có thể là file Excel). Mở file → Tệp → Lưu dưới dạng Google Trang tính rồi dán link mới.');
-  try { return SpreadsheetApp.openById(idTuLink_(url)); }
+  try { return moId_(idTuLink_(url)); }
   catch (e) { throw new Error('Không mở được ' + ten + '. Kiểm tra link và chia sẻ quyền xem cho tài khoản chạy dashboard.'); }
 }
 function luuLienKet_(nd, req) {
@@ -65,6 +64,7 @@ function luuLienKet_(nd, req) {
       if (!d) { s.appendRow([k[1], '', '']); d = s.getLastRow(); nhan.push(chuanHoa_(k[1])); }
       s.getRange(d, 2).setNumberFormat('@').setValue(url);
     });
+    SpreadsheetApp.flush(); xoaCaiDatNho_();
     try { CacheService.getScriptCache().removeAll(['congvan', 'danhmuc', 'doanvu2']); } catch (e) {}
     return caiDat_(nd);
   });
@@ -76,8 +76,8 @@ function luuLienKet_(nd, req) {
 function truongNhom_(ma) {
   const c = CacheService.getScriptCache(), k = 'truongnhom:' + ma, co = c.get(k);
   if (co) return JSON.parse(co);
-  const id = PropertiesService.getScriptProperties().getProperty('SHEET_TAI_KHOAN');
-  const s = SpreadsheetApp.openById(id).getSheets()[0], kq = [];
+  const id = prop_('SHEET_TAI_KHOAN');
+  const s = moId_(id).getSheets()[0], kq = [];
   if (s.getLastRow() >= 2) {
     const dau = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0].map(chuanHoa_), cCv = dau.indexOf(chuanHoa_('Chức vụ'));
     if (cCv > -1) {

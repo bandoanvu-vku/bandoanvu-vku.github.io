@@ -90,7 +90,7 @@
   function baoMenu() { try { sessionStorage.setItem('bdv.pd', JSON.stringify({ so: D.so, t: Date.now() })); } catch (e) {} document.dispatchEvent(new CustomEvent('bdv-pheduyet', { detail: D.so })); }
 
   function tai() {
-    return BDV.goi('pheDuyet', {}).then(function (d) { D = d; ve(); baoMenu(); }).catch(loi);
+    return BDV.tai('pheDuyet', {}, function (d, cu) { D = d; ve(); if (!cu) baoMenu(); }).catch(loi);
   }
   function loi(e) {
     if (e && e.canDangNhap) { chan(); return; }

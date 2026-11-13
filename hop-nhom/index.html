@@ -55,7 +55,7 @@
   }
   function veTong() {
     var el = T.$('noiDung');
-    if (!HT) { el.innerHTML = '<div class="panel empty">Đang tải…</div>'; BDV.goi('hopThang', {}).then(function (d) { HT = d; if (tab === 'tong') veTong(); }).catch(function (e) { T.loi(el, e); }); return; }
+    if (!HT) { el.innerHTML = '<div class="panel empty">Đang tải…</div>'; T.tai(el, 'hopThang', {}, function (d) { HT = d; if (tab === 'tong') veTong(); }); return; }
     var tt = function (ym) { return 'Tháng ' + (+ym.slice(5)) + '/' + ym.slice(0, 4); };
     el.innerHTML = '<div class="panel"><h2>Lịch họp tháng của 4 nhóm</h2><div class="sub">Bấm tên nhóm để xem chi tiết các tháng</div><div class="tblw"><table style="margin-top:8px"><thead><tr><th>Nhóm</th><th>' + tt(HT.thang[0]) + '</th><th>' + tt(HT.thang[1]) + '</th></tr></thead><tbody>' +
       HT.nhom.map(function (n) { return '<tr><td><a href="#' + n.ma + '"><b>' + esc(TEN[n.ma] || n.ten) + '</b></a></td><td>' + o(n.hop[0]) + '</td><td>' + o(n.hop[1]) + '</td></tr>'; }).join('') + '</tbody></table></div></div>';

@@ -167,7 +167,7 @@
   var HT = null, htDang = false;
   function veHopThang() {
     if (!HT) {
-      if (!htDang) { htDang = true; BDV.goi('hopThang', {}).then(function (d) { HT = d; htDang = false; var el = $('hopThang'); if (el) el.innerHTML = veHopThang(); }).catch(function () { htDang = false; }); }
+      if (!htDang) { htDang = true; BDV.tai('hopThang', {}, function (d) { HT = d; var el = $('hopThang'); if (el) el.innerHTML = veHopThang(); }).then(function () { htDang = false; }, function () { htDang = false; }); }
       return '<h2>Lịch họp tháng của các nhóm</h2><div class="sub">Đang tải…</div>';
     }
     var THU = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];

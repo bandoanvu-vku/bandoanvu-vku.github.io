@@ -43,8 +43,46 @@ function doGet() {
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
+/* ---------- tăng tốc: nhớ trong một lần gọi + bộ nhớ tạm nhiều phần ---------- */
+// Mỗi lần gọi web app là một lần chạy mới, nên các biến dưới đây chỉ sống trong một yêu cầu.
+const DO_ = { t0: 0, mo: 0, msMo: 0 };
+const SS_NHO_ = {};
+/** Mở spreadsheet theo ID, mỗi file chỉ mở một lần trong một yêu cầu. */
+function moId_(id) {
+  if (SS_NHO_[id]) return SS_NHO_[id];
+  const t = Date.now(), ss = SpreadsheetApp.openById(id);
+  DO_.mo++; DO_.msMo += Date.now() - t;
+  SS_NHO_[id] = ss;
+  return ss;
+}
+let PROP_NHO_ = null;
+/** Script Property (đọc một lần cho cả yêu cầu). */
+function prop_(k) {
+  if (!PROP_NHO_) PROP_NHO_ = PropertiesService.getScriptProperties().getProperties();
+  return PROP_NHO_[k] || null;
+}
+/** CacheService giới hạn 100 KB một khoá: chuỗi dài được chia nhiều phần. */
+function nhoDat_(khoa, chuoi, giay) {
+  const c = CacheService.getScriptCache(), P = 90000, n = Math.ceil(chuoi.length / P) || 1;
+  if (n === 1) { c.put(khoa, chuoi, giay); return; }
+  const o = {}; o[khoa] = '#phan:' + n;
+  for (let i = 0; i < n; i++) o[khoa + '#' + i] = chuoi.slice(i * P, (i + 1) * P);
+  c.putAll(o, giay);
+}
+function nhoDoc_(khoa) {
+  const c = CacheService.getScriptCache(), v = c.get(khoa);
+  if (!v || v.indexOf('#phan:') !== 0) return v;
+  const n = Number(v.slice(6)), ks = [];
+  for (let i = 0; i < n; i++) ks.push(khoa + '#' + i);
+  const m = c.getAll(ks);
+  let s = '';
+  for (let i = 0; i < n; i++) { if (m[ks[i]] == null) return null; s += m[ks[i]]; }
+  return s;
+}
+
 /** Trang GitHub Pages gửi mọi yêu cầu qua đây (text/plain JSON). Trừ bước đăng nhập, mọi yêu cầu phải kèm phiên đăng nhập. */
 function doPost(e) {
+  DO_.t0 = Date.now();
   try { chayCapNhat_(); } catch (err) {}
   try {
     const body = JSON.parse(e.postData.contents);
@@ -52,6 +90,7 @@ function doPost(e) {
     if (body.action === 'dangNhap') return json_({ ok: true, data: dangNhap_(body.idToken) });
 
     let nd = nguoiDung_(body.token);
+    DO_.nd = Date.now() - DO_.t0;
     // Quản lý xem thử bằng giao diện thành viên của một nhóm: chỉ các thao tác đọc, dữ liệu lọc như thành viên nhóm đó
     if (req.xemNhu) {
       if (nd.vaiTro !== 'quanLy' || !Object.prototype.hasOwnProperty.call(TEN_NHOM, req.xemNhu)) throw loiQuyen_('Không dùng được chế độ xem như thành viên.');
@@ -131,6 +170,8 @@ function doPost(e) {
 }
 
 function json_(o) {
+  // Thời gian xử lý ở máy chủ (ms) để đo tốc độ: tổng, đến lúc xác định người dùng, số file mở và thời gian mở
+  if (DO_.t0) o.ms = { tong: Date.now() - DO_.t0, nd: DO_.nd || 0, mo: DO_.mo, msMo: DO_.msMo };
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -153,11 +194,11 @@ function luuNho_(d) {
 /** Bộ nhớ tạm giữ 6 giờ. Mỗi lần lấy ra có kèm "tuoi" = số giây kể từ lúc đọc sheet, để trang biết khi nào cần đọc lại. */
 function nhoGhi_(khoa, d) {
   d.tuoi = 0;
-  try { CacheService.getScriptCache().put(khoa, JSON.stringify({ luc: Date.now(), d: d }), 21600); } catch (err) {}
+  try { nhoDat_(khoa, JSON.stringify({ luc: Date.now(), d: d }), 21600); } catch (err) {}
 }
 
 function nhoLay_(khoa) {
-  const nho = CacheService.getScriptCache().get(khoa);
+  const nho = nhoDoc_(khoa);
   if (!nho) return null;
   const o = JSON.parse(nho);
   if (!o || !o.d || !o.luc) return null;
@@ -255,8 +296,8 @@ function ghiNhatKy_(ss, dong) {
 /* ------------------------------------------------------------------- đọc */
 
 function moSheet_() {
-  const id = PropertiesService.getScriptProperties().getProperty('SHEET_TIMELINE') || CONFIG.SPREADSHEET_ID;
-  return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+  const id = prop_('SHEET_TIMELINE') || CONFIG.SPREADSHEET_ID;
+  return id ? moId_(id) : SpreadsheetApp.getActiveSpreadsheet();
 }
 
 function laTabThang_(ten) {

@@ -27,7 +27,7 @@
 (function () {
   var app = T.$('app'), D = null, esc = T.esc, nghi = [];
   var THU = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-  function tai() { BDV.goi('caiDat', {}).then(nhan).catch(function (e) { T.loi(app, e); }); }
+  function tai() { T.tai(app, 'caiDat', {}, nhan); }
   function nhan(d) { D = d; nghi = d.ngayNghi.slice(); ve(); }
   function nhanNgay(s) { var p = s.split('-'); return THU[new Date(+p[0], +p[1] - 1, +p[2]).getDay()] + ' ' + p[2] + '/' + p[1] + '/' + p[0]; }
   function veNghi() {

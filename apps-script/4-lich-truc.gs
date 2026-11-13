@@ -42,15 +42,15 @@ const LOAI_YC = { doi: 'Đổi ca', huy: 'Huỷ ca', them: 'Thêm ca', vang: 'Xi
 
 function sheetTruc_() {
   const p = PropertiesService.getScriptProperties();
-  let id = p.getProperty('SHEET_TRUC');
+  let id = prop_('SHEET_TRUC');
   let ss;
-  if (id) ss = SpreadsheetApp.openById(id);
+  if (id) ss = moId_(id);
   else {
     const khoa = LockService.getScriptLock();
     khoa.waitLock(20000);
     try {
       id = p.getProperty('SHEET_TRUC');
-      if (id) ss = SpreadsheetApp.openById(id);
+      if (id) ss = moId_(id);
       else {
         ss = SpreadsheetApp.create(TRUC.TEN_SHEET);
         ss.setSpreadsheetTimeZone(MUI_GIO);
@@ -92,9 +92,24 @@ function damBaoTab_(ss, ten, cot, rong) {
   return s;
 }
 
+/** Cột A:B tab "Cài đặt" của sheet lịch trực (vị trí, ngày nghỉ, liên kết…). Nhớ tạm 10 phút; mọi chỗ ghi tab này gọi xoaCaiDatNho_(). */
+let CAI_DAT_NHO_ = null;
+function giaTriCaiDat_(ss) {
+  if (CAI_DAT_NHO_) return CAI_DAT_NHO_;
+  const c = CacheService.getScriptCache(), co = c.get('caidat:v');
+  if (co) { CAI_DAT_NHO_ = JSON.parse(co); return CAI_DAT_NHO_; }
+  const s = (ss || sheetTruc_()).getSheetByName('Cài đặt');
+  const v = s && s.getLastRow() ? s.getRange(1, 1, s.getLastRow(), 2).getValues().map(function (r) {
+    return [r[0] instanceof Date ? Utilities.formatDate(r[0], MUI_GIO, 'dd/MM/yyyy') : r[0], r[1] instanceof Date ? Utilities.formatDate(r[1], MUI_GIO, 'dd/MM/yyyy') : r[1]];
+  }) : [];
+  try { c.put('caidat:v', JSON.stringify(v), 600); } catch (e) {}
+  CAI_DAT_NHO_ = v;
+  return v;
+}
+function xoaCaiDatNho_() { CAI_DAT_NHO_ = null; try { CacheService.getScriptCache().remove('caidat:v'); } catch (e) {} }
+
 function caiDatTruc_(ss) {
-  const s = ss.getSheetByName('Cài đặt');
-  const v = s ? s.getRange(1, 1, Math.max(s.getLastRow(), 1), 2).getValues() : [];
+  const v = giaTriCaiDat_(ss);
   const lay = function (nhan) {
     const r = v.filter(function (x) { return chuanHoa_(x[0]).indexOf(chuanHoa_(nhan)) === 0; })[0];
     return r ? r[1] : '';
@@ -564,6 +579,7 @@ function datViTri_(nd, req) {
   const bk = Number(req.banKinh);
   if (isFinite(bk) && bk >= 30 && bk <= 2000) s.getRange(dong('Bán kính'), 2).setValue(Math.round(bk));
   SpreadsheetApp.flush();
+  xoaCaiDatNho_();
   return lichTruc_(nd, req.tuan);
 }
 

@@ -58,9 +58,9 @@ function bangTaiKhoan_() {
   const cache = CacheService.getScriptCache();
   const daCo = cache.get('taikhoan3');
   if (daCo) return JSON.parse(daCo);
-  const id = PropertiesService.getScriptProperties().getProperty('SHEET_TAI_KHOAN');
+  const id = prop_('SHEET_TAI_KHOAN');
   if (!id) throw new Error('Chưa có sheet tài khoản dashboard.');
-  const s = SpreadsheetApp.openById(id).getSheets()[0];
+  const s = moId_(id).getSheets()[0];
   const bang = {};
   if (s.getLastRow() >= 2) {
     const tieuDe = s.getRange(1, 1, 1, Math.max(4, s.getLastColumn())).getValues()[0].map(chuanHoa_);
@@ -109,6 +109,14 @@ function hopNhat_(a, b) {
 
 /** Thông tin một email: tên, vai trò, các nhóm (theo danh sách thành viên trong sheet của từng nhóm). */
 function hoSo_(email) {
+  // Nhớ tạm 2 phút theo email (cùng thời hạn với bảng tài khoản) để mỗi yêu cầu không phải đọc lại danh sách thành viên 4 nhóm
+  const c = CacheService.getScriptCache(), k = 'hs1:' + email, co = c.get(k);
+  if (co) return JSON.parse(co);
+  const o = hoSoDoc_(email);
+  try { c.put(k, JSON.stringify(o), 120); } catch (err) {}
+  return o;
+}
+function hoSoDoc_(email) {
   const tk = bangTaiKhoan_()[email];
   if (!tk) {
     throw new Error('Email ' + email + ' chưa có trong danh sách tài khoản của Ban. Nhờ quản lý điền email này vào đúng dòng tên bạn trong sheet "' +
@@ -216,8 +224,8 @@ function cuaToi_(nd, moi) {
 
 /** Chạy một lần từ trình chỉnh sửa: thêm cột "Vai trò" vào sheet tài khoản và một dòng tài khoản quản lý. */
 function nangCapSheetTaiKhoan() {
-  const id = PropertiesService.getScriptProperties().getProperty('SHEET_TAI_KHOAN');
-  const s = SpreadsheetApp.openById(id).getSheets()[0];
+  const id = prop_('SHEET_TAI_KHOAN');
+  const s = moId_(id).getSheets()[0];
   const tieuDe = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0].map(chuoi_);
   if (tieuDe.indexOf('Vai trò') === -1) {
     s.insertColumnAfter(3);
