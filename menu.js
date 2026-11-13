@@ -322,6 +322,7 @@
     '.bdv-ngay{position:relative;display:inline-block;vertical-align:middle;max-width:100%}.bdv-ngay.khoi{display:block}' +
     '.bdv-ngay>input[type=date]{color:transparent!important}.bdv-ngay>input[type=date]::-webkit-datetime-edit{color:transparent}' +
     '.bdv-ngay>input[type=date]:focus::-webkit-datetime-edit{color:transparent}' +
+    '.bdv-ngay>input[type=date]::-webkit-datetime-edit-day-field:focus,.bdv-ngay>input[type=date]::-webkit-datetime-edit-month-field:focus,.bdv-ngay>input[type=date]::-webkit-datetime-edit-year-field:focus{background:transparent;color:transparent}' +
     '.bdv-ngay>.bdv-ngay-chu{position:absolute;top:0;bottom:0;display:flex;align-items:center;pointer-events:none;color:var(--text,#1a2b4a);white-space:nowrap;font-variant-numeric:tabular-nums}' +
     '.bdv-ngay>.bdv-ngay-chu.trong{color:var(--muted,#5b6b88)}';
   document.head.appendChild(stNgay);

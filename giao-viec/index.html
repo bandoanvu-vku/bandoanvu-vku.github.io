@@ -24,6 +24,19 @@
   .vi.dang { background: var(--accent-soft); margin: 0 -16px; padding: 10px 16px; border-top-color: transparent; }
   .pill.ok { background: rgba(27,175,122,.14); color: var(--ok); } .pill.wait { background: var(--warn-soft); color: var(--warn); }
   .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  .vc4 { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; }
+  .vc4 label { margin-top: 8px !important; }
+  .h4 { padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .h4:first-of-type { border-top: 0; }
+  .h4 .dau { display: flex; gap: 10px; align-items: baseline; }
+  .h4 .ng { flex: none; min-width: 44px; font-weight: 700; color: var(--navy, var(--accent)); font-variant-numeric: tabular-nums; }
+  .h4 b { overflow-wrap: anywhere; } .h4 .s { font-size: 12.5px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+  .h4 .vcs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0 54px; }
+  .h4 .vc { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 4px 3px 9px; }
+  .h4 .vc.xong { background: rgba(30,158,116,.1); color: var(--ok); border-color: transparent; padding-right: 9px; }
+  .h4 .vc select { border: 0 !important; background: none !important; box-shadow: none !important; font-size: 12.5px; font-weight: 600; color: var(--text); padding: 2px 4px; max-width: 150px; }
+  .h4 .vc select.trong { color: var(--bad); font-weight: 500; }
+  @media (max-width: 560px) { .vc4 { grid-template-columns: 1fr; } .h4 .vcs { margin-left: 0; } }
   .canh { background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 10px 14px; font-size: 13.5px; margin-bottom: 14px; }
   @media (max-width: 860px) { .bo { grid-template-columns: 1fr; } }
 </style>
@@ -31,7 +44,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><div><h1>Giao việc</h1><div class="sub">Tạo nhiệm vụ và giao người thực hiện · ghi thẳng vào tab Nhiệm vụ trong sheet của nhóm</div></div></div>
+  <div class="top"><div><h1>Giao việc</h1><div class="sub">Tạo nhiệm vụ và giao người thực hiện · ghi thẳng vào sheet của nhóm (Truyền thông - Thông tin: sheet Timeline)</div></div></div>
   <div id="app"><div class="panel empty">Đang tải…</div></div>
 </div>
 <script src="/dangnhap.js"></script>
@@ -39,8 +52,12 @@
 <script>
 (function () {
   var app = T.$('app'), esc = T.esc, D = null, nhom = '', sua = null, loc = 'mo', tim = '';
+  // Nhóm 4T: giao hoạt động vào tab tháng của sheet Timeline
+  var G = null, tab4 = '', giu4 = null, loi4 = '', dang4 = false;
+  var NHOM4 = { ma: '4t', ten: 'Truyền thông - Thông tin' };
+  function cacNhom() { return [NHOM4].concat(D.nhom); }
   function tai() { T.tai(app, 'giaoViecDs', {}, nhan); }
-  function nhan(d) { D = d; var h = location.hash.slice(1); nhom = d.nhom.some(function (n) { return n.ma === h; }) ? h : (nhom || d.nhom[0].ma); ve(); }
+  function nhan(d) { D = d; var h = location.hash.slice(1); nhom = cacNhom().some(function (n) { return n.ma === h; }) ? h : (nhom || '4t'); ve(); }
   function N() { return D.nhom.filter(function (n) { return n.ma === nhom; })[0]; }
   function dm(iso) { var p = iso.split('-'); return p[2] + '/' + p[1]; }
   function soNgay(iso) { var p = iso.split('-'), h = D.homNay.split('-'); return Math.round((new Date(+p[0], +p[1] - 1, +p[2]) - new Date(+h[0], +h[1] - 1, +h[2])) / 864e5); }
@@ -79,13 +96,89 @@
       }).join('') : '<div class="empty">Không có nhiệm vụ nào.</div>') + '</div>';
   }
   function ve(loi, giu) {
+    var tabs = '<div class="tabs" role="tablist">' + cacNhom().map(function (x) { return '<a role="tab" href="#' + x.ma + '" aria-selected="' + (x.ma === nhom) + '">' + esc(x.ten) + '</a>'; }).join('') + '</div>';
+    if (nhom === '4t') { app.innerHTML = tabs + '<div id="v4"></div>'; ve4(); return; }
     var n = N();
-    app.innerHTML = '<div class="tabs" role="tablist">' + D.nhom.map(function (x) { return '<a role="tab" href="#' + x.ma + '" aria-selected="' + (x.ma === nhom) + '">' + esc(x.ten) + '</a>'; }).join('') + '</div>' +
-      '<div class="canh">Nhóm Truyền thông - Thông tin giao việc trong sheet Timeline của Văn phòng Đoàn (dashboard không ghi vào sheet đó).</div>' +
+    app.innerHTML = tabs +
       (n.loi ? '<div class="panel empty">Không đọc được sheet nhóm: ' + esc(n.loi) + '</div>' : '<div class="bo">' + veForm(n, loi, giu) + veDs(n) + '</div>');
     var o = T.$('tim'); if (o && tim && document.activeElement !== o && giu === 'tim') { o.focus(); o.setSelectionRange(tim.length, tim.length); }
   }
-  window.addEventListener('hashchange', function () { if (!D) return; var h = location.hash.slice(1); if (D.nhom.some(function (n) { return n.ma === h; })) { nhom = h; sua = null; ve(); } });
+  /* ---------- nhóm Truyền thông - Thông tin ---------- */
+  function tai4(tab) {
+    dang4 = true;
+    return T.tai(T.$('v4') || app, 'giao4tDs', tab ? { tab: tab } : {}, function (d) { G = d; tab4 = d.tab; dang4 = false; if (nhom === '4t') ve4(); });
+  }
+  function T4() { return G.cacThang.filter(function (t) { return t.tab === tab4; })[0]; }
+  function o4(id, nhan, ds, goiY, v, kieu) {
+    // Cột có danh sách chọn trên sheet → ô chọn; không có → ô nhập kèm gợi ý các giá trị đã dùng
+    if (ds && ds.length) {
+      var co = v && ds.indexOf(v) < 0 ? [v].concat(ds) : ds;
+      return '<label for="' + id + '">' + nhan + '</label><select id="' + id + '"><option value="">—</option>' + co.map(function (x) { return '<option' + (x === v ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>';
+    }
+    return '<label for="' + id + '">' + nhan + '</label><input id="' + id + '"' + (kieu ? ' type="' + kieu + '"' : '') + ' maxlength="500" list="' + id + 'Ds" value="' + esc(v || '') + '">' +
+      (goiY && goiY.length ? '<datalist id="' + id + 'Ds">' + goiY.map(function (x) { return '<option value="' + esc(x) + '">'; }).join('') + '</datalist>' : '');
+  }
+  function ve4() {
+    var el = T.$('v4'); if (!el) return;
+    if (!G) { el.innerHTML = '<div class="panel empty">Đang đọc sheet Timeline…</div>'; if (!dang4) tai4(); return; }
+    var t = T4(), tc = G.tieuChi[tab4] || {}, v = giu4 || {}, nguoiDs = tc.nguoi && tc.nguoi.length ? tc.nguoi : G.thanhVien;
+    if (!t) { el.innerHTML = '<div class="panel empty">Sheet Timeline chưa có tab tháng nào.</div>'; return; }
+    var p = tab4.split('.'), dau = p[1] + '-' + p[0] + '-01', cuoi = p[1] + '-' + p[0] + '-' + ('0' + new Date(+p[1], +p[0], 0).getDate()).slice(-2);
+    var viecCo = G.tenViec.filter(function (x) { return !tc.viec || tc.viec.indexOf(x.key) > -1; });
+    var form = '<form class="panel form" id="f4"><h2>Giao hoạt động mới</h2><div class="sub">Ghi vào tab <b>' + esc(tab4) + '</b> của sheet Timeline, ở hàng trống ngay sau hoạt động cuối cùng</div>' +
+      (tc.loi ? '<div class="err">' + esc(tc.loi) + '</div>' : '') +
+      '<div class="row2"><div><label for="g4Thang">Tháng</label><select id="g4Thang">' + G.cacThang.map(function (x) { return '<option value="' + esc(x.tab) + '"' + (x.tab === tab4 ? ' selected' : '') + '>Tháng ' + x.thang + '/' + x.nam + '</option>'; }).join('') + '</select></div>' +
+      '<div><label for="g4Ngay">Thời gian</label><input type="date" id="g4Ngay" min="' + dau + '" max="' + cuoi + '" value="' + esc(v.ngay && v.ngay >= dau && v.ngay <= cuoi ? v.ngay : '') + '"></div></div>' +
+      '<label for="g4Ten">Tên hoạt động</label><input id="g4Ten" required maxlength="300" value="' + esc(v.ten || '') + '">' +
+      '<div class="row2"><div>' + o4('g4Muc', 'Mức độ', tc.mucDo, G.daDung.mucDo, v.mucDo) + '</div><div>' + o4('g4Vt', 'Vị trí đăng', tc.viTri, G.daDung.viTri, v.viTri) + '</div></div>' +
+      o4('g4Tm', 'Thư mục', tc.thuMuc, null, v.thuMuc) +
+      '<label for="g4MoTa">Mô tả</label><textarea id="g4MoTa" rows="3">' + esc(v.moTa || '') + '</textarea>' +
+      '<label style="margin-top:14px">Người thực hiện <span class="note">(để trống = thành viên tự nhận trên dashboard)</span></label><div class="vc4">' +
+      viecCo.map(function (x) {
+        var c = (v.nguoi || {})[x.key] || '';
+        return '<div><label for="g4_' + x.key + '">' + esc(x.ten) + '</label><select id="g4_' + x.key + '" data-g4="' + x.key + '"><option value="">— Chưa giao —</option>' +
+          nguoiDs.map(function (n) { return '<option' + (n === c ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select></div>';
+      }).join('') + '</div>' +
+      '<label for="g4Gc">Ghi chú</label><input id="g4Gc" maxlength="500" value="' + esc(v.ghiChu || '') + '">' +
+      (loi4 ? '<div class="err">' + esc(loi4) + '</div>' : '') +
+      '<div class="acts"><button class="btn" type="submit">Giao việc</button></div></form>';
+    var ds = t.hoatDong.slice().sort(function (a, b) { return (a.ngay || '9999') < (b.ngay || '9999') ? -1 : (a.ngay || '9999') > (b.ngay || '9999') ? 1 : a.dong - b.dong; });
+    var tenV = {}; G.tenViec.forEach(function (x) { tenV[x.key] = x.ten; });
+    var dsHtml = '<div class="panel"><h2>Hoạt động tháng ' + t.thang + '/' + t.nam + ' (' + t.hoatDong.length + ')</h2><div class="sub">Đổi người thực hiện ngay tại đây · việc đã tick hoàn thành thì không đổi được</div>' +
+      (ds.length ? ds.map(function (h) {
+        return '<div class="h4" data-dong="' + h.dong + '"><div class="dau"><span class="ng">' + (h.ngay ? dm(h.ngay) : '—') + '</span><div><b>' + esc(h.ten) + '</b>' +
+          '<div class="s">' + [h.mucDo, h.viTri, h.moTa].filter(Boolean).map(esc).join(' · ') + '</div></div></div><div class="vcs">' +
+          h.viec.map(function (x) {
+            if (x.xong) return '<span class="vc xong">✓ ' + esc(tenV[x.key]) + ': ' + esc(x.nguoi || '') + '</span>';
+            var co = x.nguoi && nguoiDs.indexOf(x.nguoi) < 0 ? [x.nguoi].concat(nguoiDs) : nguoiDs;
+            return '<span class="vc">' + esc(tenV[x.key]) + '<select data-doi="' + x.key + '" aria-label="Người làm ' + esc(tenV[x.key]) + '"' + (x.nguoi ? '' : ' class="trong"') + '><option value="">Chưa giao</option>' +
+              co.map(function (n) { return '<option' + (n === x.nguoi ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select></span>';
+          }).join('') + '</div></div>';
+      }).join('') : '<div class="empty">Tháng này chưa có hoạt động nào.</div>') + '</div>';
+    el.innerHTML = '<div class="bo">' + form + dsHtml + '</div>';
+  }
+  function docForm4() {
+    var o = { tab: tab4, ngay: T.$('g4Ngay').value, ten: T.$('g4Ten').value.trim(), mucDo: T.$('g4Muc').value.trim(), viTri: T.$('g4Vt').value.trim(),
+      thuMuc: T.$('g4Tm').value.trim(), moTa: T.$('g4MoTa').value, ghiChu: T.$('g4Gc').value.trim(), nguoi: {} };
+    [].forEach.call(document.querySelectorAll('[data-g4]'), function (x) { o.nguoi[x.dataset.g4] = x.value; });
+    return o;
+  }
+  app.addEventListener('change', function (e) {
+    if (nhom !== '4t' || !G) return;
+    if (e.target.id === 'g4Thang') {
+      giu4 = docForm4(); loi4 = ''; tab4 = e.target.value;
+      if (!G.tieuChi[tab4]) { var el = T.$('v4'); el.style.opacity = '.6'; tai4(tab4).then(function () { el.style.opacity = ''; }); } else ve4();
+      return;
+    }
+    var s = e.target.closest('select[data-doi]'); if (!s) return;
+    var h = T4().hoatDong.filter(function (x) { return x.dong === +s.closest('[data-dong]').dataset.dong; })[0];
+    s.disabled = true;
+    BDV.goi('giao4t', { viec: 'nguoi', tab: tab4, dong: h.dong, hoatDong: h.ten, key: s.dataset.doi, nguoi: s.value })
+      .then(function (d) { G = d; tab4 = d.tab; ve4(); T.toast(s.value ? 'Đã giao cho ' + s.value + ' · đã ghi vào sheet' : 'Đã gỡ người làm · đã ghi vào sheet'); })
+      .catch(function (er) { T.toast(er.message || String(er), true); tai4(tab4); });
+  });
+
+  window.addEventListener('hashchange', function () { if (!D) return; var h = location.hash.slice(1); if (cacNhom().some(function (n) { return n.ma === h; })) { nhom = h; sua = null; ve(); } });
   app.addEventListener('input', function (e) { if (e.target.id === 'tim') { tim = e.target.value; ve(null, 'tim'); var o = T.$('tim'); o.focus(); o.setSelectionRange(tim.length, tim.length); } });
   app.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b || !D) return;
@@ -95,6 +188,13 @@
   });
   app.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (e.target.id === 'f4') {
+      var r4 = docForm4(); r4.viec = 'tao';
+      var b4 = e.target.querySelector('button[type=submit]'); b4.disabled = true; b4.textContent = 'Đang ghi vào sheet…';
+      BDV.goi('giao4t', r4).then(function (d) { G = d; tab4 = d.tab; giu4 = null; loi4 = ''; ve4(); T.toast('Đã giao việc · đã thêm vào tab ' + r4.tab); })
+        .catch(function (er) { if (er && er.canDangNhap) { T.loi(app, er); return; } giu4 = r4; loi4 = er.message || String(er); ve4(); });
+      return;
+    }
     var req = { nhom: nhom, ten: T.$('fTen').value.trim(), mang: T.$('fMang').value, mucDo: T.$('fMuc').value, han: T.$('fHan').value, chinh: T.$('fChinh').value,
       hoTro: [].map.call(document.querySelectorAll('[data-ht]:checked'), function (x) { return x.value; }), moTa: T.$('fMoTa').value, ghiChu: T.$('fGc').value.trim() };
     if (sua) { req.dong = sua.dong; req.tenCu = sua.ten; }

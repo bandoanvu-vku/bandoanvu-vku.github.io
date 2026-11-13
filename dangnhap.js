@@ -182,7 +182,7 @@
   /* ---------- bộ nhớ đệm trên trình duyệt (hiện ngay dữ liệu lần trước, cập nhật ngầm) ---------- */
   // Chỉ các thao tác đọc mới được lưu; mọi thao tác ghi thành công sẽ xoá toàn bộ bộ đệm. Đăng xuất / đổi tài khoản cũng xoá (xoaBanLuu).
   var DOC = ['data', 'nhom', 'tongquan', 'cuaToi', 'lichTruc', 'thongKe', 'hoSo', 'taiLieu', 'camNang', 'cnXanh', 'kiemKe', 'hopNhom', 'hopThang',
-    'congVan', 'muonTra', 'phanHoi', 'hienTrang', 'doanVu', 'nghiepVu', 'pheDuyet', 'caiDat', 'giaoViecDs', 'duyetViecDs'];
+    'congVan', 'muonTra', 'phanHoi', 'hienTrang', 'doanVu', 'nghiepVu', 'pheDuyet', 'caiDat', 'giaoViecDs', 'duyetViecDs', 'giao4tDs'];
   var K_C = 'bdv.c.', HAN_C = 3 * 86400000;
   function khoaC(action, req) {
     var r = {}; Object.keys(req || {}).sort().forEach(function (k) { if (k !== 'moi') r[k] = req[k]; });

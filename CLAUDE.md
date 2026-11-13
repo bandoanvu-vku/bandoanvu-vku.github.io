@@ -23,7 +23,8 @@ Người dùng: Trâm, trả lời bằng tiếng Việt. Đây là dashboard ph
 ## Dữ liệu (Google Sheets)
 
 - **Timeline 2026 - 2027** (của vanphongdoan@vku.udn.vn): nguồn của nhóm 4T, tab tháng dạng `08.2026`.
-  Chỉ được ghi vào ô nhận việc/tick và tab "Nhật ký dashboard". **Không sửa gì khác trên sheet này.**
+  Được ghi: ô nhận việc/tick, tab "Nhật ký dashboard", và (Văn phòng Đoàn cấp quyền chỉnh sửa 13/11/2026) **thêm hoạt động mới** ở hàng trống ngay sau hàng cuối có "Tên hoạt động"
+  của tab tháng (cột Thời gian, Mức độ, Thư mục, Tên hoạt động, Mô tả, Vị trí đăng, ô người làm 5 việc con, Ghi chú, TT nếu đang đánh số) + đổi người làm. Không sửa / xoá hoạt động cũ, không đụng định dạng, ô tick, bảng thành viên.
 - 3 sheet nhóm "[BĐV 2026 - 2027] Theo dõi nhiệm vụ - Nhóm …": tab Nhiệm vụ (dòng 1 tiêu đề, dòng 2 gợi ý, dữ liệu từ dòng 3),
   Thành viên, Mảng công việc.
 - **Tài khoản dashboard - Ban Đoàn vụ**: Họ và tên | Nhóm | Email Google | Vai trò (Quản lý/Thành viên) | Ghi chú.
@@ -94,8 +95,10 @@ bảng tổng hợp ở tab Chung của Tổng quan). Năm học: ô chọn trê
 Hiện chỉ 2026 - 2027 có dữ liệu; năm khác thì trang theo năm hiện "chưa có dữ liệu" (trừ hồ sơ/cẩm nang/cài đặt/tài liệu/bảo mật).
 Khi bổ sung năm cũ: cần nguồn sheet theo năm ở máy chủ + thêm năm vào CO_DU_LIEU + truyền năm học trong các BDV.goi.
 Tất cả file .gs chung một không gian tên — build script / workflow dừng nếu trùng tên hàm.
-Quản lý không có "Việc của tôi"; thay bằng **Giao việc** (`/giao-viec/`, `8-giao-viec.gs`: tạo/sửa nhiệm vụ ghi vào tab Nhiệm vụ của 3 sheet nhóm,
-4T không giao được vì Timeline chỉ được ghi ô nhận/tick) và **Duyệt việc** 2 cấp: thành viên đặt "Chờ duyệt" (= chờ phụ trách chính của mảng ghi ở nhiệm vụ; mảng chưa có phụ trách
+Quản lý không có "Việc của tôi"; thay bằng **Giao việc** (`/giao-viec/`, `8-giao-viec.gs`: tạo/sửa nhiệm vụ ghi vào tab Nhiệm vụ của 3 sheet nhóm;
+tab đầu **Truyền thông - Thông tin** dùng `15-giao-4t.gs` (actions `giao4tDs` {tab} / `giao4t` {viec:'tao'|'nguoi'}): chọn tháng → form đủ cột như tab tháng
+(danh sách chọn Mức độ / Vị trí đăng / Thư mục / người lấy từ data validation hàng 3 của tab, `tieuChi4t_`, cache 30 phút; không có thì ô nhập + gợi ý giá trị đã dùng),
+ngày phải thuộc tháng của tab; danh sách hoạt động tháng cho đổi người làm (việc đã tick thì khoá); mọi thao tác ghi Nhật ký dashboard) và **Duyệt việc** 2 cấp: thành viên đặt "Chờ duyệt" (= chờ phụ trách chính của mảng ghi ở nhiệm vụ; mảng chưa có phụ trách
 hoặc chính phụ trách gửi thì ghi thẳng "Chờ quản lý duyệt") → phụ trách chính duyệt ở khung "Chờ bạn duyệt" trên tab Nhiệm vụ nhóm (action `duyetViec`, `ve:'nhom'`)
 → "Chờ quản lý duyệt" → quản lý duyệt ở `/duyet-viec/` = Hoàn thành. Trả lại (cả 2 cấp) = Đang làm + ghi chú. Menu đếm số chờ quản lý (`soViecChoQL_`).
 Xin vắng CN xanh vẫn 1 cấp (phụ trách chính duyệt).

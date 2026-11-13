@@ -164,6 +164,8 @@ function doPost(e) {
       hopThang: function () { return hopThang_(nd); },
       giaoViecDs: function () { return giaoViecDs_(nd); },
       giaoViec: function () { return giaoViec_(nd, req); },
+      giao4tDs: function () { return giao4tDs_(nd, req); },
+      giao4t: function () { return giao4t_(nd, req); },
       duyetViecDs: function () { return duyetViecDs_(nd); },
       duyetViec: function () { return duyetViec_(nd, req); },
       quanLySuaTruc: function () { return quanLySuaTruc_(nd, req); },

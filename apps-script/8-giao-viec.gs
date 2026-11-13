@@ -1,7 +1,7 @@
 /* ------------------------------------------------ giao việc + duyệt việc (quản lý) */
 /*
  * Chỉ cho 3 nhóm có sheet "Theo dõi nhiệm vụ" (Nghiệp vụ, CSDL - CSVC, Nội vụ): ghi vào tab Nhiệm vụ của sheet nhóm.
- * Nhóm Truyền thông dùng sheet Timeline của Văn phòng Đoàn — không được ghi gì ngoài ô nhận việc / tick, nên không giao việc từ đây.
+ * Nhóm Truyền thông dùng sheet Timeline của Văn phòng Đoàn: giao việc ở file 15-giao-4t.gs (thêm hoạt động vào tab tháng).
  * Duyệt việc: nhiệm vụ thành viên đặt trạng thái "Chờ duyệt" → quản lý Duyệt (Hoàn thành) hoặc Trả lại (Đang làm + ghi chú).
  * Cột tab Nhiệm vụ: TT | Mảng | Nhiệm vụ | Mô tả | Mức độ | Ngày giao | Hạn | Phụ trách chính | Hỗ trợ | Trạng thái | Link | Ghi chú
  */
