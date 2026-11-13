@@ -202,12 +202,12 @@ function congVan_(nd) {
   canNhom_(nd, NHOM_CSVC);
   const lk = lienKet_(), c = CacheService.getScriptCache();
   let d = null;
-  try { const co = c.get('congvan'); if (co) d = JSON.parse(co); } catch (e) {}
+  try { const co = nhoDoc_('congvan'); if (co) d = JSON.parse(co); } catch (e) {}
   if (!d) {
     d = {};
     try { d.di = docCvDi_(); } catch (e) { d.di = { loi: String(e.message || e) }; }
     try { d.den = docCvDen_(); } catch (e) { d.den = { loi: String(e.message || e) }; }
-    try { c.put('congvan', JSON.stringify(d), 300); } catch (e) {}
+    try { nhoDat_('congvan', JSON.stringify(d), 600); } catch (e) {}
   }
   d.lienKet = { cvDi: lk.cvDi, cvDiFolder: lk.cvDiFolder, cvDen: lk.cvDen, cvDenFolder: lk.cvDenFolder };
   try { const now = bayGio_(); d.caTruc = viecCongVan_(themNgay_(now.ngay, -14), themNgay_(now.ngay, 7)); d.toi = nd.ten; d.laQLCv = nd.vaiTro === 'quanLy' || nguoiCongVan_().phuTrach.indexOf(nd.ten) > -1; }

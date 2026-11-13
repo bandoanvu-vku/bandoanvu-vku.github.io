@@ -124,7 +124,7 @@ function doanVu_(nd) {
   canNhom_(nd, NHOM_CSVC);
   const lk = lienKet_(), c = CacheService.getScriptCache();
   let d = null;
-  try { const co = c.get('doanvu2'); if (co) d = JSON.parse(co); } catch (e) {}
+  try { const co = nhoDoc_('doanvu2'); if (co) d = JSON.parse(co); } catch (e) {}
   if (!d) {
     d = { loi: {}, ds: [], track: [], xe: { tab: '', ds: [] } };
     if (lk.qldv) {
@@ -135,7 +135,7 @@ function doanVu_(nd) {
       try { d.xe = docXeMay_(moSheetLienKet_('xeMay', 'sheet xe máy Ban Đoàn vụ')); }
       catch (e) { d.loi.xeMay = String(e.message || e); }
     }
-    if (lk.qldv && !d.loi.qldv) { try { c.put('doanvu2', JSON.stringify(d), 300); } catch (e) {} }
+    if (lk.qldv && !d.loi.qldv) { try { nhoDat_('doanvu2', JSON.stringify(d), 1800); } catch (e) {} } // sheet chỉ đọc, ít thay đổi: nhớ 30 phút
   }
   // Ghép với thành viên hiện tại (tài khoản dashboard)
   const theoMssv = {}, theoTen = {};

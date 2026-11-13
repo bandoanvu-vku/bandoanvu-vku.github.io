@@ -55,6 +55,20 @@ function moId_(id) {
   SS_NHO_[id] = ss;
   return ss;
 }
+/** Đo thời gian từng hàm (chỉ khi quản lý gửi req._tg, để tìm chỗ chậm). Thời gian tính gộp cả hàm con. */
+function batDoTG_() {
+  const g = globalThis, tg = DO_.tg = {};
+  Object.keys(g).forEach(function (k) {
+    const f = g[k];
+    if (typeof f !== 'function' || !/_$/.test(k) || /^(json_|batDoTG_|chuoi_|chuanHoa_|ngayISO_|gioChu_|phut_|themNgay_|thuCua_|prop_)$/.test(k)) return;
+    try {
+      g[k] = function () {
+        const t = Date.now();
+        try { return f.apply(this, arguments); } finally { const o = tg[k] || (tg[k] = [0, 0]); o[0]++; o[1] += Date.now() - t; }
+      };
+    } catch (e) {}
+  });
+}
 let PROP_NHO_ = null;
 /** Script Property (đọc một lần cho cả yêu cầu). */
 function prop_(k) {
@@ -91,6 +105,7 @@ function doPost(e) {
 
     let nd = nguoiDung_(body.token);
     DO_.nd = Date.now() - DO_.t0;
+    if (req._tg && nd.vaiTro === 'quanLy') batDoTG_();
     // Quản lý xem thử bằng giao diện thành viên của một nhóm: chỉ các thao tác đọc, dữ liệu lọc như thành viên nhóm đó
     if (req.xemNhu) {
       if (nd.vaiTro !== 'quanLy' || !Object.prototype.hasOwnProperty.call(TEN_NHOM, req.xemNhu)) throw loiQuyen_('Không dùng được chế độ xem như thành viên.');
@@ -172,6 +187,8 @@ function doPost(e) {
 function json_(o) {
   // Thời gian xử lý ở máy chủ (ms) để đo tốc độ: tổng, đến lúc xác định người dùng, số file mở và thời gian mở
   if (DO_.t0) o.ms = { tong: Date.now() - DO_.t0, nd: DO_.nd || 0, mo: DO_.mo, msMo: DO_.msMo };
+  if (DO_.tg) o.ms.tg = Object.keys(DO_.tg).map(function (k) { return [k, DO_.tg[k][0], DO_.tg[k][1]]; })
+    .sort(function (a, b) { return b[2] - a[2]; }).slice(0, 25);
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 }
 
