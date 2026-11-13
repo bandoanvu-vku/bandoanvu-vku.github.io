@@ -76,7 +76,11 @@ function boSungG4_(ss, s, ds, d) {
   // Ô Tab trong Nhật ký có thể bị Sheets tự đổi "11.2026" thành ngày hoặc số → đưa về dạng tên tab "MM.yyyy"
   const tabChu = function (v) {
     if (Object.prototype.toString.call(v) === '[object Date]') return Utilities.formatDate(v, ss.getSpreadsheetTimeZone(), 'MM.yyyy');
-    if (typeof v === 'number') { const p = v.toFixed(4).split('.'); return ('0' + p[0]).slice(-2) + '.' + p[1]; }
+    if (typeof v === 'number') {
+      // "11.2026" có thể thành số thập phân 11.2026 hoặc (dấu chấm = phân cách hàng nghìn) số nguyên 112026
+      if (Math.floor(v) === v) { const t = String(v); return t.length >= 5 ? ('0' + t.slice(0, -4)).slice(-2) + '.' + t.slice(-4) : t; }
+      const p = v.toFixed(4).split('.'); return ('0' + p[0]).slice(-2) + '.' + p[1];
+    }
     const m = /^(\d{1,2})\.(\d{4})$/.exec(chuoi_(v)); return m ? ('0' + m[1]).slice(-2) + '.' + m[2] : chuoi_(v);
   };
   nk.getRange(2, 1, nk.getLastRow() - 1, 5).getValues().forEach(function (r) {
