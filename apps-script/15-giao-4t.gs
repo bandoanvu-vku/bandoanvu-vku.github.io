@@ -73,8 +73,15 @@ function boSungG4_(ss, s, ds, d) {
   if (!nk || nk.getLastRow() < 2) return ds;
   const co = {}; ds.forEach(function (x) { co[x.tab + '|' + x.ten] = 1; });
   const them = [];
+  // Ô Tab trong Nhật ký có thể bị Sheets tự đổi "11.2026" thành ngày hoặc số → đưa về dạng tên tab "MM.yyyy"
+  const tabChu = function (v) {
+    if (Object.prototype.toString.call(v) === '[object Date]') return Utilities.formatDate(v, ss.getSpreadsheetTimeZone(), 'MM.yyyy');
+    if (typeof v === 'number') { const p = v.toFixed(4).split('.'); return ('0' + p[0]).slice(-2) + '.' + p[1]; }
+    const m = /^(\d{1,2})\.(\d{4})$/.exec(chuoi_(v)); return m ? ('0' + m[1]).slice(-2) + '.' + m[2] : chuoi_(v);
+  };
   nk.getRange(2, 1, nk.getLastRow() - 1, 5).getValues().forEach(function (r) {
     if (chuoi_(r[2]).indexOf('Giao việc: tạo hoạt động') !== 0) return;
+    r[3] = tabChu(r[3]);
     const k = chuoi_(r[3]) + '|' + chuoi_(r[4]);
     if (co[k]) return;
     const t = d.cacThang.filter(function (x) { return x.tab === chuoi_(r[3]); })[0];

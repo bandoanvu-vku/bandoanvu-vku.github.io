@@ -309,6 +309,8 @@ function ghiNhatKy_(ss, dong) {
     sheet = ss.insertSheet(CONFIG.TAB_NHAT_KY);
     sheet.appendRow(['Thời điểm', 'Người thao tác', 'Hành động', 'Tab', 'Hoạt động', 'Việc']);
   }
+  // Cột Tab ghi dạng chữ để Sheets không tự đổi "11.2026" thành ngày / số
+  if (dong[3] !== undefined) dong = dong.slice(0, 3).concat(["'" + dong[3]], dong.slice(4));
   sheet.appendRow(dong);
 }
 
