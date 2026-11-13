@@ -13,7 +13,12 @@ const LIEN_KET = [
   ['bbTuanThang', 'Link biên bản kiểm kê tuần/tháng'], ['bbNam', 'Link biên bản kiểm kê năm'],
   ['muonTra', 'Link sheet mượn trả tài sản'], ['hienTrang', 'Link sheet hiện trạng tài sản'],
   ['qldv', 'Link sheet Quản lý Đoàn vụ'], ['xeMay', 'Link sheet xe máy Ban Đoàn vụ'], ['formTT', 'Link form thu thập thông tin cá nhân BĐV'],
-  ['formXe', 'Link form thông tin xe máy BĐV'], ['folderHoSo', 'Link folder hồ sơ / thông tin Đoàn vụ']
+  ['formXe', 'Link form thông tin xe máy BĐV'], ['folderHoSo', 'Link folder hồ sơ / thông tin Đoàn vụ'],
+  // nhóm Nghiệp vụ (phần tử thứ 3 = nhóm hiển thị ở trang Cài đặt; không có = CSDL - CSVC)
+  ['qlSoDoan', 'Link sheet 1_QUẢN LÝ SỔ ĐOÀN - ĐOÀN PHÍ', 'Nghiệp vụ'], ['folderSoDoan', 'Link folder Thông tin Sổ Đoàn', 'Nghiệp vụ'],
+  ['mauDsSoDoan', 'Link mẫu danh sách thông tin Sổ Đoàn', 'Nghiệp vụ'], ['sheetSv5t', 'Link sheet tổng hợp hồ sơ SV5T', 'Nghiệp vụ'],
+  ['formSv5t', 'Link form nộp hồ sơ SV5T', 'Nghiệp vụ'], ['folderSv5t', 'Link folder hồ sơ SV5T năm học', 'Nghiệp vụ'],
+  ['mauThietKe', 'Link mẫu thư mời / giấy khen / GCN', 'Nghiệp vụ']
 ];
 const TT2 = { CHO_TN: 'Chờ phụ trách duyệt', CU_CHO_TN: 'Chờ trưởng nhóm duyệt', CHO_QL: 'Chờ quản lý duyệt', DUYET: 'Đã duyệt', TRA_TN: 'Trả lại', TRA_QL: 'Quản lý trả lại', HUY: 'Đã huỷ' };
 const NHOM_CSVC = 'csdl-csvc';

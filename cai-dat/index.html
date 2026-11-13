@@ -51,9 +51,9 @@
       '<div class="nhap" style="margin-top:10px"><input type="date" id="ngay" aria-label="Chọn ngày nghỉ"><button type="button" class="ghost sm" id="themNgay">+ Thêm ngày</button></div>' +
       '<div class="chips" id="dsNghi"></div>' +
       '<div class="acts"><button class="btn" type="submit">Lưu ngày nghỉ</button></div></form>' +
-      '<form class="panel form" id="f4"><h2>Liên kết nhóm CSDL - CSVC</h2><div class="sub">Dashboard chỉ đọc sheet công văn và biên bản; riêng sheet mượn trả tài sản thì dashboard ghi. Mỗi sheet cần chia sẻ quyền cho tài khoản chạy dashboard (vanborapper@gmail.com).</div>' +
-      (D.dsLienKet || []).map(function (k) { var v = (D.lienKet || {})[k[0]] || '';
-        return '<label for="lk_' + k[0] + '">' + esc(k[1].replace(/^Link /, '').replace(/^./, function (c) { return c.toUpperCase(); })) + '</label>' +
+      '<form class="panel form" id="f4"><h2>Liên kết của các nhóm</h2><div class="sub">Dashboard chỉ đọc các sheet của Văn phòng Đoàn (công văn, biên bản, Quản lý Đoàn vụ, sổ Đoàn…); riêng sheet mượn trả và hiện trạng tài sản thì dashboard ghi. Mỗi sheet cần chia sẻ quyền cho tài khoản chạy dashboard (vanborapper@gmail.com).</div>' +
+      (D.dsLienKet || []).map(function (k, i, a) { var v = (D.lienKet || {})[k[0]] || '', g = k[2] || 'CSDL - CSVC', gTruoc = i ? (a[i - 1][2] || 'CSDL - CSVC') : '';
+        return (g !== gTruoc ? '<h3 style="margin:16px 0 4px;font-size:14px">Nhóm ' + esc(g) + '</h3>' : '') + '<label for="lk_' + k[0] + '">' + esc(k[1].replace(/^Link /, '').replace(/^./, function (c) { return c.toUpperCase(); })) + '</label>' +
           '<div class="nhap"><input id="lk_' + k[0] + '" data-lk="' + k[0] + '" type="url" style="flex:1 1 320px" placeholder="https://docs.google.com/… hoặc https://drive.google.com/…" value="' + esc(v) + '">' +
           (v ? '<a class="note" href="' + esc(v) + '" target="_blank" rel="noopener">Mở</a>' : '') + '</div>' +
           (v && /rtpof=true/.test(v) ? '<div class="hint">File Excel (.xlsx): dashboard chỉ hiện nút mở file, không đọc nội dung.</div>' : '');

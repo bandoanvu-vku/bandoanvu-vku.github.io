@@ -101,6 +101,13 @@ Xem như thành viên: quản lý chọn "Giao diện" trên header (Quản lý 
 Nguồn phân công: Google Sheet "BẢNG PHÂN CÔNG NHIỆM VỤ BĐV" (tab theo nhóm: Họ tên | Chi tiết công việc, ghi "(Phụ trách chính)/(Hỗ trợ chính)").
 Dashboard không đọc trực tiếp; nội dung được chép vào tab Thành viên + Mảng công việc của sheet nhóm. Tab "Mảng và thành viên" hiện phân công từng người.
 Sửa dữ liệu sheet một lần: thêm mục vào `CAP_NHAT` trong `9-cap-nhat-du-lieu.gs` (tự chạy ở lần gọi web app đầu tiên sau triển khai, đánh dấu Script Property).
+Trang **Nghiệp vụ** (MANG_RIENG 'nghiep-vu' trong nhom.js): 4 tab theo quy trình Đoàn trường (10/2025) — Sổ Đoàn (Thu sổ · Phê sổ · Rút sổ / Chuyển sinh hoạt) ·
+SV5T · TNTT (nhận + xét hồ sơ) · Thư mời · Giấy khen · GCN (Canva tạo hàng loạt) · Ký nhận. Máy chủ `14-nghiep-vu.gs` (actions `nghiepVu` {so:[...]} / `luuNghiepVu`):
+mỗi "sổ" = cấu hình trong `SO_NV` (trường + kiểu, trạng thái theo quy trình, `can` = trường phải có để chuyển trạng thái, `chot` = trạng thái chỉ phụ trách chính mảng / quản lý chốt,
+`buoc` = các bước quy trình hiện ở mục "Quy trình", `lienKet`), lưu ở tab "NV - …" của sheet lịch trực (tự tạo, đọc theo tên cột nên thêm cột được). Giao diện chung `nvSo()` trong hoat-dong.js
+(bảng, cột "Kiểm tra" gom các ô đánh dấu, nút "→ trạng thái tiếp", form sửa). Thêm quy trình mới: thêm mục vào `SO_NV` + một tab trong MANG_RIENG gọi `nvSo(el, [khoá], ...)`.
+Không lưu STK / CCCD của người ký nhận, người nộp hồ sơ. Link nhóm Nghiệp vụ (sheet Quản lý sổ Đoàn - Đoàn phí, folder Thông tin Sổ Đoàn, mẫu DS, sheet/form/folder SV5T, mẫu thiết kế)
+khai báo trong `LIEN_KET` với phần tử thứ 3 'Nghiệp vụ' (trang Cài đặt chia nhóm theo phần tử này).
 **Phản hồi hệ thống** (`/phan-hoi/`, `11-phan-hoi.gs`, actions `phanHoi` / `guiPhanHoi` / `xuLyPhanHoi`): mọi vai trò gửi góp ý (loại, trang, mức hài lòng 1–5, nội dung; tối đa 10/ngày),
 lưu tab "Phản hồi hệ thống" của sheet tài khoản KÈM họ tên/email/nhóm người gửi. Trang không có ghi chú về ẩn danh (không được hứa ẩn danh vì sheet lưu tên).
  Thành viên thấy góp ý của mình + trả lời của Ban; quản lý có tab Tổng hợp (tên ẩn mặc định, nút "Xem người gửi"), đổi trạng thái + trả lời.

@@ -13,6 +13,13 @@
       ['giay-to', 'Giấy tờ / Biểu mẫu', ['giấy đề nghị', 'biểu mẫu', 'giấy tờ'], '', ['Soạn Giấy đề nghị']],
       ['doan-vu', 'Thông tin Đoàn vụ', ['đoàn vụ'], 'doanVu', ['Cập nhật thông tin trên sheet, track-log', 'Quản lý thông tin', 'Hồ sơ của Đoàn vụ']],
       ['chu-nhat-xanh', 'Chủ nhật xanh', ['chủ nhật xanh', 'cn xanh'], 'cnXanh', ['Viết thông báo', 'Liên hệ khu vực trực', 'Tạo sheet điểm danh', 'Giám sát thực hiện']]
+    ],
+    'nghiep-vu': [
+      // 4 tab theo quy trình Đoàn trường (10/2025); sổ theo dõi cấu hình ở máy chủ (14-nghiep-vu.gs, SO_NV)
+      ['so-doan', 'Sổ Đoàn', ['sổ đoàn'], 'nvSoDoan', ['Thu sổ Đoàn (năm 2)', 'Phê sổ Đoàn (tháng 5)', 'Rút sổ / chuyển sinh hoạt']],
+      ['sv5t', 'SV5T · TNTT', ['sinh viên 5 tốt', 'sv5t'], 'nvSv5t', ['Nhận hồ sơ bản mềm, bản cứng', 'Xét hồ sơ theo tiêu chí', 'Thông báo kết quả, quyết định']],
+      ['thiet-ke', 'Thư mời · Giấy khen · GCN', ['thiết kế', 'thư mời', 'giấy chứng nhận'], 'nvThietKe', ['Làm trên Canva (tạo hàng loạt)', 'Gửi người phụ trách xem']],
+      ['ky-nhan', 'Ký nhận', ['danh sách nhận', 'soạn thảo'], 'nvKyNhan', ['Cho ký nhận, chụp minh chứng', 'Chuyển tiền / lưu trữ']]
     ]
   };
   var DS_MANG = MANG_RIENG[NHOM] || [];
