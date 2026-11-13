@@ -56,7 +56,7 @@ function luuLienKet_(nd, req) {
     LIEN_KET.forEach(function (k) {
       if (!req.lienKet || req.lienKet[k[0]] === undefined) return;
       const url = chuoi_(req.lienKet[k[0]]).slice(0, 500);
-      if (url && !/^https:\/\/(docs|drive)\.google\.com\//.test(url)) throw new Error(k[1] + ': cần link Google Drive / Google Sheets.');
+      if (url && !/^https:\/\/((docs|drive)\.google\.com|forms\.gle)\//.test(url)) throw new Error(k[1] + ': cần link Google Drive / Google Sheets.');
       let d = nhan.indexOf(chuanHoa_(k[1])) + 1;
       if (!d) { s.appendRow([k[1], '', '']); d = s.getLastRow(); nhan.push(chuanHoa_(k[1])); }
       s.getRange(d, 2).setNumberFormat('@').setValue(url);
