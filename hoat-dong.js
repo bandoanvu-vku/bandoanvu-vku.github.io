@@ -813,8 +813,11 @@
       (g.chua.length + g.thieu.length ? '<div class="nut" style="justify-content:flex-start"><button class="b1" type="button" data-hd="ntNhac">Chép lời nhắc (' + (g.chua.length + g.thieu.length) + ' người)</button><span class="mo-ta">Dán vào nhóm chat để nhắc mọi người.</span></div>' : '') +
       khoi3('Chưa đăng ký', g.chua, 'chua') + khoi3('Chưa đủ giờ', g.thieu, 'thieu') + '<details><summary>Đã đủ giờ (' + g.du.length + ')</summary>' + g.du.map(function (p) { return dong(p, 'du'); }).join('') + '</details>' +
       '<div class="mo-ta" style="margin-top:10px"><a class="lk" href="/lich-truc/">Mở trang Lịch trực</a>' + (d.quanLy ? '' : ' · Công bố lịch và duyệt đổi ca / xin vắng do quản lý thực hiện.') + '</div></div>';
-    var quy = '<details class="khung"><summary style="margin:0">Nội quy trực văn phòng</summary><div class="quy"><ol><li>Giờ trực 8h00–11h00, 14h00–17h00, thứ 2 – thứ 6.</li><li>Áo Đoàn hoặc áo VKU, quần dài / jean / váy, bảng tên, giày hoặc dép có quai (không dép lê).</li>' +
-      '<li>Không đi trễ; bận đột xuất báo sớm cho Nội vụ và gửi yêu cầu xin vắng trên dashboard.</li><li>Chủ động chào hỏi khách, thầy cô, sinh viên.</li><li>Tiết kiệm điện, giữ vệ sinh; ra về đổ rác, xếp bàn ghế, tắt điện.</li></ol></div></details>';
+    var quy = '<details class="khung"><summary style="margin:0">Nội quy trực văn phòng (trích Nội quy VPĐ 21/4/2026)</summary><div class="quy"><ol><li>Trực thứ 2 – thứ 6: sáng 08:00–11:00, chiều 14:00–17:00; nghỉ thứ 7, chủ nhật, Lễ, Tết.</li>' +
+      '<li>Chấp hành thời gian làm việc: điểm danh và cập nhật nhật ký trực; cần ra ngoài lúc trực phải báo cáo và được đồng ý.</li>' +
+      '<li>Trang phục: áo xanh thanh niên (áo VKU), quần dài (chân váy quá gối), giày hoặc dép có quai sau — không mang dép cross, đeo bảng tên BĐV.</li>' +
+      '<li>Giao tiếp hoà nhã, tận tình với đoàn viên và khách; giữ vệ sinh, tiết kiệm điện nước, văn phòng phẩm.</li>' +
+      '<li>Hết giờ tắt thiết bị điện, khoá cửa phòng.</li></ol><a class="lk" href="/cam-nang/">Xem toàn văn trong Cẩm nang</a></div></details>';
     o.el.innerHTML = '<div class="hd">' + nut + dot + tinh + quy + '</div>';
   }
   function themN(iso, n) { var p = iso.split('-'); var x = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)); return x.toISOString().slice(0, 10); }
