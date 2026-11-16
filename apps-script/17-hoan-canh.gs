@@ -26,7 +26,8 @@ function docHoanCanh_() {
   const co1 = {};
   v.slice(h + 1).forEach(function (r) {
     const ten = tenKhop_(r[cTen]);
-    if (!ten) return;
+    if (!ten || ten.indexOf(' ') < 0) return; // bỏ dòng rác kiểu "P"
+
     co1[ten] = co1[ten] || chuoi_(r[cHc]).replace(/[\s\-–.]/g, '').length > 0;
   });
   const kq = { tab: s.getName(), co: co1 };
@@ -42,8 +43,13 @@ function hoanCanh_(nd) {
   Object.keys(bang).forEach(function (em) {
     const tk = bang[em];
     if (tk.quanLy && !(tk.nhom || []).length) return;
-    const k = tenKhop_(tk.ten);
+    let k = tenKhop_(tk.ten);
     if (!k || da[k]) return;
+    // Tên ở sheet tài khoản ghi gọn (vd "Văn Đạt") → ghép nếu là phần cuối của đúng MỘT họ tên đầy đủ trong sheet hoàn cảnh
+    if (!Object.prototype.hasOwnProperty.call(hc.co, k) && k.indexOf(' ') > -1) {
+      const kh = Object.keys(hc.co).filter(function (x) { return x.slice(-(k.length + 1)) === ' ' + k; });
+      if (kh.length === 1) k = kh[0];
+    }
     da[k] = 1;
     nguoi.push({ ten: tk.ten, nhom: tk.nhom || [], coTen: Object.prototype.hasOwnProperty.call(hc.co, k), co: !!hc.co[k] });
   });
