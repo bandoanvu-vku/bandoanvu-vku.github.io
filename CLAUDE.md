@@ -159,6 +159,7 @@ Lộ trình còn lại: Đơn từ & xin nghỉ → duyệt ở Phê duyệt; Nh
   tự `clasp push` + `clasp deploy` vào đúng Deployment ID và kiểm tra web app (cần secret `CLASPRC_JSON`;
   thiếu secret thì workflow bỏ qua và phải dán tay qua editor như cũ). Xem kết quả: `gh run list -R bandoanvu-vku/bandoanvu-vku.github.io`.
   `clasp push` thay toàn bộ file trong dự án bằng nội dung `apps-script/` (kể cả `appsscript.json`, giữ webapp
-  USER_DEPLOYING + ANYONE_ANONYMOUS). Thêm quyền mới (scope) thì người dùng phải vào editor chạy một hàm để cấp quyền lại.
+  USER_DEPLOYING + ANYONE_ANONYMOUS). Quyền khai báo cứng trong `oauthScopes` của appsscript.json (spreadsheets, documents, script.external_request) —
+  dùng dịch vụ mới thì thêm scope vào đó, rồi người dùng vào editor chạy một hàm (vd `capQuyenDocs`) để cấp quyền lại; thiếu scope thì lệnh gọi dịch vụ đó báo lỗi "không có quyền".
 - Chrome của người dùng bị thu nhỏ thì thao tác chuột/ảnh chụp treo; nhờ họ mở cửa sổ lên.
 - Gom nhiều thay đổi máy chủ vào một lần triển khai.
