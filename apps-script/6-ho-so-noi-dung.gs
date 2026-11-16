@@ -203,7 +203,14 @@ function dongBoMuc_(x, s, ep) {
   }
 }
 /** Chạy một lần trong trình sửa Apps Script để cấp quyền đọc Google Docs cho dashboard. */
-function capQuyenDocs() { try { DocumentApp.openById('x'); } catch (e) {} return 'Đã cấp quyền Google Docs'; }
+function capQuyenDocs() {
+  // Màn hình cấp quyền kiểu mới cho bỏ tích từng quyền → buộc hỏi lại đúng quyền Google Docs nếu còn thiếu
+  ScriptApp.requireScopes(ScriptApp.AuthMode.FULL, ['https://www.googleapis.com/auth/documents']);
+  const x = docCamNang_().filter(function (y) { return y.nguon; })[0];
+  if (!x) { Logger.log('Đã có quyền Google Docs (chưa mục cẩm nang nào gắn Doc).'); return; }
+  const nd = noiDungTuDoc_(idTuLink_(x.nguon));
+  Logger.log('Đọc được Google Doc của mục "' + x.tieuDe + '": ' + nd.split('\n').length + ' đoạn.');
+}
 
 function camNang_(nd, epMa) {
   if (!ssTaiKhoan_().getSheetByName('Cẩm nang')) voiKhoa_(function () { tabNoiDung_('Cẩm nang', COT_CN, [90, 70, 260, 620, 150, 130, 260], camNangMau_()); });
