@@ -22,7 +22,7 @@ function ngayVppChu_(v) {
 }
 
 function docTonKhoVpp_() {
-  const c = CacheService.getScriptCache(), co = nhoDoc_('vppkk1');
+  const c = CacheService.getScriptCache(), co = nhoDoc_('vppkk2');
   if (co) return JSON.parse(co);
   const url = lienKet_().tonKhoVpp, id = idTuLink_(url);
   if (!id) return null;
@@ -30,20 +30,20 @@ function docTonKhoVpp_() {
   try { ss = moId_(id); } catch (e) { throw new Error('Máy chủ chưa đọc được sheet tồn kho VPP (tài khoản chạy dashboard cần quyền xem).'); }
   const s = ss.getSheets().filter(function (x) { return /tồn kho/i.test(x.getName()); })[0];
   if (!s) throw new Error('Không thấy tab "Tồn kho văn phòng phẩm ĐTN" trong sheet tồn kho.');
-  const v = s.getDataRange().getValues();
+  const r0 = s.getDataRange(), v = r0.getValues(), hien = r0.getDisplayValues(); // ngày lấy đúng chữ đang hiện trên sheet (sheet để định dạng ngày kiểu Mỹ)
   let h = -1;
   for (let i = 0; i < Math.min(v.length, 12) && h < 0; i++) if (/danh mục/i.test(chuoi_(v[i][1]))) h = i;
   if (h < 0) throw new Error('Không thấy hàng tiêu đề "Danh mục VPP" trong tab tồn kho.');
   // Hàng ngày = hàng đầu tiên dưới tiêu đề có ô dạng ngày ở cột D trở đi
   let hn = -1;
-  for (let i = h + 1; i < Math.min(v.length, h + 5) && hn < 0; i++) if (v[i].slice(3).some(function (x) { return !!ngayVppChu_(x); })) hn = i;
+  for (let i = h + 1; i < Math.min(v.length, h + 5) && hn < 0; i++) if (hien[i].slice(3).some(function (x) { return !!ngayVppChu_(x); })) hn = i;
   if (hn < 0) throw new Error('Không thấy hàng ngày kiểm kê trong tab tồn kho.');
   const lan = [];
   let khoi = 0;
   for (let j = 3; j < v[hn].length; j++) {
     if (/tổng/i.test(chuoi_(v[h][j]))) break;
     if (/thời gian/i.test(chuoi_(v[h][j]))) khoi++;
-    const ngay = ngayVppChu_(v[hn][j]);
+    const ngay = ngayVppChu_(hien[hn][j]);
     if (!ngay) continue;
     let nhan = '';
     for (let i = h + 1; i < hn; i++) if (/lần/i.test(chuoi_(v[i][j]))) nhan = chuoi_(v[i][j]);
@@ -56,13 +56,13 @@ function docTonKhoVpp_() {
     mon.push({ stt: chuoi_(r[0]), ten: ten, dvt: chuoi_(r[2]), sl: lan.map(function (l) { return soVpp_(r[l.cot]); }) });
   });
   const kq = { tab: s.getName(), lan: lan.map(function (l) { return { nhan: l.nhan, ngay: l.ngay, khoi: l.khoi }; }), mon: mon, luc: Utilities.formatDate(new Date(), MUI_GIO, 'dd/MM/yyyy HH:mm') };
-  try { nhoDat_('vppkk1', JSON.stringify(kq), 600); } catch (e) {}
+  try { nhoDat_('vppkk2', JSON.stringify(kq), 600); } catch (e) {}
   return kq;
 }
 
 function vppKiemKe_(nd, req) {
   canNoiVu_(nd);
-  if (req && req.lamMoi) try { CacheService.getScriptCache().remove('vppkk1'); } catch (e) {}
+  if (req && req.lamMoi) try { CacheService.getScriptCache().remove('vppkk2'); } catch (e) {}
   const tk = docTonKhoVpp_();
   return tk ? Object.assign({ ketNoi: true, quanLy: nd.vaiTro === 'quanLy' }, tk) : { ketNoi: false, quanLy: nd.vaiTro === 'quanLy' };
 }
