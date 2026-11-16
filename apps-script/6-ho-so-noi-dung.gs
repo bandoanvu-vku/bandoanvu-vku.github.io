@@ -199,7 +199,7 @@ function dongBoMuc_(x, s, ep) {
     c.put(k, luc, 3600);
     x.dongBo = luc;
   } catch (e) {
-    x.loiDongBo = /authoriz|quyền|permission|access/i.test(String(e)) ? 'Máy chủ chưa có quyền đọc Google Doc này.' : 'Không đọc được Google Doc (' + String(e.message || e).slice(0, 80) + ').';
+    x.loiDongBo = (/authoriz/i.test(String(e)) ? 'Máy chủ chưa được cấp quyền Google Docs.' : 'Không đọc được Google Doc.') + ' (' + String(e.message || e).slice(0, 160) + ')';
   }
 }
 /** Chạy một lần trong trình sửa Apps Script để cấp quyền đọc Google Docs cho dashboard. */
