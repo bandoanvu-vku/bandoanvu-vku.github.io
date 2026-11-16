@@ -109,7 +109,7 @@ function doPost(e) {
     // Quản lý xem thử bằng giao diện thành viên của một nhóm: chỉ các thao tác đọc, dữ liệu lọc như thành viên nhóm đó
     if (req.xemNhu) {
       if (nd.vaiTro !== 'quanLy' || !Object.prototype.hasOwnProperty.call(TEN_NHOM, req.xemNhu)) throw loiQuyen_('Không dùng được chế độ xem như thành viên.');
-      const chiXem = ['data', 'nhom', 'tongquan', 'cuaToi', 'lichTruc', 'thongKe', 'hoSo', 'taiLieu', 'camNang', 'cnXanh', 'kiemKe', 'hopNhom', 'congVan', 'muonTra', 'phanHoi', 'hienTrang', 'doanVu', 'nghiepVu', 'lichThanhVien', 'quanLyTruc', 'hoanCanh'];
+      const chiXem = ['data', 'nhom', 'tongquan', 'cuaToi', 'lichTruc', 'thongKe', 'hoSo', 'taiLieu', 'camNang', 'cnXanh', 'kiemKe', 'hopNhom', 'congVan', 'muonTra', 'phanHoi', 'hienTrang', 'doanVu', 'nghiepVu', 'lichThanhVien', 'quanLyTruc', 'hoanCanh', 'vppKiemKe', 'vppGdn'];
       if (chiXem.indexOf(body.action) === -1) throw new Error('Đang xem bằng giao diện thành viên (chỉ xem). Chuyển về "Giao diện quản lý" ở thanh trên cùng để thao tác.');
       nd = Object.assign({}, nd, { vaiTro: 'thanhVien', nhom: [req.xemNhu], xemThu: true });
     }
@@ -136,6 +136,9 @@ function doPost(e) {
       lichThanhVien: function () { return lichThanhVien_(nd); },
       quanLyTruc: function () { return quanLyTruc_(nd, req); },
       hoanCanh: function () { return hoanCanh_(nd); },
+      vppKiemKe: function () { return vppKiemKe_(nd, req); },
+      vppGdn: function () { return vppGdn_(nd); },
+      luuVppGdn: function () { return luuVppGdn_(nd, req); },
       luuNguonHoanCanh: function () { return luuNguonHoanCanh_(nd, req); },
       luuQuanLyTruc: function () { return luuQuanLyTruc_(nd, req); },
       taiLieu: function () { return taiLieu_(nd); },

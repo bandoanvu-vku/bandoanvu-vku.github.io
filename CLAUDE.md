@@ -124,7 +124,9 @@ Mỗi khung kèm link mở nhanh các sheet hệ thống lấy từ Script Prope
 Trang **Nội vụ** dùng chung engine (mục SO_NV có `nhom: 'noi-vu'`, tab sheet "NoV - …"): Nhân sự = CHỈ theo dõi hoàn cảnh gia đình (`17-hoan-canh.gs`, action `hoanCanh` / `luuNguonHoanCanh`:
 sheet "Hoàn cảnh gia đình - Học lực" do Nội vụ quản lý trực tiếp, ID ở Script Property `SHEET_HOAN_CANH` — quản lý dán link ở tab Nhân sự, link không trả về trình duyệt;
 máy chủ chỉ trả tên thành viên (sheet tài khoản) + đã có / chưa có thông tin + số tên trong sheet không khớp, KHÔNG gửi nội dung hoàn cảnh / học lực; cache `hoancanh1` 5 phút; sổ thành viên mới / ứng tuyển không còn hiện)
-· Văn phòng phẩm (kiểm tra định kỳ · sử dụng/mượn · đề nghị cấp theo quý) · Hoạt động · Vệ sinh (theo dõi + chấm điểm hoạt động · trực vệ sinh) · Lịch trực · Lịch học (lịch học – lịch thi;
+· Văn phòng phẩm (`18-vpp.gs` + hoat-dong.js novVpp, 3 tab con: **Kiểm kê** CHỈ ĐỌC tab "Tồn kho văn phòng phẩm ĐTN" của link `tonKhoVpp` (cột kiểm kê = hàng "Lần n" + hàng ngày, dừng ở "TỔNG QUÝ"; chọn kỳ xem / kỳ so sánh, chênh lệch, hết hàng; cache `vppkk1` 10 phút, action `vppKiemKe`) ·
+**Giấy đề nghị** (Nội vụ + quản lý; action `vppGdn` / `luuVppGdn`: nhập SL theo danh mục = tab đầy đủ của file mẫu `mauGdnVpp` (cache `vppdm1` 6 giờ) + món ngoài danh mục; máy chủ SpreadsheetApp.create file mới, `copyTo` 2 tab mẫu,
+điền cột "Đoàn TN" + viết lại bảng tab rút gọn (SL tồn kho = lần kiểm kê gần nhất có đếm), sửa dòng ngày / quý / năm, `addEditor` người tạo; sổ ở tab "VPP - Giấy đề nghị" sheet lịch trực; bản nháp ở localStorage `bdv.gdnNhap`) · Sử dụng / mượn = sổ cũ `vppDung`) · Hoạt động · Vệ sinh (theo dõi + chấm điểm hoạt động · trực vệ sinh) · Lịch trực · Lịch học (lịch học – lịch thi;
 mục Quy trình ghi nội quy trực; lịch trực vẫn ở trang Lịch trực). Kiểu trường `ban` = chọn bất kỳ ai trong sheet tài khoản. Không đưa link sheet "Hoàn cảnh gia đình" lên dashboard.
 Link Nội vụ: phần tử thứ 3 'Nội vụ' trong LIEN_KET.
 **Phản hồi hệ thống** (`/phan-hoi/`, `11-phan-hoi.gs`, actions `phanHoi` / `guiPhanHoi` / `xuLyPhanHoi`): mọi vai trò gửi góp ý (loại, trang, mức hài lòng 1–5, nội dung; tối đa 10/ngày),

@@ -20,7 +20,7 @@ const LIEN_KET = [
   ['formSv5t', 'Link form nộp hồ sơ SV5T', 'Nghiệp vụ'], ['folderSv5t', 'Link folder hồ sơ SV5T năm học', 'Nghiệp vụ'],
   ['mauThietKe', 'Link mẫu thư mời / giấy khen / GCN', 'Nghiệp vụ'],
   ['ttThanhVien', 'Link sheet THÔNG TIN THÀNH VIÊN BĐV', 'Nội vụ'], ['folderUngTuyen', 'Link folder ứng tuyển các đợt', 'Nội vụ'],
-  ['tonKhoVpp', 'Link sheet Tồn kho VPP - VPĐ', 'Nội vụ'], ['folderDeNghiVpp', 'Link folder giấy đề nghị VPP', 'Nội vụ'],
+  ['tonKhoVpp', 'Link sheet Tồn kho VPP - VPĐ', 'Nội vụ'], ['folderDeNghiVpp', 'Link folder giấy đề nghị VPP', 'Nội vụ'], ['mauGdnVpp', 'Link file mẫu Giấy đề nghị VPP (2 tab)', 'Nội vụ'],
   ['theoDoiHoatDong', 'Link sheet Theo dõi hoạt động BĐV', 'Nội vụ'], ['tongKetHoatDong', 'Link sheet tổng kết hoạt động, trực VPĐ, trực vệ sinh', 'Nội vụ'],
   ['folderHoatDong', 'Link folder quản lý hoạt động', 'Nội vụ'], ['lichHocSheet', 'Link sheet LỊCH HỌC - LỊCH THI BĐV', 'Nội vụ'],
   // liên kết quản lý chung, không thuộc nhóm nào
