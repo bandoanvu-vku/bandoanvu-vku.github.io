@@ -120,7 +120,9 @@ Không lưu STK / CCCD của người ký nhận, người nộp hồ sơ. Link 
 khai báo trong `LIEN_KET` với phần tử thứ 3 'Nghiệp vụ' (trang Cài đặt chia nhóm theo phần tử này).
 Trang Cài đặt → mục **Liên kết**: mỗi nhóm một khung xổ xuống (Chung · 4T · Nghiệp vụ · CSDL - CSVC · Nội vụ); phần tử thứ 3 'Chung' = liên kết quản lý chung (phanCong, folderChung).
 Mỗi khung kèm link mở nhanh các sheet hệ thống lấy từ Script Properties (`sheetHeThong_` trong caiDat, chỉ quản lý).
-Trang **Nội vụ** dùng chung engine (mục SO_NV có `nhom: 'noi-vu'`, tab sheet "NoV - …"): Nhân sự (thành viên mới · ứng tuyển, chốt Trúng/Không trúng tuyển = phụ trách mảng nhân sự)
+Trang **Nội vụ** dùng chung engine (mục SO_NV có `nhom: 'noi-vu'`, tab sheet "NoV - …"): Nhân sự = CHỈ theo dõi hoàn cảnh gia đình (`17-hoan-canh.gs`, action `hoanCanh` / `luuNguonHoanCanh`:
+sheet "Hoàn cảnh gia đình - Học lực" do Nội vụ quản lý trực tiếp, ID ở Script Property `SHEET_HOAN_CANH` — quản lý dán link ở tab Nhân sự, link không trả về trình duyệt;
+máy chủ chỉ trả tên thành viên (sheet tài khoản) + đã có / chưa có thông tin + số tên trong sheet không khớp, KHÔNG gửi nội dung hoàn cảnh / học lực; cache `hoancanh1` 5 phút; sổ thành viên mới / ứng tuyển không còn hiện)
 · Văn phòng phẩm (kiểm tra định kỳ · sử dụng/mượn · đề nghị cấp theo quý) · Hoạt động · Vệ sinh (theo dõi + chấm điểm hoạt động · trực vệ sinh) · Lịch trực · Lịch học (lịch học – lịch thi;
 mục Quy trình ghi nội quy trực; lịch trực vẫn ở trang Lịch trực). Kiểu trường `ban` = chọn bất kỳ ai trong sheet tài khoản. Không đưa link sheet "Hoàn cảnh gia đình" lên dashboard.
 Link Nội vụ: phần tử thứ 3 'Nội vụ' trong LIEN_KET.

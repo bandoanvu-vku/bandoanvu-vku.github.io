@@ -106,6 +106,7 @@
     '.hd .cv-r.nay-r{background:var(--accent-soft);margin:0 -16px;padding:8px 16px;border-radius:8px}.hd .cv-r .cho{justify-content:flex-end}' +
     '@media (max-width:640px){.hd .cv-r{grid-template-columns:1fr}.hd .cv-r .cho{justify-content:flex-start}}' +
     '@media (max-width:640px){.hd .vc-i{grid-template-columns:22px 1fr}.hd .vc-i .nut{grid-column:2}.hd .dong{grid-template-columns:64px 1fr}.hd .nut{grid-column:1/-1;justify-content:flex-start}.hd .yc{grid-template-columns:1fr}}';
+  css += '.hd .tien-do{height:8px;border-radius:5px;background:var(--track,#e6ebf3);overflow:hidden}.hd .tien-do i{display:block;height:100%;background:var(--s-done,#1baf7a)}';
   css += '.hd .dong.dk{grid-template-columns:minmax(150px,200px) 1fr auto}@media (max-width:640px){.hd .dong.dk{grid-template-columns:1fr auto}.hd .dong.dk .cho{grid-column:1/-1;order:3}}';
   var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
@@ -744,7 +745,50 @@
   function nvSv5t(el) { nvSo(el, ['sv5t'], 'nvSv5t'); }
   function nvThietKe(el) { nvSo(el, ['thietKe'], 'nvThietKe'); }
   function nvKyNhan(el) { nvSo(el, ['kyNhan'], 'nvKyNhan'); }
-  function novNhanSu(el) { nvSo(el, ['thanhVienMoi', 'ungTuyen'], 'novNhanSu'); }
+  /* Nhân sự = theo dõi đã cập nhật hoàn cảnh gia đình chưa (17-hoan-canh.gs). Chỉ tên + trạng thái, không có nội dung hoàn cảnh. */
+  function novNhanSu(el) {
+    var o = khoi(el, 'novNhanSu', 'hoanCanh', {}, veNhanSu);
+    ganSuKien(el, function (b) {
+      var d = o.d; if (!d) return;
+      if (b.dataset.hd === 'hcNhac') {
+        var chua = d.nguoi.filter(function (p) { return !p.co; });
+        chep('📝 Nhắc cập nhật thông tin hoàn cảnh gia đình cho Nội vụ. Các bạn chưa có thông tin: ' + chua.map(function (p) { return p.ten; }).join(', ') + '. Liên hệ Nội vụ để bổ sung nhé!', 'Đã chép lời nhắc');
+      }
+      if (b.dataset.hd === 'hcNguon') {
+        var inp = b.closest('.form').querySelector('[data-f=url]');
+        gui(o, 'luuNguonHoanCanh', { url: inp.value.trim() }, b.closest('.khung'), 'Đã kết nối sheet hoàn cảnh').catch(function () {});
+      }
+    });
+  }
+  function veNhanSu(o) {
+    var d = o.d;
+    var nguon = function (lan2) {
+      return d.quanLy ? '<details class="khung"' + (lan2 ? '' : ' open') + '><summary style="margin:0">' + (lan2 ? 'Đổi sheet nguồn (quản lý)' : 'Kết nối sheet hoàn cảnh (quản lý)') + '</summary>' +
+        '<div class="form"><label style="flex:1 1 320px">Link Google Sheet hoàn cảnh gia đình<input data-f="url" placeholder="https://docs.google.com/spreadsheets/d/…"></label><div class="nut"><button class="b1" type="button" data-hd="hcNguon">Kết nối</button></div>' +
+        '<div class="mo-ta ca">Link chỉ lưu ở máy chủ, không hiện lại trên dashboard. Tài khoản chạy dashboard cần quyền xem sheet.</div></div></details>' : '';
+    };
+    if (!d.ketNoi) { o.el.innerHTML = '<div class="hd"><div class="khung trong-k">Chưa kết nối sheet hoàn cảnh gia đình.' + (d.quanLy ? '' : ' Nhờ quản lý kết nối.') + '</div>' + nguon(false) + '</div>'; return; }
+    var co = d.nguoi.filter(function (p) { return p.co; }), chua = d.nguoi.filter(function (p) { return !p.co; });
+    var theoNhom = function (ds) {
+      var g = {}; ds.forEach(function (p) { var k = nhomChu(p.nhom); (g[k] = g[k] || []).push(p); });
+      return Object.keys(g).sort().map(function (k) {
+        return '<div class="nhom-t">' + esc(k) + ' (' + g[k].length + ')</div><div class="cho" style="margin:4px 0 8px">' + g[k].map(function (p) {
+          return '<span class="ten">' + esc(p.ten) + (p.co ? '' : ' <small>' + (p.coTen ? 'có tên, ô hoàn cảnh trống' : 'chưa có trong sheet') + '</small>') + '</span>';
+        }).join('') + '</div>';
+      }).join('');
+    };
+    var pt = d.nguoi.length ? Math.round(co.length / d.nguoi.length * 100) : 0;
+    o.el.innerHTML = '<div class="hd"><div class="khung"><h3>Hoàn cảnh gia đình thành viên</h3>' +
+      '<div class="mo-ta">Đối chiếu danh sách thành viên hiện tại của Ban (sheet tài khoản dashboard) với sheet hoàn cảnh, ghép theo họ tên. Dashboard chỉ hiện đã có / chưa có thông tin; nội dung hoàn cảnh xem và sửa trên sheet gốc.</div>' +
+      '<div class="tiles" style="margin-top:10px"><div class="tile chinh"><span>Đã cập nhật</span><b>' + co.length + '<small style="font-size:14px"> / ' + d.nguoi.length + '</small></b></div>' +
+      '<div class="tile' + (chua.length ? ' xau' : '') + '"><span>Chưa có thông tin</span><b>' + chua.length + '</b></div><div class="tile"><span>Hoàn thành</span><b>' + pt + '%</b></div></div>' +
+      '<div class="tien-do" style="margin:6px 0 12px"><i style="width:' + pt + '%"></i></div>' +
+      (chua.length ? '<div class="nut" style="justify-content:flex-start"><button class="b1" type="button" data-hd="hcNhac">Chép lời nhắc (' + chua.length + ' người)</button></div>' +
+        '<h3 style="margin-top:12px">Chưa có thông tin (' + chua.length + ')</h3>' + theoNhom(chua) : '<div class="trong-k">Tất cả thành viên đã có thông tin hoàn cảnh. 🎉</div>') +
+      '<details><summary>Đã cập nhật (' + co.length + ')</summary>' + theoNhom(co) + '</details>' +
+      (d.ngoai ? '<div class="mo-ta" style="margin-top:8px">Sheet còn ' + d.ngoai + ' tên không khớp ai trong danh sách hiện tại (đã rời Ban hoặc ghi tên khác). Tên ghi khác nhau thì sửa cho trùng sheet tài khoản để được đếm đúng.</div>' : '') +
+      '</div>' + nguon(true) + '</div>';
+  }
   function novVpp(el) { nvSo(el, ['vppKiem', 'vppDung', 'vppDeNghi'], 'novVpp'); }
   function novHoatDong(el) { nvSo(el, ['hoatDong', 'veSinh'], 'novHoatDong'); }
   function novLich(el) { nvSo(el, ['lichHoc'], 'novLich'); }

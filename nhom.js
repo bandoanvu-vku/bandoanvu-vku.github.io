@@ -23,7 +23,7 @@
     ],
     'noi-vu': [
       // 4 tab theo quy trình nhóm Nội vụ; sổ theo dõi dùng chung engine SO_NV (14-nghiep-vu.gs)
-      ['nhan-su', 'Nhân sự', ['nhân sự'], 'novNhanSu', ['Cập nhật thành viên mới', 'Ứng tuyển theo đợt']],
+      ['nhan-su', 'Nhân sự', ['nhân sự'], 'novNhanSu', ['Quản lý hoàn cảnh gia đình thành viên (trên sheet gốc)', 'Nhắc người chưa có thông tin']],
       ['vpp', 'Văn phòng phẩm', ['văn phòng phẩm', 'vpp'], 'novVpp', ['Kiểm tra định kỳ, cập nhật tồn kho', 'Ghi nhận sử dụng / mượn', 'Đề nghị cấp VPP theo quý']],
       ['hoat-dong', 'Hoạt động · Vệ sinh', ['hoạt động', 'vệ sinh'], 'novHoatDong', ['Theo dõi, điểm danh, chấm điểm hoạt động', 'Lịch trực vệ sinh VPĐ']],
       ['lich', 'Lịch trực', ['lịch trực', 'giờ trực'], 'novTruc', ['Đặt thời gian mở / khoá đăng ký', 'Nhắc người chưa đăng ký đủ giờ', 'Quản lý công bố lịch']],
