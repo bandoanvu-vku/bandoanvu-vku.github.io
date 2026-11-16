@@ -10,7 +10,7 @@ const HO_SO = {
   TU_SUA: { mssv: 'MSSV', lop: 'Lớp', sdt: 'Số điện thoại' }
 };
 const COT_TL = ['Mã', 'Tiêu đề', 'Link', 'Danh mục', 'Mô tả', 'Cập nhật bởi', 'Cập nhật lúc', 'Nhóm']; // Nhóm: chung | 4t | nghiep-vu | csdl-csvc | noi-vu
-const COT_CN = ['Mã', 'Thứ tự', 'Tiêu đề', 'Nội dung', 'Cập nhật bởi', 'Cập nhật lúc'];
+const COT_CN = ['Mã', 'Thứ tự', 'Tiêu đề', 'Nội dung', 'Cập nhật bởi', 'Cập nhật lúc', 'Nguồn Google Doc'];
 
 function ssTaiKhoan_() {
   const id = prop_('SHEET_TAI_KHOAN');
@@ -147,21 +147,81 @@ function docCamNang_() {
   const s = ssTaiKhoan_().getSheetByName('Cẩm nang');
   if (!s || s.getLastRow() < 2) return [];
   return s.getRange(2, 1, s.getLastRow() - 1, COT_CN.length).getValues().map(function (r, i) {
-    return { dong: i + 2, ma: chuoi_(r[0]), thuTu: Number(r[1]) || 999, tieuDe: chuoi_(r[2]), noiDung: String(r[3] == null ? '' : r[3]), boi: chuoi_(r[4]), luc: lucChu_(r[5]) };
+    return { dong: i + 2, ma: chuoi_(r[0]), thuTu: Number(r[1]) || 999, tieuDe: chuoi_(r[2]), noiDung: String(r[3] == null ? '' : r[3]), boi: chuoi_(r[4]), luc: lucChu_(r[5]), nguon: chuoi_(r[6]) };
   }).filter(function (x) { return x.ma && x.tieuDe; }).sort(function (a, b) { return a.thuTu - b.thuTu || a.dong - b.dong; });
 }
-function camNang_(nd) {
-  if (!ssTaiKhoan_().getSheetByName('Cẩm nang')) voiKhoa_(function () { tabNoiDung_('Cẩm nang', COT_CN, [90, 70, 260, 620, 150, 130], camNangMau_()); });
-  return { ds: docCamNang_().map(function (x) { delete x.dong; return x; }), quanLy: nd.vaiTro === 'quanLy' };
+function damBaoCotCn_(s) { if (chuoi_(s.getRange(1, COT_CN.length).getValue()) !== COT_CN[COT_CN.length - 1]) s.getRange(1, COT_CN.length).setValue(COT_CN[COT_CN.length - 1]).setFontWeight('bold').setBackground('#1a56c4').setFontColor('#ffffff'); }
+
+/* ---- Mục cẩm nang lấy nội dung từ Google Doc (cột "Nguồn Google Doc"): đọc lại tối đa 1 giờ / lần, lưu bản mới vào cột Nội dung để dự phòng. */
+/** Google Doc → định dạng cẩm nang: đoạn in đậm cả đoạn → **…**, gạch đầu dòng / "Điều n" → "- ", chữ đậm trong đoạn → **…**. */
+function noiDungTuDoc_(id) {
+  const body = DocumentApp.openById(id).getBody(), ra = [];
+  for (let i = 0; i < body.getNumChildren(); i++) {
+    const el = body.getChild(i), loai = el.getType();
+    if (loai !== DocumentApp.ElementType.PARAGRAPH && loai !== DocumentApp.ElementType.LIST_ITEM) continue;
+    const t = el.editAsText(), chu = t.getText();
+    if (!chu.trim()) continue;
+    const moc = t.getTextAttributeIndices(), run = [];
+    for (let k = 0; k < moc.length; k++) {
+      const doan = chu.slice(moc[k], k + 1 < moc.length ? moc[k + 1] : chu.length);
+      if (doan) run.push({ t: doan, d: !!t.isBold(moc[k]) });
+    }
+    const dong = ghepDam_(run).replace(/[\u000b\r\n]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    ra.push(loai === DocumentApp.ElementType.LIST_ITEM || /^(\*\*)?\s*Điều\s+\d+/i.test(dong) ? '- ' + dong : dong);
+  }
+  return ra.join('\n');
+}
+/** [{t, d: in đậm}] → chuỗi có **…**; khoảng trắng đứng giữa hai đoạn đậm gộp vào đoạn đậm, khoảng trắng đầu/cuối để ngoài dấu **. */
+function ghepDam_(run) {
+  const g = [];
+  run.forEach(function (r, i) {
+    const d = r.d || (!r.t.trim() && i > 0 && i < run.length - 1 && run[i - 1].d && run[i + 1].d);
+    if (g.length && g[g.length - 1].d === d) g[g.length - 1].t += r.t; else g.push({ t: r.t, d: d });
+  });
+  return g.map(function (x) {
+    if (!x.d || !x.t.trim()) return x.t;
+    const m = /^(\s*)([\s\S]*?)(\s*)$/.exec(x.t);
+    return m[1] + '**' + m[2] + '**' + m[3];
+  }).join('');
+}
+function dongBoMuc_(x, s, ep) {
+  const id = idTuLink_(x.nguon);
+  if (!id) { x.loiDongBo = 'Link Google Doc không hợp lệ.'; return; }
+  const c = CacheService.getScriptCache(), k = 'cndoc:' + id;
+  const co = ep ? null : c.get(k);
+  if (co) { x.dongBo = co; return; }
+  try {
+    const nd = noiDungTuDoc_(id).slice(0, 20000), luc = Utilities.formatDate(new Date(), MUI_GIO, 'dd/MM/yyyy HH:mm');
+    if (nd && nd !== x.noiDung) {
+      s.getRange(x.dong, 4, 1, 3).setValues([[nd, 'Google Doc', new Date()]]);
+      x.noiDung = nd; x.boi = 'Google Doc'; x.luc = luc;
+    }
+    c.put(k, luc, 3600);
+    x.dongBo = luc;
+  } catch (e) {
+    x.loiDongBo = /authoriz|quyền|permission|access/i.test(String(e)) ? 'Máy chủ chưa có quyền đọc Google Doc này.' : 'Không đọc được Google Doc (' + String(e.message || e).slice(0, 80) + ').';
+  }
+}
+/** Chạy một lần trong trình sửa Apps Script để cấp quyền đọc Google Docs cho dashboard. */
+function capQuyenDocs() { try { DocumentApp.openById('x'); } catch (e) {} return 'Đã cấp quyền Google Docs'; }
+
+function camNang_(nd, epMa) {
+  if (!ssTaiKhoan_().getSheetByName('Cẩm nang')) voiKhoa_(function () { tabNoiDung_('Cẩm nang', COT_CN, [90, 70, 260, 620, 150, 130, 260], camNangMau_()); });
+  const ds = docCamNang_(), s = ssTaiKhoan_().getSheetByName('Cẩm nang');
+  ds.forEach(function (x) { if (x.nguon) dongBoMuc_(x, s, epMa === x.ma); });
+  const ql = nd.vaiTro === 'quanLy';
+  return { ds: ds.map(function (x) { delete x.dong; x.coNguon = !!x.nguon; if (!ql) { delete x.nguon; delete x.loiDongBo; } return x; }), quanLy: ql };
 }
 function luuCamNang_(nd, req) {
   canQuanLy_(nd, 'sửa được cẩm nang');
   return voiKhoa_(function () {
-    const s = tabNoiDung_('Cẩm nang', COT_CN, [90, 70, 260, 620, 150, 130], camNangMau_());
+    const s = tabNoiDung_('Cẩm nang', COT_CN, [90, 70, 260, 620, 150, 130, 260], camNangMau_());
+    damBaoCotCn_(s);
     const ds = docCamNang_();
     const i = ds.findIndex(function (x) { return x.ma === req.ma; }), cu = ds[i];
     if (req.viec !== 'them' && !cu) throw new Error('Không tìm thấy mục này (có thể vừa bị xoá). Tải lại trang.');
     if (req.viec === 'xoa') { s.deleteRow(cu.dong); return camNang_(nd); }
+    if (req.viec === 'dongBo') { if (!cu.nguon) throw new Error('Mục này không gắn Google Doc.'); return camNang_(nd, cu.ma); }
     if (req.viec === 'len' || req.viec === 'xuong') {
       const j = req.viec === 'len' ? i - 1 : i + 1;
       if (j >= 0 && j < ds.length) {
@@ -170,10 +230,18 @@ function luuCamNang_(nd, req) {
       }
       return camNang_(nd);
     }
-    const tieuDe = chuoi_(req.tieuDe).slice(0, 150), noiDung = String(req.noiDung || '').slice(0, 20000);
+    const tieuDe = chuoi_(req.tieuDe).slice(0, 150), nguon = chuoi_(req.nguon);
+    let noiDung = String(req.noiDung || '').slice(0, 20000);
     if (!tieuDe) throw new Error('Nhập tiêu đề mục.');
-    if (req.viec === 'sua') s.getRange(cu.dong, 3, 1, 4).setValues([[tieuDe, noiDung, nd.ten, new Date()]]);
-    else s.appendRow([maMoi_('CN'), ds.length + 1, tieuDe, noiDung, nd.ten, new Date()]);
+    if (nguon) {
+      if (!/docs\.google\.com\/document\/d\//.test(nguon) || !idTuLink_(nguon)) throw new Error('Link nguồn phải là link Google Docs (docs.google.com/document/d/…).');
+      try { noiDung = noiDungTuDoc_(idTuLink_(nguon)).slice(0, 20000); }
+      catch (e) { throw new Error(/authoriz/i.test(String(e)) ? 'Máy chủ chưa được cấp quyền đọc Google Docs. Quản lý mở trình sửa Apps Script, chạy hàm capQuyenDocs một lần rồi thử lại.' : 'Không đọc được Google Doc: tài khoản chạy dashboard cần quyền xem file này.'); }
+    }
+    let dong;
+    if (req.viec === 'sua') { dong = cu.dong; s.getRange(dong, 3, 1, 5).setValues([[tieuDe, noiDung, nguon ? 'Google Doc' : nd.ten, new Date(), nguon]]); }
+    else { s.appendRow([maMoi_('CN'), ds.length + 1, tieuDe, noiDung, nguon ? 'Google Doc' : nd.ten, new Date(), nguon]); dong = s.getLastRow(); }
+    if (nguon) try { CacheService.getScriptCache().put('cndoc:' + idTuLink_(nguon), Utilities.formatDate(new Date(), MUI_GIO, 'dd/MM/yyyy HH:mm'), 3600); } catch (e) {}
     return camNang_(nd);
   });
 }

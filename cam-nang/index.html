@@ -57,6 +57,7 @@
     var nd = D.ds.map(function (x, i) {
       return '<section class="panel sec" id="' + esc(x.ma) + '"><h2><span>' + (i + 1) + '.</span>' + esc(x.tieuDe) + '</h2><div class="nd">' + dinhDang(x.noiDung) + '</div>' +
         (D.quanLy ? '<div class="cn">Cập nhật ' + esc(x.luc) + (x.boi ? ' · ' + esc(x.boi) : '') + '</div><div class="b"><button type="button" class="ghost sm" data-sua="' + esc(x.ma) + '">Sửa</button>' +
+          (x.coNguon ? '<button type="button" class="ghost sm" data-dongbo="' + esc(x.ma) + '">Đồng bộ ngay</button><a class="ghost sm" style="text-decoration:none;display:inline-flex;align-items:center" href="' + esc(x.nguon) + '" target="_blank" rel="noopener">Mở Google Doc</a>' : '') +
           (i ? '<button type="button" class="ghost sm" data-di="len" data-ma="' + esc(x.ma) + '">↑ Lên</button>' : '') + (i < D.ds.length - 1 ? '<button type="button" class="ghost sm" data-di="xuong" data-ma="' + esc(x.ma) + '">↓ Xuống</button>' : '') +
           '<button type="button" class="ghost sm bad" data-xoa="' + esc(x.ma) + '">Xoá</button></div>' : '') + '</section>';
     }).join('');
@@ -66,11 +67,14 @@
     F = x || { tieuDe: '', noiDung: '' };
     T.$('dlgBody').innerHTML = '<form class="form" id="f"><h2>' + (F.ma ? 'Sửa mục' : 'Thêm mục') + '</h2>' +
       '<label for="fT">Tiêu đề</label><input id="fT" required maxlength="150" value="' + esc(F.tieuDe) + '">' +
-      '<label for="fN">Nội dung</label><textarea id="fN" rows="12">' + esc(F.noiDung) + '</textarea>' +
+      '<label for="fG">Lấy nội dung từ Google Doc (không bắt buộc)</label><input id="fG" placeholder="https://docs.google.com/document/d/…" value="' + esc(F.nguon || '') + '">' +
+      '<div class="note">Dán link Google Doc thì mục tự cập nhật theo Doc (tối đa 1 giờ, hoặc bấm "Đồng bộ ngay"); ô Nội dung bên dưới bị bỏ qua. Tài khoản chạy dashboard cần quyền xem Doc. Xoá link để tự viết nội dung.</div>' +
+      '<label for="fN">Nội dung</label><textarea id="fN" rows="12"' + (F.nguon ? ' disabled' : '') + '>' + esc(F.noiDung) + '</textarea>' +
       '<div class="note">Mỗi dòng là một đoạn. Bắt đầu dòng bằng "- " để thành gạch đầu dòng, **hai dấu sao** để in đậm, dán link https:// sẽ bấm được.</div>' +
       (loi ? '<div class="err">' + esc(loi) + '</div>' : '') +
       '<div class="acts"><button type="button" class="ghost" data-dong="1">Đóng</button><button class="btn" type="submit">Lưu</button></div></form>';
     T.$('dlg').className = 'dlg mo'; T.$('fT').focus();
+    T.$('fG').addEventListener('input', function () { T.$('fN').disabled = !!this.value.trim(); });
   }
   function dong() { T.$('dlg').className = 'dlg'; F = null; }
   function gui(req, el, tb) {
@@ -82,7 +86,7 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && F) dong(); });
   T.$('dlg').addEventListener('submit', function (e) {
     e.preventDefault();
-    var x = { ma: F.ma, tieuDe: T.$('fT').value.trim(), noiDung: T.$('fN').value };
+    var x = { ma: F.ma, tieuDe: T.$('fT').value.trim(), noiDung: T.$('fN').value, nguon: T.$('fG').value.trim() };
     e.target.querySelector('button[type=submit]').disabled = true;
     BDV.goi('luuCamNang', Object.assign({ viec: F.ma ? 'sua' : 'them' }, x)).then(function (d) { dong(); nhan(d); T.toast('Đã lưu'); })
       .catch(function (er) { moForm(x, er.message || String(er)); });
@@ -90,6 +94,7 @@
   app.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b || !D) return;
     if (b.dataset.sua) { moForm(D.ds.filter(function (x) { return x.ma === b.dataset.sua; })[0]); return; }
+    if (b.dataset.dongbo) { gui({ viec: 'dongBo', ma: b.dataset.dongbo }, b.closest('.sec'), 'Đã đồng bộ từ Google Doc').catch(function () {}); return; }
     if (b.dataset.di) { gui({ viec: b.dataset.di, ma: b.dataset.ma }, b.closest('.sec')).catch(function () {}); return; }
     if (b.dataset.xoa) {
       if (b.dataset.chac !== '1') { b.dataset.chac = '1'; b.textContent = 'Bấm lần nữa để xoá'; setTimeout(function () { if (b.isConnected) { b.dataset.chac = ''; b.textContent = 'Xoá'; } }, 4000); return; }
