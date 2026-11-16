@@ -139,6 +139,9 @@ Lịch học / thi: thành viên đăng ký ở `/ho-so/` (hoSo trả thêm `lic
 `hocKy_`: T8–T1 = HK1, T2–T6 = HK2, T7 = Hè) + tab "Lịch thi" (Mã | Email | Họ và tên | Học kỳ | Môn thi | Ngày thi | Giờ thi | Phòng / ghi chú | Cập nhật lúc) trong sheet lịch trực.
 actions `luuLichHoc` {slots}, `luuLichThi` {viec: them|sua|xoa}, `lichThanhVien` (Nội vụ + quản lý; ô chọn thành viên, mặc định chính mình; lịch thi có lựa chọn "Tất cả").
 Sổ cũ SO_NV `lichHoc` (link Google Calendar) không còn hiện trên trang.
+**ĐANG DỞ (16/11/2026)**: đồng bộ Cẩm nang ↔ Google Doc chưa chạy — tài khoản vanborapper chưa cấp scope `documents`
+(màn hình cấp quyền kiểu mới bị bỏ tích ô Google Docs; chạy `capQuyenDocs` báo "Các quyền còn thiếu: …/auth/documents", lần cấp lại 16/11 không thành, người dùng hẹn sửa sau).
+Trong lúc đó mục Nội quy hiện bản chép cột Nội dung, quản lý thấy dòng lỗi đồng bộ; thành viên không thấy lỗi. Cấp xong scope là chạy, không cần sửa mã.
 Lộ trình còn lại: Đơn từ & xin nghỉ → duyệt ở Phê duyệt; Nhắc việc tự động (email, cần cấp quyền).
 
 ## Tốc độ (11/2026)
