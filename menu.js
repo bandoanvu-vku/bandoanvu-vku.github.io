@@ -360,6 +360,26 @@
     }
   }).observe(document.body, { childList: true, subtree: true });
   boNgayTatCa();
+
+  /* Nút mở sheet / folder liên kết (máy chủ trả `nutSheet` = { maTab | '_': [{ ten, url }] }, xem nutSheet_ trong 10-csvc-cong-van.gs).
+     BDV_SHEET(nutSheet, maTab) → HTML một hàng nút: link chung của phạm vi ('_') + link riêng của tab. Trống thì trả ''. */
+  var stSh = document.createElement('style');
+  stSh.textContent = '.bdv-sheet{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:0 0 12px}.bdv-sheet>span{font-size:12.5px;color:#5b6b82;margin-right:2px}' +
+    '.bdv-sheet a{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border:1px solid #c9d6ec;border-radius:999px;background:#fff;color:#1f3b6b;font-size:12.5px;font-weight:600;text-decoration:none;line-height:1.3}' +
+    '.bdv-sheet a:hover{background:#eef3fc;border-color:#4c86e8}.bdv-sheet a i{font-style:normal;font-size:13px}';
+  document.head.appendChild(stSh);
+  function bieuTuong(url) { return /\/forms\/|forms\.gle/.test(url) ? '📝' : /\/folders\//.test(url) ? '📁' : /\/document\//.test(url) ? '📄' : '📊'; }
+  window.BDV_SHEET = function (ns, tab) {
+    if (!ns) return '';
+    var ds = (ns._ || []).concat(tab && tab !== '_' ? ns[tab] || [] : []);
+    if (!ds.length) return '';
+    var esc = function (x) { return String(x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    return '<div class="bdv-sheet"><span>Mở nhanh:</span>' + ds.map(function (x) {
+      var t = String(x.ten || ''); t = t.charAt(0).toUpperCase() + t.slice(1);
+      return '<a href="' + esc(x.url) + '" target="_blank" rel="noopener" title="Mở trong tab mới"><i>' + bieuTuong(x.url) + '</i>' + esc(t) + ' ↗</a>';
+    }).join('') + '</div>';
+  };
+
   if (!window.BDV && !document.querySelector('script[src="/dangnhap.js"]')) {
     var dn = document.createElement('script'); dn.src = '/dangnhap.js'; dn.onload = ve; document.body.appendChild(dn);
   }

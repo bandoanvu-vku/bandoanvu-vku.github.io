@@ -115,11 +115,11 @@ function doPost(e) {
     }
     const doc = {
       toi: function () { return nd; },
-      data: function () { canNhom_(nd, '4t'); return layDuLieu(req.moi === true); },
-      nhom: function () { const n = String(req.n || ''); canNhom_(nd, n); const d = layNhom(n, req.moi === true); if (n === NHOM_CSVC) { try { d.viecTuDong = viecCongVanNhiemVu_(nd.ten); } catch (e) { d.viecTuDong = []; } } return d; },
-      tongquan: function () { return locTongQuan_(layTongQuan(req.moi === true), nd); },
+      data: function () { canNhom_(nd, '4t'); const d = Object.assign({}, layDuLieu(req.moi === true)); d.nutSheet = nutSheet_(nd, '4t'); return d; },
+      nhom: function () { const n = String(req.n || ''); canNhom_(nd, n); const d = layNhom(n, req.moi === true); if (n === NHOM_CSVC) { try { d.viecTuDong = viecCongVanNhiemVu_(nd.ten); } catch (e) { d.viecTuDong = []; } } d.nutSheet = nutSheet_(nd, n); return d; },
+      tongquan: function () { const d = locTongQuan_(layTongQuan(req.moi === true), nd); if (nd.vaiTro === 'quanLy') d.nutSheet = nutSheet_(nd, 'chung'); return d; },
       cuaToi: function () { const o = cuaToi_(nd, req.moi === true); o.truc = trucTuanNay_(nd); try { if (nd.nhom.indexOf(NHOM_CSVC) > -1) o.viec = o.viec.concat(viecCongVanNhiemVu_(nd.ten)); } catch (e) {} return o; },
-      lichTruc: function () { return lichTruc_(nd, req.tuan); },
+      lichTruc: function () { const d = lichTruc_(nd, req.tuan); d.nutSheet = nutSheet_(nd, 'truc'); return d; },
       dangKyTruc: function () { return dangKyTruc_(nd, req); },
       huyTruc: function () { return huyTruc_(nd, req); },
       diemDanh: function () { return diemDanh_(nd, req); },

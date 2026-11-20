@@ -394,7 +394,7 @@
         '<div class="loc"><label>Bán kính <input type="number" id="bk" min="30" max="2000" step="10" value="' + D.banKinh + '"> m</label>' +
         '<button class="ghost" type="button" id="datvt">Đặt vị trí văn phòng tại chỗ tôi đứng</button></div></div>';
     }
-    $('app').innerHTML = theDiemDanh() + kpi + '<div class="panel">' + nav + '<div class="banner ' + st.ma + '">' + ban + '</div>' + tuanHtml + '</div>' + ycHtml + ql;
+    $('app').innerHTML = (window.BDV_SHEET ? BDV_SHEET(D.nutSheet) : '') + theDiemDanh() + kpi + '<div class="panel">' + nav + '<div class="banner ' + st.ma + '">' + ban + '</div>' + tuanHtml + '</div>' + ycHtml + ql;
     var t = new Date();
     $('foot').textContent = 'Cập nhật lúc ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '. Điểm danh dùng vị trí của điện thoại / máy tính, chỉ được ghi nhận khi bạn ở gần văn phòng.';
   }

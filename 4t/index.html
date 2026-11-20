@@ -267,6 +267,7 @@
       });
   }
   function nhan(d) {
+    if (!d.nutSheet && D && D.nutSheet) d.nutSheet = D.nutSheet;
     D = d; moKhoa();
     try { localStorage.setItem('bdv4t.data', JSON.stringify(d)); } catch (e) {}
     if (iThang < 0 || iThang >= D.cacThang.length) {
@@ -306,6 +307,8 @@
     if (view === 'hd') veHoatDong(); else if (view === 'toi') veCuaToi();
     else if (view === 'hop') { $('view').innerHTML = '<div id="modHd"></div>'; if (window.BDVHD) BDVHD.hopNhom($('modHd'), '4t'); else $('modHd').innerHTML = '<div class="empty-box">Đang tải…</div>'; }
     else veThanhVien();
+    var nutSh = window.BDV_SHEET ? BDV_SHEET(D.nutSheet, view) : '';
+    if (nutSh) $('view').insertAdjacentHTML('afterbegin', nutSh);
   }
   function veThang() {
     var nut = [['homnay', 'Hôm nay'], ['homqua', 'Hôm qua'], ['3', '3 ngày'], ['7', '7 ngày'], ['tuy', 'Tuỳ chọn']];

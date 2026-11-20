@@ -167,6 +167,7 @@
   function nhan(d) {
     if (!d.truongNhom && D && D.truongNhom) d.truongNhom = D.truongNhom;
     if (!d.viecTuDong && D && D.viecTuDong) d.viecTuDong = D.viecTuDong;
+    if (!d.nutSheet && D && D.nutSheet) d.nutSheet = D.nutSheet;
     D = d; moKhoa();
     try { localStorage.setItem('bdv.' + NHOM + '.data', JSON.stringify(d)); } catch (e) {}
     document.title = 'Nhóm ' + D.ten + ' · Ban Đoàn vụ';
@@ -197,6 +198,9 @@
     else if (view === 'hop') veHop();
     else if (view === 'nv' || view === 'toi') veNhiemVu(view === 'toi');
     else veMangRieng(DS_MANG.filter(function (m) { return m[0] === view; })[0]);
+    // Hàng nút mở sheet / folder liên kết của nhóm + của tab đang xem (tự có cho mọi tab, kể cả tab thêm sau này)
+    var nutSh = window.BDV_SHEET ? BDV_SHEET(D && D.nutSheet, view) : '';
+    if (nutSh && $('view')) $('view').insertAdjacentHTML('afterbegin', nutSh);
     var c = document.querySelector('.tabs [aria-selected=true]'); if (c && c.scrollIntoView && view !== 'nv') c.scrollIntoView({ block: 'nearest', inline: 'center' });
   }
   function khopMang(ten, khoa) { var t = String(ten || '').toLowerCase(); return khoa.some(function (k) { return t.indexOf(k) > -1; }); }

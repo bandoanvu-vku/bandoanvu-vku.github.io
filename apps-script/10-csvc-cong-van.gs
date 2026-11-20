@@ -7,25 +7,43 @@
  *   Công việc chưa có phụ trách chính, hoặc chính phụ trách gửi, thì gửi thẳng quản lý.
  * Mượn / trả: sheet riêng (link "Sheet mượn trả tài sản"), tab đầu là danh mục tài sản; tab "Mượn về", "Cho mượn" tự tạo.
  */
+// [khoá, nhãn ở trang Cài đặt, nhóm ('' = CSDL - CSVC | 'Nghiệp vụ' | 'Nội vụ' | '4T' | 'Chung'), mã tab trên trang nhóm ('' = mọi tab của nhóm)]
+// Mọi link khai báo ở đây TỰ hiện nút "Mở …" trên đúng tab của nhóm (nutSheet_) — thêm link mới chỉ cần thêm một dòng.
 const LIEN_KET = [
-  ['cvDi', 'Link sheet công văn đi'], ['cvDiFolder', 'Link folder công văn đi'],
-  ['cvDen', 'Link sheet công văn đến'], ['cvDenFolder', 'Link folder công văn đến'],
-  ['bbTuanThang', 'Link biên bản kiểm kê tuần/tháng'], ['bbNam', 'Link biên bản kiểm kê năm'],
-  ['muonTra', 'Link sheet mượn trả tài sản'], ['hienTrang', 'Link sheet hiện trạng tài sản'],
-  ['qldv', 'Link sheet Quản lý Đoàn vụ'], ['xeMay', 'Link sheet xe máy Ban Đoàn vụ'], ['formTT', 'Link form thu thập thông tin cá nhân BĐV'],
-  ['formXe', 'Link form thông tin xe máy BĐV'], ['folderHoSo', 'Link folder hồ sơ / thông tin Đoàn vụ'],
-  // nhóm Nghiệp vụ (phần tử thứ 3 = nhóm hiển thị ở trang Cài đặt; không có = CSDL - CSVC)
-  ['qlSoDoan', 'Link sheet 1_QUẢN LÝ SỔ ĐOÀN - ĐOÀN PHÍ', 'Nghiệp vụ'], ['folderSoDoan', 'Link folder Thông tin Sổ Đoàn', 'Nghiệp vụ'],
-  ['mauDsSoDoan', 'Link mẫu danh sách thông tin Sổ Đoàn', 'Nghiệp vụ'], ['sheetSv5t', 'Link sheet tổng hợp hồ sơ SV5T', 'Nghiệp vụ'],
-  ['formSv5t', 'Link form nộp hồ sơ SV5T', 'Nghiệp vụ'], ['folderSv5t', 'Link folder hồ sơ SV5T năm học', 'Nghiệp vụ'],
-  ['mauThietKe', 'Link mẫu thư mời / giấy khen / GCN', 'Nghiệp vụ'],
-  ['ttThanhVien', 'Link sheet THÔNG TIN THÀNH VIÊN BĐV', 'Nội vụ'], ['folderUngTuyen', 'Link folder ứng tuyển các đợt', 'Nội vụ'],
-  ['tonKhoVpp', 'Link sheet Tồn kho VPP - VPĐ', 'Nội vụ'], ['folderDeNghiVpp', 'Link folder giấy đề nghị VPP', 'Nội vụ'], ['mauGdnVpp', 'Link file mẫu Giấy đề nghị VPP (2 tab)', 'Nội vụ'],
-  ['theoDoiHoatDong', 'Link sheet Theo dõi hoạt động BĐV', 'Nội vụ'], ['tongKetHoatDong', 'Link sheet tổng kết hoạt động, trực VPĐ, trực vệ sinh', 'Nội vụ'],
-  ['folderHoatDong', 'Link folder quản lý hoạt động', 'Nội vụ'], ['lichHocSheet', 'Link sheet LỊCH HỌC - LỊCH THI BĐV', 'Nội vụ'],
-  // liên kết quản lý chung, không thuộc nhóm nào
+  ['cvDi', 'Link sheet công văn đi', '', 'cong-van'], ['cvDiFolder', 'Link folder công văn đi', '', 'cong-van'],
+  ['cvDen', 'Link sheet công văn đến', '', 'cong-van'], ['cvDenFolder', 'Link folder công văn đến', '', 'cong-van'],
+  ['bbTuanThang', 'Link biên bản kiểm kê tuần/tháng', '', 'csvc'], ['bbNam', 'Link biên bản kiểm kê năm', '', 'csvc'],
+  ['muonTra', 'Link sheet mượn trả tài sản', '', 'csvc'], ['hienTrang', 'Link sheet hiện trạng tài sản', '', 'csvc'],
+  ['qldv', 'Link sheet Quản lý Đoàn vụ', '', 'doan-vu'], ['xeMay', 'Link sheet xe máy Ban Đoàn vụ', '', 'doan-vu'], ['formTT', 'Link form thu thập thông tin cá nhân BĐV', '', 'doan-vu'],
+  ['formXe', 'Link form thông tin xe máy BĐV', '', 'doan-vu'], ['folderHoSo', 'Link folder hồ sơ / thông tin Đoàn vụ', '', 'doan-vu'],
+  ['qlSoDoan', 'Link sheet 1_QUẢN LÝ SỔ ĐOÀN - ĐOÀN PHÍ', 'Nghiệp vụ', 'so-doan'], ['folderSoDoan', 'Link folder Thông tin Sổ Đoàn', 'Nghiệp vụ', 'so-doan'],
+  ['mauDsSoDoan', 'Link mẫu danh sách thông tin Sổ Đoàn', 'Nghiệp vụ', 'so-doan'], ['sheetSv5t', 'Link sheet tổng hợp hồ sơ SV5T', 'Nghiệp vụ', 'sv5t'],
+  ['formSv5t', 'Link form nộp hồ sơ SV5T', 'Nghiệp vụ', 'sv5t'], ['folderSv5t', 'Link folder hồ sơ SV5T năm học', 'Nghiệp vụ', 'sv5t'],
+  ['mauThietKe', 'Link mẫu thư mời / giấy khen / GCN', 'Nghiệp vụ', 'thiet-ke'],
+  ['ttThanhVien', 'Link sheet THÔNG TIN THÀNH VIÊN BĐV', 'Nội vụ', 'nhan-su'], ['folderUngTuyen', 'Link folder ứng tuyển các đợt', 'Nội vụ', 'nhan-su'],
+  ['tonKhoVpp', 'Link sheet Tồn kho VPP - VPĐ', 'Nội vụ', 'vpp'], ['folderDeNghiVpp', 'Link folder giấy đề nghị VPP', 'Nội vụ', 'vpp'], ['mauGdnVpp', 'Link file mẫu Giấy đề nghị VPP (2 tab)', 'Nội vụ', 'vpp'],
+  ['theoDoiHoatDong', 'Link sheet Theo dõi hoạt động BĐV', 'Nội vụ', 'hoat-dong'], ['tongKetHoatDong', 'Link sheet tổng kết hoạt động, trực VPĐ, trực vệ sinh', 'Nội vụ', 'hoat-dong'],
+  ['folderHoatDong', 'Link folder quản lý hoạt động', 'Nội vụ', 'hoat-dong'], ['lichHocSheet', 'Link sheet LỊCH HỌC - LỊCH THI BĐV', 'Nội vụ', 'lich-hoc'],
   ['phanCong', 'Link sheet BẢNG PHÂN CÔNG NHIỆM VỤ BĐV', 'Chung'], ['folderChung', 'Link folder chung của Ban Đoàn vụ', 'Chung']
 ];
+const MA_NHOM_LK = { '': 'csdl-csvc', 'Nghiệp vụ': 'nghiep-vu', 'Nội vụ': 'noi-vu', '4T': '4t', 'Truyền thông - Thông tin': '4t', 'Chung': 'chung' };
+/** Nút mở sheet cho một phạm vi: nhóm ('4t' | 'nghiep-vu' | 'csdl-csvc' | 'noi-vu'), 'chung' (Tổng quan) hoặc 'truc' (Lịch trực).
+ *  Trả { maTab | '_': [{ ten, url }] } — '_' = hiện ở mọi tab. Sheet hệ thống (ID trong Script Properties) cũng thêm ở đây.
+ *  KHÔNG BAO GIỜ thêm sheet hoàn cảnh gia đình (SHEET_HOAN_CANH). Gọi sau khi đã kiểm tra quyền xem phạm vi đó. */
+function nutSheet_(nd, pham) {
+  const lk = lienKet_(), o = {}, ql = nd.vaiTro === 'quanLy';
+  const them = function (tab, ten, url) { if (url) (o[tab || '_'] = o[tab || '_'] || []).push({ ten: ten, url: url }); };
+  const url = function (id) { return id ? 'https://docs.google.com/spreadsheets/d/' + id + '/edit' : ''; };
+  LIEN_KET.forEach(function (k) { if (MA_NHOM_LK[k[2] || ''] === pham) them(k[3], k[1].replace(/^Link /, ''), lk[k[0]]); });
+  if (pham === '4t') them('_', 'sheet Timeline 2026 - 2027', url(prop_('SHEET_TIMELINE') || CONFIG.SPREADSHEET_ID));
+  else if (pham === 'chung') { if (ql) { them('_', 'sheet Tài khoản dashboard', url(prop_('SHEET_TAI_KHOAN'))); them('_', 'sheet Lịch trực văn phòng', url(prop_('SHEET_TRUC'))); } }
+  else if (pham === 'truc') { if (ql || laNoiVu_(nd)) them('_', 'sheet Lịch trực văn phòng', url(prop_('SHEET_TRUC'))); }
+  else {
+    let g = {}; try { g = JSON.parse(prop_('SHEET_NHOM') || '{}'); } catch (e) {}
+    if (g[pham]) them('_', 'sheet theo dõi nhiệm vụ nhóm', url(g[pham].id));
+  }
+  return o;
+}
 const TT2 = { CHO_TN: 'Chờ phụ trách duyệt', CU_CHO_TN: 'Chờ trưởng nhóm duyệt', CHO_QL: 'Chờ quản lý duyệt', DUYET: 'Đã duyệt', TRA_TN: 'Trả lại', TRA_QL: 'Quản lý trả lại', HUY: 'Đã huỷ' };
 const NHOM_CSVC = 'csdl-csvc';
 

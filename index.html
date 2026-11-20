@@ -267,7 +267,8 @@
       }).join('') : '<div class="empty">Timeline chưa có hoạt động nào.</div>') + '</div>';
 
     var hopHtml = tab === 'chung' && D.phamVi !== 'nhom' ? '<div class="panel" id="hopThang">' + veHopThang() + '</div>' : '';
-    $('app').innerHTML = tabs + kpi + xepHang + nhom + hopHtml + '<div class="grid2"><div>' + nguoi + '</div><div>' + due + thang + '</div></div>';
+    var nutSh = tab === 'chung' && window.BDV_SHEET ? BDV_SHEET(D.nutSheet) : '';
+    $('app').innerHTML = tabs + nutSh + kpi + xepHang + nhom + hopHtml + '<div class="grid2"><div>' + nguoi + '</div><div>' + due + thang + '</div></div>';
     var tc = $('app').querySelector('.tabs [aria-selected=true]'); if (tc && tc.scrollIntoView && tab !== 'chung') tc.scrollIntoView({ block: 'nearest', inline: 'center' });
     var n = new Date();
     $('foot').textContent = 'Cập nhật lúc ' + ('0' + n.getHours()).slice(-2) + ':' + ('0' + n.getMinutes()).slice(-2) + '. Số liệu lấy từ sheet Timeline và ba sheet theo dõi nhiệm vụ; khối lượng thành viên tính theo người phụ trách chính.';

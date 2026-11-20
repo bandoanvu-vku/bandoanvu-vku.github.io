@@ -119,6 +119,9 @@ mỗi "sổ" = cấu hình trong `SO_NV` (trường + kiểu, trạng thái theo
 (bảng, cột "Kiểm tra" gom các ô đánh dấu, nút "→ trạng thái tiếp", form sửa). Thêm quy trình mới: thêm mục vào `SO_NV` + một tab trong MANG_RIENG gọi `nvSo(el, [khoá], ...)`.
 Không lưu STK / CCCD của người ký nhận, người nộp hồ sơ. Link nhóm Nghiệp vụ (sheet Quản lý sổ Đoàn - Đoàn phí, folder Thông tin Sổ Đoàn, mẫu DS, sheet/form/folder SV5T, mẫu thiết kế)
 khai báo trong `LIEN_KET` với phần tử thứ 3 'Nghiệp vụ' (trang Cài đặt chia nhóm theo phần tử này).
+**Nút mở sheet** (áp dụng mọi nhóm + về sau): mỗi dòng `LIEN_KET` = [khoá, nhãn, nhóm, mã tab]; `nutSheet_(nd, phạm vi)` gom link theo tab ('_' = mọi tab) + sheet hệ thống
+(sheet theo dõi nhóm, Timeline cho 4T; Tổng quan: phanCong, folderChung + sheet tài khoản / lịch trực cho quản lý; Lịch trực: sheet lịch trực cho quản lý + Nội vụ) → trả `nutSheet` trong `nhom`, `data`, `tongquan`, `lichTruc`;
+giao diện `BDV_SHEET(nutSheet, maTab)` (menu.js) vẽ hàng "Mở nhanh" đầu tab (nhom.js `ve`, 4t, index tab Chung, lich-truc). Link mới / tab mới: chỉ cần thêm dòng LIEN_KET có mã tab. KHÔNG thêm sheet hoàn cảnh.
 Trang Cài đặt → mục **Liên kết**: mỗi nhóm một khung xổ xuống (Chung · 4T · Nghiệp vụ · CSDL - CSVC · Nội vụ); phần tử thứ 3 'Chung' = liên kết quản lý chung (phanCong, folderChung).
 Mỗi khung kèm link mở nhanh các sheet hệ thống lấy từ Script Properties (`sheetHeThong_` trong caiDat, chỉ quản lý).
 Trang **Nội vụ** dùng chung engine (mục SO_NV có `nhom: 'noi-vu'`, tab sheet "NoV - …"): Nhân sự = CHỈ theo dõi hoàn cảnh gia đình (`17-hoan-canh.gs`, action `hoanCanh` / `luuNguonHoanCanh`:
