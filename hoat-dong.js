@@ -838,9 +838,6 @@
       if (o.loc.chi === 'chua') return r.x === null;
       return true;
     });
-    var moc = '<div class="cho" style="margin:8px 0 4px">' + d.lan.map(function (l, i) {
-      return '<span class="ten' + (i === a ? '" style="background:#1f3b6b;color:#fff' : i === b ? '" style="outline:2px solid #4c86e8' : '') + '">' + esc(l.nhan) + ' · <b>' + l.ngay + '</b></span>';
-    }).join('') + '</div>';
     var bang = '<div style="overflow-x:auto"><table class="bang"><thead><tr><th>#</th><th>Danh mục VPP</th><th>ĐVT</th><th style="text-align:right">' + esc(d.lan[b].ngay) + '</th><th style="text-align:right">' + esc(d.lan[a].ngay) + '</th><th style="text-align:right">Chênh lệch</th><th>Lịch sử</th></tr></thead><tbody>' +
       hien.map(function (r, i) {
         var ls = r.m.sl.map(function (v, k) { return '<span title="' + esc(d.lan[k].nhan + ' ' + d.lan[k].ngay) + '" style="display:inline-block;min-width:18px;text-align:center;font-size:11px;color:' + (k === a ? '#1f3b6b;font-weight:700' : 'var(--muted)') + '">' + (v === null ? '·' : soChu(v)) + '</span>'; }).join('');
@@ -849,7 +846,7 @@
       }).join('') + (hien.length ? '' : '<tr><td colspan="7" class="trong-k">Không có món nào khớp.</td></tr>') + '</tbody></table></div>';
     var nutLoc = function (v, chu, so) { return '<button class="b3' + (o.loc.chi === v ? ' b1' : '') + '" type="button" data-hd="kkLoc" data-v="' + v + '">' + chu + ' (' + so + ')</button>'; };
     o.el.innerHTML = '<div class="khung"><h3>Kiểm kê văn phòng phẩm</h3><div class="mo-ta">Chỉ đọc từ tab "' + esc(d.tab) + '" của sheet tồn kho VPP. Nhập kiểm kê trên sheet; dashboard cập nhật sau tối đa 10 phút (hoặc bấm Tải lại). Lấy lúc ' + esc(d.luc) + '.</div>' +
-      '<div class="mo-ta" style="margin-top:8px"><b>Các mốc kiểm kê</b> (nền đậm = kỳ đang xem, viền xanh = kỳ so sánh)</div>' + moc +
+      '<div class="mo-ta" style="margin-top:8px">' + n + ' lần kiểm kê · gần nhất <b>' + esc(d.lan[n - 1].ngay) + '</b></div>' +
       '<div class="form" style="margin-top:6px"><label>Kỳ đang xem<select data-kk="kyNay">' + op(a) + '</select></label><label>So với kỳ<select data-kk="kyTruoc">' + op(b) + '</select></label><div class="nut"><button class="b3" type="button" data-hd="kkMoi">Tải lại từ sheet</button></div></div>' +
       '<div class="tiles" style="margin-top:10px"><div class="tile chinh"><span>Số món</span><b>' + d.mon.length + '</b></div><div class="tile"><span>Tăng so với kỳ trước</span><b style="color:#17794a">' + tang + '</b></div><div class="tile"><span>Giảm</span><b style="color:#c0392b">' + giam + '</b></div><div class="tile' + (het ? ' xau' : '') + '"><span>Hết hàng (= 0)</span><b>' + het + '</b></div></div>' +
       '<div class="nut" style="justify-content:flex-start;flex-wrap:wrap;margin:8px 0"><input data-kkq placeholder="Tìm món…" value="' + esc(o.loc.q || '') + '" style="min-width:200px;border:1px solid var(--line);border-radius:8px;padding:6px 10px">' +
